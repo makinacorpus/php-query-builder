@@ -1,0 +1,10 @@
+/.buildpath
+/.phpunit.cache/
+/.project
+/.settings/
+/composer.lock
+/coverage/
+/phpstan.neon
+/phpunit.xml
+/unrelated/
+/vendor/

@@ -1,0 +1,39 @@
+{
+    "name" : "makinacorpus/query-builder",
+    "type": "library",
+    "description": "Driver agnostic SQL query builder.",
+    "keywords": ["postgresql", "mysql", "symfony"],
+    "homepage": "http://github.com/makinacorpus/php-query-builder",
+    "license": "MIT",
+    "authors": [
+        {
+            "name" : "Pierre RINEAU",
+            "email" : "pierre.rineau@processus.org"
+        },
+        {
+            "name" : "Makina Corpus",
+            "email" : "pierre.rineau@processus.org"
+        }
+    ],
+    "minimum-stability" : "dev",
+    "prefer-stable" : true,
+    "autoload" : {
+        "psr-4" : {
+            "MakinaCorpus\\QueryBuilder\\" : "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "MakinaCorpus\\QueryBuilder\\Tests\\": "tests"
+        }
+    },
+    "require" : {
+        "php" : ">=8.2"
+    },
+    "require-dev" : {
+        "doctrine/dbal": "^3.6",
+        "phpbench/phpbench": "^1.0",
+        "phpstan/phpstan": "^1.10",
+        "phpunit/phpunit" : "^10.0"
+    }
+}
