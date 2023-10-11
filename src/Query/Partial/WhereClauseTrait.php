@@ -73,9 +73,9 @@ trait WhereClauseTrait
      *
      * Default WHERE clause uses AND predicate.
      */
-    public function whereExpression(mixed $expression, mixed $arguments = null): static
+    public function whereRaw(mixed $expression, mixed $arguments = null): static
     {
-        $this->where->expression($expression, $arguments);
+        $this->where->raw($expression, $arguments);
 
         return $this;
     }

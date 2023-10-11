@@ -106,7 +106,7 @@ class Where implements Expression
     /**
      * Add a single raw SQL expression.
      */
-    public function raw(string $expression, mixed $arguments = null): static
+    public function withRaw(string $expression, mixed $arguments = null): static
     {
         $this->addExpression(new Raw($expression, $arguments));
 

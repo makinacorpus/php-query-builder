@@ -12,7 +12,7 @@ class WhereBuilderTest extends AbstractWriterTestCase
     public function testExpression(): void
     {
         $expression = new Where();
-        $expression->expression('this is an arbitrary expression ?', ['foo']);
+        $expression->raw('this is an arbitrary expression ?', ['foo']);
 
         self::assertSameSql(
             <<<SQL

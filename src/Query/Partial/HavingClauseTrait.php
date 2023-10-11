@@ -73,9 +73,9 @@ trait HavingClauseTrait
      *
      * Default HAVING clause uses AND predicate.
      */
-    public function havingExpression(mixed $expression, mixed $arguments = null): static
+    public function havingRaw(mixed $expression, mixed $arguments = null): static
     {
-        $this->having->expression($expression, $arguments);
+        $this->having->raw($expression, $arguments);
 
         return $this;
     }

@@ -66,7 +66,7 @@ trait WhereBuilder
         //   get a Where instance here. We should not care about the
         //   default operator then.
         if (null === $value && (\is_callable($column) || $column instanceof Where)) {
-            return $this->expression($column);
+            return $this->raw($column);
         }
 
         $column = ExpressionHelper::column($column);
@@ -121,7 +121,7 @@ trait WhereBuilder
      * @param mixed $arguments
      *   Parameters for the arbitrary SQL.
      */
-    public function expression(callable|string|Expression $expression, mixed $arguments = []): static
+    public function raw(callable|string|Expression $expression, mixed $arguments = []): static
     {
         $expression = ExpressionHelper::raw($expression, $arguments, $this);
 
@@ -136,7 +136,7 @@ trait WhereBuilder
     /**
      * Negate another expression.
      */
-    public function notExpression(callable|string|Expression $expression, mixed $arguments = []): static
+    public function notRaw(callable|string|Expression $expression, mixed $arguments = []): static
     {
         $this->getInstance()->notWith(ExpressionHelper::raw($expression, $arguments));
 

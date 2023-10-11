@@ -71,7 +71,7 @@ class WhereTest extends AbstractWriterTestCase
         );
     }
 
-    public function testNotExpressionBecomesValue(): void
+    public function testNotExpressionInstanceBecomesValue(): void
     {
         $expression = new Where();
         $expression->with('this is an arbitrary user value');

@@ -96,7 +96,7 @@ class DeleteTest extends AbstractWriterTestCase
     {
         $query = new Delete('some_table');
 
-        $query->whereExpression('true');
+        $query->whereRaw('true');
 
         self::assertSameSql(
             <<<SQL
@@ -156,7 +156,7 @@ class DeleteTest extends AbstractWriterTestCase
         );
     }
 
-    public function testReturningExpression()
+    public function testReturningRaw()
     {
         $query = new Delete('some_table');
 

@@ -145,7 +145,7 @@ final class Select extends AbstractQuery implements TableExpression
     /**
      * Add a selected column.
      *
-     * If you need to pass arguments, use a Expression instance or columnExpression().
+     * If you need to pass arguments, use a Expression instance or columnRaw().
      */
     public function column(mixed $expression, ?string $alias = null): static
     {
@@ -157,7 +157,7 @@ final class Select extends AbstractQuery implements TableExpression
     /**
      * Add a selected column as a raw SQL expression.
      */
-    public function columnExpression(mixed $expression, ?string $alias = null, mixed $arguments = null): static
+    public function columnRaw(mixed $expression, ?string $alias = null, mixed $arguments = null): static
     {
         $this->columns[] = new SelectColumn(ExpressionHelper::raw($expression, $arguments), $alias);
 
@@ -276,7 +276,7 @@ final class Select extends AbstractQuery implements TableExpression
      * @param int $null
      *   Null behavior, nulls first, nulls last, or leave the backend default.
      */
-    public function orderByExpression(mixed $column, int $order = Query::ORDER_ASC, int $null = Query::NULL_IGNORE): static
+    public function orderByRaw(mixed $column, int $order = Query::ORDER_ASC, int $null = Query::NULL_IGNORE): static
     {
         $this->orders[] = [ExpressionHelper::raw($column), $order, $null];
 

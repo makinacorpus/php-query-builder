@@ -202,7 +202,7 @@ class ExpressionHelperTest extends AbstractWriterTestCase
         );
     }
 
-    public function testColumnExpression(): void
+    public function testColumnRaw(): void
     {
         self::assertEquals(
             new Raw('this is arbitrary'),

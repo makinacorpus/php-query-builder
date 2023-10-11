@@ -438,7 +438,7 @@ class Writer
                     throw new QueryBuilderError("Something very bad happened.");
                 }
                 // @phpstan-ignore-next-line
-                $query->getWhere()->expression($condition);
+                $query->getWhere()->raw($condition);
             }
         }
 

@@ -66,7 +66,7 @@ trait ReturningQueryTrait
      * Expression might carry an alias, it will be override if the $alias
      * parameter is provided, or used otherwised.
      */
-    public function returningExpression(mixed $expression, ?string $alias = null): static
+    public function returningRaw(mixed $expression, ?string $alias = null): static
     {
         $this->return[] = new Column(ExpressionHelper::raw($expression), $alias);
 

@@ -202,7 +202,7 @@ class MySQLWriter extends Writer
     /**
      * {@inheritdoc}
      *
-    protected function formatLikeExpression(SimilarTo $value, WriterContext $context): string
+    protected function formatSimilarTo(SimilarTo $value, WriterContext $context): string
     {
         if ($value->hasValue()) {
             $pattern = $value->getPattern(

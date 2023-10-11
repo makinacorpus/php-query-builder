@@ -134,7 +134,7 @@ final class ExpressionHelper
             return $expression;
         }
 
-        return (new Where())->expression($expression);
+        return (new Where())->raw($expression);
     }
 
     /**

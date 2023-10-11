@@ -61,12 +61,12 @@ $query = $queryBuilder
     ->column(
         $queryBuilder
             ->select('orders')
-            ->columnExpression('count(*)')
+            ->columnRaw('count(*)')
             ->where('user_id', new Column('users.id'))
         ,
         'order_count'
     )
-    ->columnExpression(
+    ->columnRaw(
         <<<SQL
         (
             SELECT max("login")

@@ -291,10 +291,10 @@ class SelectTest extends AbstractWriterTestCase
         );
     }
 
-    public function testColumnExpressionWithColumnNameDoesNotEscape(): void
+    public function testColumnRawWithColumnNameDoesNotEscape(): void
     {
         $query = new Select('some_table');
-        $query->columnExpression('foo.a', 'my_alias');
+        $query->columnRaw('foo.a', 'my_alias');
 
         self::assertSameSql(
             'select foo.a as "my_alias" from "some_table"',
@@ -302,31 +302,31 @@ class SelectTest extends AbstractWriterTestCase
         );
     }
 
-    public function testColumnExpressionWithExpressionInstanceAndArgumentsRaiseException(): void
+    public function testColumnRawWithExpressionInstanceAndArgumentsRaiseException(): void
     {
         $query = new Select('some_table');
 
         self::expectException(QueryBuilderError::class);
         self::expectExceptionMessageMatches('/arguments/');
 
-        $query->columnExpression(new Raw('count(*)'), null, 12);
+        $query->columnRaw(new Raw('count(*)'), null, 12);
     }
 
-    public function testColumnExpressionWithEmptyStringRaiseError(): void
+    public function testColumnRawWithEmptyStringRaiseError(): void
     {
         $query = new Select('some_table');
 
         self::expectException(QueryBuilderError::class);
         self::expectExceptionMessageMatches('/Expression cannot be null/');
 
-        $query->columnExpression('');
+        $query->columnRaw('');
     }
 
-    public function testColumnExpressionWithNonArrayArguments(): void
+    public function testColumnRawWithNonArrayArguments(): void
     {
         $query = new Select('some_table');
 
-        $query->columnExpression('sum(?)', null, 12);
+        $query->columnRaw('sum(?)', null, 12);
 
         self::assertSameSql(
             'select sum(?) from "some_table"',
@@ -372,7 +372,7 @@ class SelectTest extends AbstractWriterTestCase
     {
         $query = new Select('some_table');
 
-        $query->columnExpression(
+        $query->columnRaw(
             function () {
                 return "foo.bar";
             },
@@ -385,7 +385,7 @@ class SelectTest extends AbstractWriterTestCase
         );
     }
 
-    public function testColumnExpressionWithCallback(): void
+    public function testColumnRawWithCallback(): void
     {
         $query = new Select('some_table');
 
@@ -524,7 +524,7 @@ class SelectTest extends AbstractWriterTestCase
     {
         $query = new Select('some_table');
 
-        $query->whereExpression((new Where(Where::OR))
+        $query->whereRaw((new Where(Where::OR))
             ->isNull('foo')
             ->isNull('bar')
         );
@@ -535,7 +535,7 @@ class SelectTest extends AbstractWriterTestCase
         );
     }
 
-    public function testConditionWithCallbackReturningExpression(): void
+    public function testConditionWithCallbackReturningRaw(): void
     {
         $query = new Select('some_table');
 
@@ -580,7 +580,7 @@ class SelectTest extends AbstractWriterTestCase
     {
         $query = new Select('some_table');
 
-        $query->whereExpression('a < b');
+        $query->whereRaw('a < b');
 
         self::assertSameSql(
             'select * from "some_table" where a < b',
@@ -592,7 +592,7 @@ class SelectTest extends AbstractWriterTestCase
     {
         $query = new Select('some_table');
 
-        $query->whereExpression(function (Where $where) {
+        $query->whereRaw(function (Where $where) {
             $where->isEqual('a', 56);
         });
 
@@ -606,7 +606,7 @@ class SelectTest extends AbstractWriterTestCase
     {
         $query = new Select('some_table');
 
-        $query->whereExpression(fn (Where $where) => $where->isLess('foo', 'bar'));
+        $query->whereRaw(fn (Where $where) => $where->isLess('foo', 'bar'));
 
         self::assertSameSql(
             'select * from "some_table" where "foo" < ?',
@@ -621,7 +621,7 @@ class SelectTest extends AbstractWriterTestCase
         self::expectException(QueryBuilderError::class);
         self::expectExceptionMessageMatches('/Expression cannot be null/');
 
-        $query->whereExpression('');
+        $query->whereRaw('');
     }
 
     public function testHaving(): void
@@ -678,7 +678,7 @@ class SelectTest extends AbstractWriterTestCase
         );
     }
 
-    public function testHavingWithCallbackReturningExpression(): void
+    public function testHavingWithCallbackReturningRaw(): void
     {
         $query = new Select('some_table');
 
@@ -690,11 +690,11 @@ class SelectTest extends AbstractWriterTestCase
         );
     }
 
-    public function testHavingExpression(): void
+    public function testHavingRaw(): void
     {
         $query = new Select('some_table');
 
-        $query->havingExpression('a < b');
+        $query->havingRaw('a < b');
 
         self::assertSameSql(
             'select * from "some_table" having a < b',
@@ -702,12 +702,12 @@ class SelectTest extends AbstractWriterTestCase
         );
     }
 
-    public function testHavingExpressionWithCallback(): void
+    public function testHavingRawWithCallback(): void
     {
         $query = new Select('some_table');
 
-        $query->havingExpression(fn (Where $where) => $where->isEqual('a', 56));
-        $query->havingExpression(function (Where $where) { $where->isEqual('b', 78); });
+        $query->havingRaw(fn (Where $where) => $where->isEqual('a', 56));
+        $query->havingRaw(function (Where $where) { $where->isEqual('b', 78); });
 
         self::assertSameSql(
             'select * from "some_table" having "a" = ? and "b" = ?',
@@ -945,7 +945,7 @@ class SelectTest extends AbstractWriterTestCase
     public function testCastWithValue(): void
     {
         $query = new Select();
-        $query->columnExpression(
+        $query->columnRaw(
             new Cast(12, 'some_type', 'value_type')
         );
 
@@ -958,7 +958,7 @@ class SelectTest extends AbstractWriterTestCase
     public function testCastWithExpression(): void
     {
         $query = new Select();
-        $query->columnExpression(
+        $query->columnRaw(
             new Cast(
                 new Row(['bla', 12]),
                 'some_type'
@@ -1002,7 +1002,7 @@ class SelectTest extends AbstractWriterTestCase
     public function testCastWithExpressionWarnValueTypeWillBeIgnored(): void
     {
         $query = new Select();
-        $query->columnExpression(
+        $query->columnRaw(
             new Cast(
                 new Row(['bla', 12]),
                 'some_type',
@@ -1021,7 +1021,7 @@ class SelectTest extends AbstractWriterTestCase
     public function testRawQueryGetsParsed(): void
     {
         $query = new Select('some_table');
-        $query->columnExpression(new RawQuery('select ?::int', [1]));
+        $query->columnRaw(new RawQuery('select ?::int', [1]));
 
         self::assertSameSql(
             'select (select ?) from "some_table"',
@@ -1034,7 +1034,7 @@ class SelectTest extends AbstractWriterTestCase
         $row = new Row([1, 'foo']);
 
         $query = new Select('some_table');
-        $query->whereExpression(new RawQuery('(foo, bar) = ?', $row));
+        $query->whereRaw(new RawQuery('(foo, bar) = ?', $row));
 
         self::assertSameSql(
             'select * from "some_table" where ((foo, bar) = (?, ?))',
@@ -1045,7 +1045,7 @@ class SelectTest extends AbstractWriterTestCase
     public function testRawGetsParsed(): void
     {
         $query = new Select('some_table');
-        $query->columnExpression(new Raw('?::int', [1]));
+        $query->columnRaw(new Raw('?::int', [1]));
 
         self::assertSameSql(
             'select ? from "some_table"',
@@ -1058,7 +1058,7 @@ class SelectTest extends AbstractWriterTestCase
         $row = new Row([1, 'foo']);
 
         $query = new Select('some_table');
-        $query->whereExpression(new Raw('(foo, bar) = ?', $row));
+        $query->whereRaw(new Raw('(foo, bar) = ?', $row));
 
         self::assertSameSql(
             'select * from "some_table" where (foo, bar) = (?, ?)',
@@ -1069,7 +1069,7 @@ class SelectTest extends AbstractWriterTestCase
     public function testWith(): void
     {
         $query = (new Select('test1'))
-            ->columnExpression('count(*)')
+            ->columnRaw('count(*)')
             ->join('test2', 'test1.a = test2.foo')
         ;
 
@@ -1172,7 +1172,7 @@ class SelectTest extends AbstractWriterTestCase
         $where->isEqual('t.user_id', 12);
         $where->isLess('t.deadline', new Raw('now()'));
         $having = $query->getHaving();
-        $having->expression('count(n.nid) < ?', 3);
+        $having->raw('count(n.nid) < ?', 3);
 
         $formatted = $writer->prepare($query);
         self::assertSameSql($reference, $formatted);
@@ -1226,11 +1226,11 @@ class SelectTest extends AbstractWriterTestCase
         $query = (new Select('task', 't'))
             ->column('t.*')
             ->column('n.type')
-            ->columnExpression('count(n.id)', 'comment_count')
+            ->columnRaw('count(n.id)', 'comment_count')
             ->groupBy('t.id')
             ->groupBy('n.type')
             ->orderBy('n.type')
-            ->orderByExpression('count(n.nid)', Query::ORDER_DESC)
+            ->orderByRaw('count(n.nid)', Query::ORDER_DESC)
             ->range(7, 42)
         ;
         $query
@@ -1242,7 +1242,7 @@ class SelectTest extends AbstractWriterTestCase
             ->isLess('t.deadline', new Raw('now()'))
         ;
         $having = $query->getHaving()
-            ->expression('count(n.nid) < ?', 3)
+            ->raw('count(n.nid) < ?', 3)
         ;
 
         $formatted = $writer->prepare($query);
@@ -1295,16 +1295,16 @@ class SelectTest extends AbstractWriterTestCase
         $query = (new Select('task'))
             ->column('task.*')
             ->column('task_note.type')
-            ->columnExpression('count(task_note.id)', 'comment_count')
+            ->columnRaw('count(task_note.id)', 'comment_count')
             ->leftJoin('task_note', 'task_note.task_id = task.id', 'task_note')
             ->groupBy('task.id')
             ->groupBy('task_note.type')
             ->orderBy('task_note.type')
-            ->orderByExpression('count(task_note.nid)', Query::ORDER_DESC)
+            ->orderByRaw('count(task_note.nid)', Query::ORDER_DESC)
             ->range(7, 42)
             ->where('task.user_id', 12)
-            ->whereExpression('task.deadline < now()')
-            ->havingExpression('count(task_note.nid) < ?', 3)
+            ->whereRaw('task.deadline < now()')
+            ->havingRaw('count(task_note.nid) < ?', 3)
         ;
 
         $formatted = $writer->prepare($query);

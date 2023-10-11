@@ -74,7 +74,7 @@ class MySQLWriterDeleteTest extends DeleteTest
     {
         $query = new Delete('some_table');
 
-        $query->whereExpression('true');
+        $query->whereRaw('true');
 
         self::assertSameSql(
             <<<SQL
@@ -105,7 +105,7 @@ class MySQLWriterDeleteTest extends DeleteTest
         self::expectNotToPerformAssertions();
     }
 
-    public function testReturningExpression()
+    public function testReturningRaw()
     {
         // MySQL does not support RETURNING.
         self::expectNotToPerformAssertions();
