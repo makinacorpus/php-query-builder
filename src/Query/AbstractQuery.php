@@ -4,17 +4,46 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Query;
 
+use MakinaCorpus\QueryBuilder\OptionsBag;
+use MakinaCorpus\QueryBuilder\SqlString;
+use MakinaCorpus\QueryBuilder\Driver\Driver;
+use MakinaCorpus\QueryBuilder\Driver\DriverAwareTrait;
 use MakinaCorpus\QueryBuilder\Query\Partial\AliasHolderTrait;
 use MakinaCorpus\QueryBuilder\Query\Partial\WithClauseTrait;
 
 abstract class AbstractQuery implements Query
 {
     use AliasHolderTrait;
+    use DriverAwareTrait;
     use WithClauseTrait;
 
+    private ?Driver $driver = null;
     private ?string $identifier = null;
-    /** @var array<string,mixed> */
-    private array $options = [];
+    private ?OptionsBag $options = null;
+
+    /**
+     * {@inheritdoc}
+     */
+    public function generate(): SqlString
+    {
+        return $this->getWriter()->prepare($this);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function execute(): mixed
+    {
+        return $this->getDriver()->execute($this->getWriter()->prepare($this));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function perform(): int
+    {
+        return $this->getDriver()->perform($this->getWriter()->prepare($this));
+    }
 
     /**
      * {@inheritdoc}
@@ -27,7 +56,7 @@ abstract class AbstractQuery implements Query
     /**
      * {@inheritdoc}
      */
-    final public function getIdentifier(): ?string
+    public function getIdentifier(): ?string
     {
         return $this->identifier;
     }
@@ -35,7 +64,7 @@ abstract class AbstractQuery implements Query
     /**
      * {@inheritdoc}
      */
-    final public function setIdentifier(string $identifier): static
+    public function setIdentifier(string $identifier): static
     {
         $this->identifier = $identifier;
 
@@ -45,13 +74,9 @@ abstract class AbstractQuery implements Query
     /**
      * {@inheritdoc}
      */
-    final public function setOption(string $name, $value): static
+    public function setOption(string $name, $value): static
     {
-        if (null === $value) {
-            unset($this->options[$name]);
-        } else {
-            $this->options[$name] = $value;
-        }
+        $this->getOptions()->set($name, $value);
 
         return $this;
     }
@@ -59,11 +84,9 @@ abstract class AbstractQuery implements Query
     /**
      * {@inheritdoc}
      */
-    final public function setOptions(array $options): static
+    public function setOptions(array $options): static
     {
-        foreach ($options as $name => $value) {
-            $this->setOption($name, $value);
-        }
+        $this->getOptions()->setAll($options);
 
         return $this;
     }
@@ -71,17 +94,8 @@ abstract class AbstractQuery implements Query
     /**
      * {@inheritdoc}
      */
-    final public function getOptions(null|string|array $overrides = null): array
+    public function getOptions(): OptionsBag
     {
-        if ($overrides) {
-            if (!\is_array($overrides)) {
-                $overrides = ['class' => $overrides];
-            }
-            $options = \array_merge($this->options, $overrides);
-        } else {
-            $options = $this->options;
-        }
-
-        return $options;
+        return $this->options ?? ($this->options = new OptionsBag());
     }
 }

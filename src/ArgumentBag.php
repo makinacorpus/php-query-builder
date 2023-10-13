@@ -12,8 +12,6 @@ use MakinaCorpus\QueryBuilder\Expression\Value;
  *
  * Parameters are always an ordered array, they may not be identifier from
  * within the query, but they can be in this bag.
- *
- * @todo CLEANUP
  */
 final class ArgumentBag
 {

@@ -4,28 +4,54 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder;
 
+use MakinaCorpus\QueryBuilder\Driver\DriverAwareTrait;
 use MakinaCorpus\QueryBuilder\Query\Delete;
 use MakinaCorpus\QueryBuilder\Query\Insert;
 use MakinaCorpus\QueryBuilder\Query\Merge;
 use MakinaCorpus\QueryBuilder\Query\Select;
 use MakinaCorpus\QueryBuilder\Query\Update;
 
+/**
+ * Builds queries, and allow you to forward them to a driver.
+ */
 class QueryBuilder
 {
+    use DriverAwareTrait;
+
     /**
-     * {@inheritdoc}
+     * Generate proper SQL with parameter placeholder from any expression.
      */
-    final public function select(null|string|Expression $table = null, ?string $alias = null): Select
+    public function generate(mixed $expression, mixed $arguments = null): SqlString
     {
-        return new Select($table, $alias);
+        return $this->getWriter()->prepare(ExpressionHelper::raw($expression, $arguments));
     }
 
     /**
      * {@inheritdoc}
      */
-    final public function update(string|Expression $table, ?string $alias = null): Update
+    public function select(null|string|Expression $table = null, ?string $alias = null): Select
     {
-        return new Update($table, $alias);
+        $ret = new Select($table, $alias);
+
+        if ($this->driver) {
+            $ret->setDriver($this->driver);
+        }
+
+        return $ret;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function update(string|Expression $table, ?string $alias = null): Update
+    {
+        $ret = new Update($table, $alias);
+
+        if ($this->driver) {
+            $ret->setDriver($this->driver);
+        }
+
+        return $ret;
     }
 
     /**
@@ -33,7 +59,13 @@ class QueryBuilder
      */
     public function insert(string|Expression $table): Insert
     {
-        return new Insert($table);
+        $ret = new Insert($table);
+
+        if ($this->driver) {
+            $ret->setDriver($this->driver);
+        }
+
+        return $ret;
     }
 
     /**
@@ -41,7 +73,13 @@ class QueryBuilder
      */
     public function merge(string|Expression $table): Merge
     {
-        return new Merge($table);
+        $ret = new Merge($table);
+
+        if ($this->driver) {
+            $ret->setDriver($this->driver);
+        }
+
+        return $ret;
     }
 
     /**
@@ -49,6 +87,12 @@ class QueryBuilder
      */
     public function delete(string|Expression $table, ?string $alias = null): Delete
     {
-        return new Delete($table, $alias);
+        $ret = new Delete($table, $alias);
+
+        if ($this->driver) {
+            $ret->setDriver($this->driver);
+        }
+
+        return $ret;
     }
 }

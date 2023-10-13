@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Platform\Writer;
 
 use MakinaCorpus\QueryBuilder\Expression;
-use MakinaCorpus\QueryBuilder\Where;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
-use MakinaCorpus\QueryBuilder\Expression\SimilarTo;
 use MakinaCorpus\QueryBuilder\Query\Delete;
 use MakinaCorpus\QueryBuilder\Query\Merge;
 use MakinaCorpus\QueryBuilder\Query\Query;

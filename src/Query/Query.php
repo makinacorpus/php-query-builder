@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Query;
 
 use MakinaCorpus\QueryBuilder\Expression;
+use MakinaCorpus\QueryBuilder\OptionsBag;
+use MakinaCorpus\QueryBuilder\SqlString;
 
 interface Query extends Expression
 {
@@ -23,7 +25,31 @@ interface Query extends Expression
     const CONFLICT_UPDATE = 2;
 
     /**
-     * Get query identifier
+     * Generate the SQL code and return it.
+     *
+     * If no driver is set, this method will use the default SQL standard
+     * writer, using '?' as parameter placeholder.
+     */
+    public function generate(): SqlString;
+
+    /**
+     * Execute the given query, and return the result from the driver.
+     *
+     * Driver may return anything, it's your job ensuring your are manipulating
+     * something expected from the driver you use.
+     */
+    public function execute(): mixed;
+
+    /**
+     * Execute the given query, and return the affected row count.
+     *
+     * If driver is unable to give you an affected row count, -1 will be
+     * returned instead.
+     */
+    public function perform(): int;
+
+    /**
+     * Get query identifier.
      *
      * @see Query::setIdentifier()
      */
@@ -71,9 +97,9 @@ interface Query extends Expression
     public function setOptions(array $options): static;
 
     /**
-     * Get normalized options.
+     * {@inheritdoc}
      */
-    public function getOptions(null|string|array $overrides = null): array;
+    public function getOptions(): OptionsBag;
 
     /**
      * Should this query return something

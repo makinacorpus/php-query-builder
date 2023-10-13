@@ -31,7 +31,7 @@
         "php" : ">=8.2"
     },
     "require-dev" : {
-        "doctrine/dbal": "^3.6",
+        "doctrine/dbal": "^3.7",
         "phpbench/phpbench": "^1.0",
         "phpstan/phpstan": "^1.10",
         "phpunit/phpunit" : "^10.0"

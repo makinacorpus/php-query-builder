@@ -85,7 +85,12 @@ class Writer
         $context = new WriterContext();
         $rawSql = $this->format($sql, $context);
 
-        return new SqlString($rawSql, $context->getArgumentBag(), $identifier);
+        return new SqlString(
+            $rawSql,
+            $context->getArgumentBag(),
+            $identifier,
+            $sql instanceof Query ? $sql->getOptions() : null,
+        );
     }
 
     /**
