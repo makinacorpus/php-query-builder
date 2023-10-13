@@ -9,7 +9,7 @@ use MakinaCorpus\QueryBuilder\Platform\Escaper\StandardEscaper;
 use MakinaCorpus\QueryBuilder\Writer\Writer;
 use PHPUnit\Framework\TestCase;
 
-abstract class AbstractWriterTestCase extends TestCase
+abstract class UnitTestCase extends TestCase
 {
     private static ?Writer $writer = null;
 

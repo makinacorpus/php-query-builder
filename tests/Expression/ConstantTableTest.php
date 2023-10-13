@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Tests\Expression;
 
 use MakinaCorpus\QueryBuilder\Expression\ConstantTable;
-use MakinaCorpus\QueryBuilder\Tests\AbstractWriterTestCase;
+use MakinaCorpus\QueryBuilder\Tests\UnitTestCase;
 
-class ConstantTableTest extends AbstractWriterTestCase
+class ConstantTableTest extends UnitTestCase
 {
     public function testReturns(): void
     {

@@ -7,13 +7,13 @@ namespace MakinaCorpus\QueryBuilder\Tests\Query;
 use MakinaCorpus\QueryBuilder\Expression\ConstantTable;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\Query\Delete;
-use MakinaCorpus\QueryBuilder\Tests\AbstractWriterTestCase;
+use MakinaCorpus\QueryBuilder\Tests\UnitTestCase;
 
 /**
  * It does not test all possibles variations of Where/With since they are done
  * with SelectTest, which in the end goes to generic implementations.
  */
-class DeleteTest extends AbstractWriterTestCase
+class DeleteTest extends UnitTestCase
 {
     public function testClone()
     {

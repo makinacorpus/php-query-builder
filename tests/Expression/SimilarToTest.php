@@ -6,9 +6,9 @@ namespace MakinaCorpus\QueryBuilder\Tests\Expression;
 
 use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\Expression\SimilarTo;
-use MakinaCorpus\QueryBuilder\Tests\AbstractWriterTestCase;
+use MakinaCorpus\QueryBuilder\Tests\UnitTestCase;
 
-class SimilarToTest extends AbstractWriterTestCase
+class SimilarToTest extends UnitTestCase
 {
     public function testReturns(): void
     {

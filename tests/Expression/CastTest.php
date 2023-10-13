@@ -7,9 +7,9 @@ namespace MakinaCorpus\QueryBuilder\Tests\Expression;
 use MakinaCorpus\QueryBuilder\Expression\Cast;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\Expression\Row;
-use MakinaCorpus\QueryBuilder\Tests\AbstractWriterTestCase;
+use MakinaCorpus\QueryBuilder\Tests\UnitTestCase;
 
-class CastTest extends AbstractWriterTestCase
+class CastTest extends UnitTestCase
 {
     public function testReturns(): void
     {

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Tests\Expression;
 
 use MakinaCorpus\QueryBuilder\Expression\Value;
-use MakinaCorpus\QueryBuilder\Tests\AbstractWriterTestCase;
+use MakinaCorpus\QueryBuilder\Tests\UnitTestCase;
 
-class ValueTest extends AbstractWriterTestCase
+class ValueTest extends UnitTestCase
 {
     public function testReturns(): void
     {

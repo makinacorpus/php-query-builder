@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Tests\Expression;
 
 use MakinaCorpus\QueryBuilder\Expression\Row;
-use MakinaCorpus\QueryBuilder\Tests\AbstractWriterTestCase;
+use MakinaCorpus\QueryBuilder\Tests\UnitTestCase;
 
-class RowTest extends AbstractWriterTestCase
+class RowTest extends UnitTestCase
 {
     public function testReturns(): void
     {

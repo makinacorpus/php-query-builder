@@ -6,9 +6,9 @@ namespace MakinaCorpus\QueryBuilder\Tests\Expression;
 
 use MakinaCorpus\QueryBuilder\Expression\ConstantTable;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
-use MakinaCorpus\QueryBuilder\Tests\AbstractWriterTestCase;
+use MakinaCorpus\QueryBuilder\Tests\UnitTestCase;
 
-class RawTest extends AbstractWriterTestCase
+class RawTest extends UnitTestCase
 {
     public function testReturns(): void
     {

@@ -9,14 +9,14 @@ use MakinaCorpus\QueryBuilder\Platform\Writer\PostgreSQLWriter;
 use MakinaCorpus\QueryBuilder\Query\Merge;
 use MakinaCorpus\QueryBuilder\Query\Query;
 use MakinaCorpus\QueryBuilder\Query\Select;
-use MakinaCorpus\QueryBuilder\Tests\AbstractWriterTestCase;
+use MakinaCorpus\QueryBuilder\Tests\UnitTestCase;
 
 /**
  * MERGE is a complex topic for which the various SQL dialects diverge
  * the most from one another, so for this peculiar use case, it does not
  * extend the base MergeTest.
  */
-class PostgreSQLWriterMergeTest extends AbstractWriterTestCase
+class PostgreSQLWriterMergeTest extends UnitTestCase
 {
     protected function setUp(): void
     {

@@ -14,7 +14,7 @@ use MakinaCorpus\QueryBuilder\Expression\TableName;
 use MakinaCorpus\QueryBuilder\Expression\Value;
 use MakinaCorpus\QueryBuilder\Query\Update;
 
-class ExpressionHelperTest extends AbstractWriterTestCase
+class ExpressionHelperTest extends UnitTestCase
 {
     public function testArgumentsReturnArray(): void
     {

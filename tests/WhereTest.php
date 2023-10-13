@@ -7,7 +7,7 @@ namespace MakinaCorpus\QueryBuilder\Tests;
 use MakinaCorpus\QueryBuilder\Where;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
 
-class WhereTest extends AbstractWriterTestCase
+class WhereTest extends UnitTestCase
 {
     public function testReturns(): void
     {

@@ -6,9 +6,9 @@ namespace MakinaCorpus\QueryBuilder\Tests\Expression;
 
 use MakinaCorpus\QueryBuilder\Where;
 use MakinaCorpus\QueryBuilder\Expression\Value;
-use MakinaCorpus\QueryBuilder\Tests\AbstractWriterTestCase;
+use MakinaCorpus\QueryBuilder\Tests\UnitTestCase;
 
-class WhereTest extends AbstractWriterTestCase
+class WhereTest extends UnitTestCase
 {
     public function testReturns(): void
     {

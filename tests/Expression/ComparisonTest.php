@@ -6,9 +6,9 @@ namespace MakinaCorpus\QueryBuilder\Tests\Expression;
 
 use MakinaCorpus\QueryBuilder\Expression\Comparison;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
-use MakinaCorpus\QueryBuilder\Tests\AbstractWriterTestCase;
+use MakinaCorpus\QueryBuilder\Tests\UnitTestCase;
 
-class ComparisonTest extends AbstractWriterTestCase
+class ComparisonTest extends UnitTestCase
 {
     public function testReturns(): void
     {

@@ -6,9 +6,9 @@ namespace MakinaCorpus\QueryBuilder\Tests\Expression;
 
 use MakinaCorpus\QueryBuilder\Expression\Aliased;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
-use MakinaCorpus\QueryBuilder\Tests\AbstractWriterTestCase;
+use MakinaCorpus\QueryBuilder\Tests\UnitTestCase;
 
-class AliasedTest extends AbstractWriterTestCase
+class AliasedTest extends UnitTestCase
 {
     public function testReturns(): void
     {

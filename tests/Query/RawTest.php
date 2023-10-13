@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Tests\Query;
 
 use MakinaCorpus\QueryBuilder\Query\RawQuery;
-use MakinaCorpus\QueryBuilder\Tests\AbstractWriterTestCase;
+use MakinaCorpus\QueryBuilder\Tests\UnitTestCase;
 
-class RawTest extends AbstractWriterTestCase
+class RawTest extends UnitTestCase
 {
     public function testClone(): void
     {

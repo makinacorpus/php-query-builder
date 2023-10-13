@@ -6,9 +6,9 @@ namespace MakinaCorpus\QueryBuilder\Tests\Expression;
 
 use MakinaCorpus\QueryBuilder\Expression\ArrayValue;
 use MakinaCorpus\QueryBuilder\Expression\Value;
-use MakinaCorpus\QueryBuilder\Tests\AbstractWriterTestCase;
+use MakinaCorpus\QueryBuilder\Tests\UnitTestCase;
 
-class ArrayValueTest extends AbstractWriterTestCase
+class ArrayValueTest extends UnitTestCase
 {
     public function testReturns(): void
     {

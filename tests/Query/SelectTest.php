@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Tests\Query;
 
+use MakinaCorpus\QueryBuilder\Where;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Expression\Aliased;
 use MakinaCorpus\QueryBuilder\Expression\Cast;
@@ -16,11 +17,10 @@ use MakinaCorpus\QueryBuilder\Platform\Escaper\StandardEscaper;
 use MakinaCorpus\QueryBuilder\Query\Query;
 use MakinaCorpus\QueryBuilder\Query\RawQuery;
 use MakinaCorpus\QueryBuilder\Query\Select;
-use MakinaCorpus\QueryBuilder\Tests\AbstractWriterTestCase;
-use MakinaCorpus\QueryBuilder\Where;
+use MakinaCorpus\QueryBuilder\Tests\UnitTestCase;
 use MakinaCorpus\QueryBuilder\Writer\Writer;
 
-class SelectTest extends AbstractWriterTestCase
+class SelectTest extends UnitTestCase
 {
     protected function setUp(): void
     {

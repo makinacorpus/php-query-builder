@@ -7,9 +7,9 @@ namespace MakinaCorpus\QueryBuilder\Tests\Expression;
 use MakinaCorpus\QueryBuilder\Expression\Between;
 use MakinaCorpus\QueryBuilder\Expression\ColumnName;
 use MakinaCorpus\QueryBuilder\Expression\Value;
-use MakinaCorpus\QueryBuilder\Tests\AbstractWriterTestCase;
+use MakinaCorpus\QueryBuilder\Tests\UnitTestCase;
 
-class BetweenTest extends AbstractWriterTestCase
+class BetweenTest extends UnitTestCase
 {
     public function testReturns(): void
     {
