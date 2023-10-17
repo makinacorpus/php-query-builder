@@ -98,31 +98,44 @@ class Writer
      */
     protected function format(Expression $expression, WriterContext $context, bool $enforceParenthesis = false): string
     {
-        $ret = match (\get_class($expression)) {
-            Aliased::class => $this->formatAliased($expression, $context),
-            ArrayValue::class => $this->formatArrayValue($expression, $context),
-            Between::class => $this->formatBetween($expression, $context),
-            Cast::class => $this->formatCast($expression, $context),
-            ColumnName::class => $this->formatIdentifier($expression, $context),
-            ConstantTable::class => $this->formatConstantTable($expression, $context),
-            Comparison::class => $this->formatComparison($expression, $context),
-            Delete::class => $this->formatDelete($expression, $context),
-            Identifier::class => $this->formatIdentifier($expression, $context),
-            Insert::class => $this->formatInsert($expression, $context),
-            Merge::class => $this->formatMerge($expression, $context),
-            Not::class => $this->formatNot($expression, $context),
-            NullValue::class => $this->formatNullValue($expression, $context),
-            Raw::class => $this->formatRaw($expression, $context),
-            RawQuery::class => $this->formatRawQuery($expression, $context),
-            Row::class => $this->formatRow($expression, $context),
-            Select::class => $this->formatSelect($expression, $context),
-            SimilarTo::class => $this->formatSimilarTo($expression, $context),
-            TableName:: class => $this->formatIdentifier($expression, $context),
-            Update::class => $this->formatUpdate($expression, $context),
-            Value::class => $this->formatValue($expression, $context),
-            Where::class => $this->formatWhere($expression, $context),
-            default => throw new QueryBuilderError(\sprintf("Unexpected expression object type: %s", \get_class($expression))),
-        };
+        // Query may be overriden by bridges to add functionality.
+        if ($expression instanceof Query) {
+            if ($expression instanceof Delete) {
+                $ret = $this->formatDelete($expression, $context);
+            } else if ($expression instanceof Insert) {
+                $ret = $this->formatInsert($expression, $context);
+            } else if ($expression instanceof Merge) {
+                $ret = $this->formatMerge($expression, $context);
+            } else if ($expression instanceof RawQuery) {
+                $ret = $this->formatRawQuery($expression, $context);
+            } else if ($expression instanceof Select) {
+                $ret = $this->formatSelect($expression, $context);
+            } else if ($expression instanceof Update) {
+                $ret = $this->formatUpdate($expression, $context);
+            } else {
+                throw new QueryBuilderError(\sprintf("Unexpected expression object type: %s", \get_class($expression)));
+            }
+        } else {
+            $ret = match (\get_class($expression)) {
+                Aliased::class => $this->formatAliased($expression, $context),
+                ArrayValue::class => $this->formatArrayValue($expression, $context),
+                Between::class => $this->formatBetween($expression, $context),
+                Cast::class => $this->formatCast($expression, $context),
+                ColumnName::class => $this->formatIdentifier($expression, $context),
+                ConstantTable::class => $this->formatConstantTable($expression, $context),
+                Comparison::class => $this->formatComparison($expression, $context),
+                Identifier::class => $this->formatIdentifier($expression, $context),
+                Not::class => $this->formatNot($expression, $context),
+                NullValue::class => $this->formatNullValue($expression, $context),
+                Raw::class => $this->formatRaw($expression, $context),
+                Row::class => $this->formatRow($expression, $context),
+                SimilarTo::class => $this->formatSimilarTo($expression, $context),
+                TableName:: class => $this->formatIdentifier($expression, $context),
+                Value::class => $this->formatValue($expression, $context),
+                Where::class => $this->formatWhere($expression, $context),
+                default => throw new QueryBuilderError(\sprintf("Unexpected expression object type: %s", \get_class($expression))),
+            };
+        }
 
         // Working with Aliased special case, we need to write parenthesis
         // depending upon the decorated expression, not the Aliased one.

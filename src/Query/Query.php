@@ -6,7 +6,6 @@ namespace MakinaCorpus\QueryBuilder\Query;
 
 use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\OptionsBag;
-use MakinaCorpus\QueryBuilder\SqlString;
 
 interface Query extends Expression
 {
@@ -23,30 +22,6 @@ interface Query extends Expression
     const ORDER_DESC = 2;
     const CONFLICT_IGNORE = 1;
     const CONFLICT_UPDATE = 2;
-
-    /**
-     * Generate the SQL code and return it.
-     *
-     * If no driver is set, this method will use the default SQL standard
-     * writer, using '?' as parameter placeholder.
-     */
-    public function generate(): SqlString;
-
-    /**
-     * Execute the given query, and return the result from the driver.
-     *
-     * Driver may return anything, it's your job ensuring your are manipulating
-     * something expected from the driver you use.
-     */
-    public function execute(): mixed;
-
-    /**
-     * Execute the given query, and return the affected row count.
-     *
-     * If driver is unable to give you an affected row count, -1 will be
-     * returned instead.
-     */
-    public function perform(): int;
 
     /**
      * Get query identifier.

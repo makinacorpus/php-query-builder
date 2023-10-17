@@ -11,8 +11,6 @@ use MakinaCorpus\QueryBuilder\Query\Partial\ReturningQueryTrait;
 
 /**
  * Represents an INSERT INTO table SELECT ... query.
- *
- * This class is not final for backward compatibility purpose: do NOT extend it.
  */
 class Insert extends AbstractQuery
 {

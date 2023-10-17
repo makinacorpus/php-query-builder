@@ -16,7 +16,7 @@ use MakinaCorpus\QueryBuilder\ExpressionHelper;
 /**
  * Represents an UPDATE query.
  */
-final class Update extends AbstractQuery
+class Update extends AbstractQuery
 {
     use FromClauseTrait;
     use ReturningQueryTrait;

@@ -16,7 +16,7 @@ namespace MakinaCorpus\QueryBuilder\Escaper;
  *   - which escaping function is concerned by which of the above statements
  *     will depend upon the low level connection library.
  *
- * Each driver will need to implement its own.
+ * Each bridge will need to implement its own.
  */
 interface Escaper
 {
@@ -82,9 +82,4 @@ interface Escaper
      * For PDO, return "??", and all others just "?".
      */
     public function unescapePlaceholderChar(): string;
-
-    /**
-     * Escape blob properly for driver.
-     */
-    public function escapeBlob(string $word): string;
 }

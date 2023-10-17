@@ -18,7 +18,7 @@ class SqlString
      */
     public function getArguments(): ArgumentBag
     {
-        return $this->arguments ?? ($this->arguments = new ArgumentBag());
+        return $this->arguments ??= new ArgumentBag();
     }
 
     /**
@@ -34,7 +34,7 @@ class SqlString
      */
     public function getIdentifier(): string
     {
-        return $this->identifier ?? ($this->identifier = 'mcqb_' . \md5($this->rawSql));
+        return $this->identifier ??= 'mcqb_' . \md5($this->rawSql);
     }
 
     /**

@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace MakinaCorpus\QueryBuilder\Driver;
+namespace MakinaCorpus\QueryBuilder\Bridge\Pdo\Escaper;
 
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Platform\Escaper\StandardEscaper;
 
 class PdoEscaper extends StandardEscaper
 {
-    private \PDO $connection;
     /** @var bool */
     private $doCheckIdentifiers = false;
 
-    public function __construct(\PDO $connection)
-    {
+    public function __construct(
+        private \PDO $connection
+    ) {
         parent::__construct('?', null);
 
         $this->connection = $connection;
@@ -63,14 +63,6 @@ class PdoEscaper extends StandardEscaper
     /**
      * {@inheritdoc}
      */
-    public function writePlaceholder(int $index): string
-    {
-        return '?';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function unescapePlaceholderChar(): string
     {
         return '??';
@@ -85,33 +77,5 @@ class PdoEscaper extends StandardEscaper
             $this->checkIdentifier($string);
         }
         return $this->connection->quote($string, \PDO::PARAM_STR);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function escapeBlob(string $word): string
-    {
-        // We have to trim extra ' chars added by PDO.
-        return \trim($this->connection->quote($word, \PDO::PARAM_LOB), "'");
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function unescapeBlob($resource): mixed
-    {
-        // I have no idea why, but all of the sudden, PDO pgsql driver started
-        // to send resources instead of data...
-        if (null === $resource) {
-            return null;
-        }
-        if (\is_string($resource)) {
-            return $resource;
-        }
-        if (!\is_resource($resource) && !$resource instanceof \PgSql\Connection) {
-            return \stream_get_contents($resource);
-        }
-        return $resource;
     }
 }

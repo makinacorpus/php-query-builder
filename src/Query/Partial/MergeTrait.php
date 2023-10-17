@@ -34,9 +34,7 @@ trait MergeTrait
      */
     public function getUsingTableAlias(): string
     {
-        return $this->usingTableAlias ?? (
-            $this->usingTableAlias = $this->createAliasForName('upsert')
-        );
+        return $this->usingTableAlias ??= $this->createAliasForName('upsert');
     }
 
     /**

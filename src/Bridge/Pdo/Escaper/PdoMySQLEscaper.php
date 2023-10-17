@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace MakinaCorpus\QueryBuilder\Driver;
+namespace MakinaCorpus\QueryBuilder\Bridge\Pdo\Escaper;
 
 class PdoMySQLEscaper extends PdoEscaper
 {

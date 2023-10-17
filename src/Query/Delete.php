@@ -17,7 +17,7 @@ use MakinaCorpus\QueryBuilder\Query\Partial\WhereClauseTrait;
  *
  * Here FROM clause trait represents the USING clause.
  */
-final class Delete extends AbstractQuery
+class Delete extends AbstractQuery
 {
     use ReturningQueryTrait;
     use FromClauseTrait;

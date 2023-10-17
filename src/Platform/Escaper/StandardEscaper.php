@@ -14,9 +14,9 @@ use MakinaCorpus\QueryBuilder\Escaper\Escaper;
  * This implementation is unsafe to use with a real database server.
  *
  * Most implementations should extend this one and override escapeIdentifier(),
- * escapeLiteral(), escapeBlob(), getEscapeSequences() and writePlaceholder()
+ * escapeLiteral(), getEscapeSequences() and writePlaceholder()
  * methods:
- *  - escapeIdentifier(), escapeLiteral(), escapeBlob(), getEscapeSequences()
+ *  - escapeIdentifier(), escapeLiteral(), getEscapeSequences()
  *    are server side dialect related methods,
  *  - writePlaceholder() and unescapePlaceholderChar() are PHP side driver
  *    related method.
@@ -76,8 +76,8 @@ class StandardEscaper implements Escaper
         // interpreted as the corresponding character by PHP, and what we get
         // is actually a binary UTF-8 string in most cases.
         //
-        // Please be aware that in the end, the driver will override this in
-        // most case and this code will be executed.
+        // Please be aware that in the end, the bridge will override this in
+        // most case and this code will not be executed.
         return "'" . \str_replace("'", "''", $string) . "'";
     }
 
@@ -118,13 +118,5 @@ class StandardEscaper implements Escaper
     public function unescapePlaceholderChar(): string
     {
         return '?';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function escapeBlob(string $word): string
-    {
-        return $this->escapeLiteral($word);
     }
 }

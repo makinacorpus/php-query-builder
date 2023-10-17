@@ -18,7 +18,7 @@ use MakinaCorpus\QueryBuilder\Query\Partial\WhereClauseTrait;
 /**
  * Represents a SELECT query.
  */
-final class Select extends AbstractQuery implements TableExpression
+class Select extends AbstractQuery implements TableExpression
 {
     use FromClauseTrait;
     use HavingClauseTrait;

@@ -16,7 +16,9 @@ features of your favorite RDBMS without worrying about this API limitations.
 
 # Getting started
 
-## 1. Install
+## Standalone setup
+
+### 1. Install
 
 Simply:
 
@@ -33,7 +35,7 @@ a few implementations:
 
 Most tested implementation is PostgreSQL.
 
-## 2. Setup the query builder
+### 2. Setup the query builder
 
 ```php
 use MakinaCorpus\QueryBuilder\Platform\Escaper\StandardEscaper;
@@ -47,7 +49,7 @@ $writer = new PostgreSQLWriter($escaper);
 $queryBuilder = new QueryBuilder();
 ```
 
-## 3. Write your query
+### 3. Write your query
 
 ```php
 use MakinaCorpus\QueryBuilder\QueryBuidler;
@@ -93,7 +95,7 @@ This is a simple one, but the query builder can help you for many things:
    your choice,
  - and much more!
 
-## 4. Generate the SQL and execute it
+### 4. Generate the SQL and execute it
 
 Considering you have a DBAL of your own with the following method:
 
@@ -120,9 +122,13 @@ $myDbal->execute(
 If you need to convert PHP native values to SQL first, please see the
 next chapter.
 
-## Arguments and ArgumentBag
+## Doctrine DBAL setup
 
-@todo
+A `doctrine/dbal` bridge is provided, please read the documentation.
+
+## PDO setup
+
+A `PDO` bridge is provided, please read the documentation.
 
 ## Configuring value placeholders
 
@@ -197,10 +203,6 @@ where
 Please note that for consistency and portability reasons, this API always
 require that you identify value placeholder in raw SQL expressions using the
 `?` placeholder, no matter which one will end in generated SQL code.
-
-## Raw SQL and value replacement
-
-@todo
 
 # Roadmap
 
