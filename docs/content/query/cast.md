@@ -12,7 +12,10 @@ injected into a raw SQL string, use the PostgreSQL type cast syntax
 as such:
 
 ```php
-/** @var \MakinaCorpus\QueryBuilder\Writer\Writer $writer */
+use MakinaCorpus\QueryBuilder\Writer\Writer;
+
+assert($writer instanceof Writer);
+
 $writer->prepare("select ?::int" [1]);
 $writer->prepare("select ?::date" [new \DateTimeImmutable()]);
 ```
@@ -34,8 +37,10 @@ code is semantically equivalent to the upper example:
 
 ```php
 use MakinaCorpus\QueryBuilder\Expression\Value;
+use MakinaCorpus\QueryBuilder\Writer\Writer;
 
-/** @var \MakinaCorpus\QueryBuilder\Writer\Writer $writer */
+assert($writer instanceof Writer);
+
 $writer->prepare("select ?" [new Value(1, 'int')]);
 $writer->prepare("select ?" [new Value(new \DateTimeImmutable(), 'date')]);
 ```
@@ -47,7 +52,10 @@ Please note that anything you cast which is not ``?`` will be left untouched.
 For example:
 
 ```php
-/** @var \MakinaCorpus\QueryBuilder\Writer\Writer $writer */
+use MakinaCorpus\QueryBuilder\Writer\Writer;
+
+assert($writer instanceof Writer);
+
 $writer->prepare("select 1::int");
 ```
 
@@ -67,8 +75,11 @@ code, but you can hint the SQL writer as such:
 
 ```php
 use MakinaCorpus\QueryBuilder\Expression\Value;
+use MakinaCorpus\QueryBuilder\QueryBuilder;
+use MakinaCorpus\QueryBuilder\Writer\Writer;
 
-/** @var \MakinaCorpus\QueryBuilder\QueryBuilder $queryBuilder */
+assert($queryBuilder instanceof QueryBuilder);
+
 $queryBuilder
     ->select()
     ->columnRaw(
@@ -89,7 +100,10 @@ If you are trying to let the SQL server do the cast by itself, you should write
 it using the SQL-92 standard ``CAST()`` function as such:
 
 ```php
-/** @var \MakinaCorpus\QueryBuilder\Writer\Writer $writer */
+use MakinaCorpus\QueryBuilder\Writer\Writer;
+
+assert($writer instanceof Writer);
+
 $writer->prepare(
     <<<SQL
     select cast(? as int)
@@ -104,8 +118,10 @@ Which is semantically equivalent to:
 
 ```php
 use MakinaCorpus\QueryBuilder\Expression\Cast;
+use MakinaCorpus\QueryBuilder\Writer\Writer;
 
-/** @var \MakinaCorpus\QueryBuilder\Writer\Writer $writer */
+assert($writer instanceof Writer);
+
 $writer->prepare(
     <<<SQL
     select ?
@@ -121,8 +137,10 @@ Or:
 ```php
 use MakinaCorpus\QueryBuilder\Expression\Cast;
 use MakinaCorpus\QueryBuilder\Expression\Value;
+use MakinaCorpus\QueryBuilder\Writer\Writer;
 
-/** @var \MakinaCorpus\QueryBuilder\Writer\Writer $writer */
+assert($writer instanceof Writer);
+
 $writer->prepare(
     <<<SQL
     select ?

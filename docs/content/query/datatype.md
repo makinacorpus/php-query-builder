@@ -43,7 +43,10 @@ When you want to pass an array of values into your parameters, just pass the
 value transparently:
 
 ```php
-/** @var \MakinaCorpus\QueryBuilder\Writer\Writer $writer */
+use MakinaCorpus\QueryBuilder\Writer\Writer;
+
+assert($writer instanceof Writer);
+
 $writer->prepare(
     <<<SQL
     insert into foo (my_array) values (?)",

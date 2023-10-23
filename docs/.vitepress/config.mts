@@ -128,6 +128,11 @@ export default defineConfig({
             link: '/query/impl',
             items: []
           },
+          {
+            text: 'Where',
+            link: '/query/impl/where',
+            items: []
+          },
         ]
       },
     ]

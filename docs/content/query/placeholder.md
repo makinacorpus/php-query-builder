@@ -6,7 +6,10 @@ Independently from the final database driver, all parameters within arbitrary SQ
 must be written using the `?` placeholder in raw SQL:
 
 ```php
-/** @var \MakinaCorpus\QueryBuilder\Writer\Writer $writer */
+use MakinaCorpus\QueryBuilder\Writer\Writer;
+
+assert($writer instanceof Writer);
+
 $writer->prepare(
     <<<SQL
     SELECT * FROM user WHERE mail = ?
@@ -21,7 +24,10 @@ Additionnaly in order to type hint values for a later bridge value to SQL
 conversion to work gracefully, you can use the following syntax: `?::TYPE`.
 
 ```php
-/** @var \MakinaCorpus\QueryBuilder\Writer\Writer $writer */
+use MakinaCorpus\QueryBuilder\Writer\Writer;
+
+assert($writer instanceof Writer);
+
 $writer->prepare(
     <<<SQL
     SELECT * FROM user WHERE last_login > ?::timestamp
@@ -38,7 +44,10 @@ You can specify any number of parameter placeholders within the query, parameter
 array must be ordered:
 
 ```php
-/** @var \MakinaCorpus\QueryBuilder\Writer\Writer $writer */
+use MakinaCorpus\QueryBuilder\Writer\Writer;
+
+assert($writer instanceof Writer);
+
 $writer->prepare(
     <<<SQL
     SELECT * FROM user WHERE last_login > ?::timestamp AND mail = ?
@@ -56,14 +65,17 @@ The placeholder is much more than a value placeholder, it can also be used to
 place complex SQL expressions in a raw SQL string, for example:
 
 ```php
+use MakinaCorpus\QueryBuilder\QueryBuilder;
+use MakinaCorpus\QueryBuilder\Writer\Writer;
 
-/** @var \MakinaCorpus\QueryBuilder\QueryBuilder $queryBuilder */
+assert($queryBuilder instanceof QueryBuilder);
+assert($writer instanceof Writer);
+
 $nestedSelect = $queryBuilder
     ->select('some_table')
     ->column('id')
 ;
 
-/** @var \MakinaCorpus\QueryBuilder\Writer\Writer $writer */
 $writer->prepare(
     <<<SQL
     select *

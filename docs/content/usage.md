@@ -35,7 +35,7 @@ ORDER BY
 You may do it in many ways, let's see one of them:
 
 ```php
-use MakinaCorpus\QueryBuilder\Expression\Column;
+use MakinaCorpus\QueryBuilder\Expression\ColumnName;
 use MakinaCorpus\QueryBuilder\Where;
 
 $select = $queryBuilder->select('product');
@@ -57,7 +57,7 @@ $select
     )
     ->leftJoin(
         'variation'
-        fn (Where $where) => $where->isEqual('variation.product_id', new Column('product.id'))
+        fn (Where $where) => $where->isEqual('variation.product_id', new ColumnName('product.id'))
     )
     ->where('user_backet.user_id', 12)
     ->whereRaw('some_unsupported_function()')
@@ -72,9 +72,9 @@ As you can see, there are many details revealed by this code.
 ## Raw expression are allowed (almost) everywhere
 
 For each specialized method such as `Select::column()`, which aims to parse
-the user input like the `MakinaCorpus\QueryBuilder\Expression\Column` expression
-class, exists a `*Raw()` alternative when it makes sense, here the
-`Select::columnRaw()` method.
+the user input like the `MakinaCorpus\QueryBuilder\Expression\ColumnName`
+expression class, exists a `*Raw()` alternative when it makes sense, here
+the `Select::columnRaw()` method.
 
 Raw methods accept:
   - any string and will be treated as SQL code,

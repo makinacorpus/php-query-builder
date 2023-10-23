@@ -5,7 +5,10 @@
 A query created from the query builder:
 
 ```php
-/** @var \MakinaCorpus\QueryBuilder\QueryBuilder $queryBuilder */
+use MakinaCorpus\QueryBuilder\QueryBuilder;
+
+assert($queryBuilder instanceof QueryBuilder);
+
 $select = $queryBuilder->select($table, $alias);
 $update = $queryBuilder->update($table, $alias);
 $merge = $queryBuilder->merge($table);
@@ -52,7 +55,7 @@ an arbitrary raw expression to the where clause:
 
 ```php
 // WHERE COUNT("comment") > 5
-$select->whereExpression('COUNT("comment") > ?', [5]);
+$select->whereRaw('COUNT("comment") > ?', [5]);
 ```
 
 Parameter placeholders will be gracefully merged to the others in their
@@ -89,7 +92,7 @@ in the generated SQL.
 ```php
 use MakinaCorpus\QueryBuilder\Expression\ColumnName;
 
-new ColumnExpression('some_column');
+new ColumnName('some_column');
 ```
 
 Will be formatted as:
@@ -104,7 +107,7 @@ Will be formatted as:
 
 use MakinaCorpus\QueryBuilder\Expression\ColumnName;
 
-new ColumnExpression('some_column.some_table');
+new ColumnName('some_column.some_table');
 ```
 
 Will be formatted as:
@@ -118,7 +121,7 @@ Will be formatted as:
 ```php
 use MakinaCorpus\QueryBuilder\Expression\ColumnName;
 
-new ColumnExpression('some_column', 'some_table');
+new ColumnName('some_column', 'some_table');
 ```
 
 Will be formatted as:
@@ -132,7 +135,7 @@ Will be formatted as:
 ```php
 use MakinaCorpus\QueryBuilder\Expression\ColumnName;
 
-new ColumnExpression('some.column', 'some.table');
+new ColumnName('some.column', 'some.table');
 ```
 
 Will be formatted as:
@@ -152,7 +155,7 @@ alias, WITH statement.
 
 use MakinaCorpus\QueryBuilder\Expression\TableName;
 
-new TableExpression('some_table');
+new TableName('some_table');
 ```
 
 Will be formatted as:
@@ -166,7 +169,7 @@ Will be formatted as:
 ```php
 use MakinaCorpus\QueryBuilder\Expression\TableName;
 
-new TableExpression('some_table', 'foo');
+new TableName('some_table', 'foo');
 ```
 
 Will be formatted as:
@@ -180,7 +183,7 @@ Will be formatted as:
 ```php
 use MakinaCorpus\QueryBuilder\Expression\TableName;
 
-new TableExpression('my_schema.some_table', 'foo');
+new TableName('my_schema.some_table', 'foo');
 ```
 
 Will be formatted as:
@@ -194,7 +197,7 @@ Will be formatted as:
 ```php
 use MakinaCorpus\QueryBuilder\Expression\TableName;
 
-new TableExpression('some_table', 'foo', 'my_schema');
+new TableName('some_table', 'foo', 'my_schema');
 ```
 
 Will be formatted as:
@@ -208,7 +211,7 @@ Will be formatted as:
 ```php
 use MakinaCorpus\QueryBuilder\Expression\TableName;
 
-new TableExpression('some.table', 'some.alias', 'my.schema');
+new TableName('some.table', 'some.alias', 'my.schema');
 ```
 
 Will be formatted as:
@@ -236,7 +239,7 @@ in use, and is not the responsability of the query builder.
 ```php
 use MakinaCorpus\QueryBuilder\Expression\Value;
 
-new ValueExpression(12);
+new Value(12);
 ```
 
 Will be formatted as:
@@ -250,7 +253,7 @@ Will be formatted as:
 ```php
 use MakinaCorpus\QueryBuilder\Expression\Value;
 
-new ValueExpression(12, 'int');
+new Value(12, 'int');
 ```
 
 Will be formatted as:
@@ -264,7 +267,7 @@ Will be formatted as:
 ```php
 use MakinaCorpus\QueryBuilder\Expression\Value;
 
-new ValueExpression(['foo' => 'bar', 'baz' => [1, 2, 3]], 'json');
+new Value(['foo' => 'bar', 'baz' => [1, 2, 3]], 'json');
 ```
 
 Will be formatted as:
@@ -278,7 +281,7 @@ Will be formatted as:
 ```php
 use MakinaCorpus\QueryBuilder\Expression\Value;
 
-new ValueExpression([1, 2, 3], 'int[]');
+new Value([1, 2, 3], 'int[]');
 ```
 
 Will be formatted as:
