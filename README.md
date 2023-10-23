@@ -10,9 +10,17 @@ It is based upon a fluent API, which makes basic SELECT, DELETE, INSERT,
 UPDATE and MERGE queries easy to write, even if you don't really now SQL.
 
 Under the hood, your queries are trees of Expression instances, and at any
-point, any method, you may pass arbitrary expressions if the builder does
+place, any method, you may pass arbitrary expressions if the builder does
 not support the feature you want to use: this means you can use all
 features of your favorite RDBMS without worrying about this API limitations.
+
+This API by itself is only a SQL string generator, in order to use it
+transparently, a few bridges are provided:
+
+ - `doctring/dbal:^3` query builder,
+ - soon a `doctring/dbal:^4` query builder,
+ - `PDO` query builder,
+ - Symfony bundle will be available in a separate package.
 
 # Getting started
 
@@ -204,19 +212,65 @@ Please note that for consistency and portability reasons, this API always
 require that you identify value placeholder in raw SQL expressions using the
 `?` placeholder, no matter which one will end in generated SQL code.
 
+# Building documentation
+
+Documentation is written using [VitePress](https://vitepress.dev).
+
+For readers:
+
+```sh
+cd ./docs/
+nvm use
+npm ci
+npm run docs:build
+<your browser> ./.vitepress/dist/index.html
+```
+
+For developers:
+
+```sh
+cd ./docs/
+nvm use
+npm ci
+npm run docs:dev
+```
+
+# Run tests
+
+Most unit tests will work gracefuly by running directly PHPUnit:
+
+```sh
+composer install
+vendor/bin/phpunit
+```
+
+For running bridges integration tests, it needs a complete environment with
+some databases up and running, for this purpose a script that uses
+`docker compose` is provided, yet it might not work gracefuly in all
+environments:
+
+```sh
+composer install
+./run-tests.sh
+```
+
+Please understand that the testing environment is currently at the prototype
+stage, and will remain as-is until github actions CI is configured.
+
 # Roadmap
 
 ## Short-term
 
- - Document everything!
- - Add `doctrine/dbal` bridge for using it transparently.
- - Add a Symfony bundle for using it transparently along `doctrine/dbal`.
+ - [ ] Document everything!
+ - [x] Add `doctrine/dbal` bridge for using it transparently.
+ - [ ] Add a Symfony bundle for using it transparently along `doctrine/dbal`,
+ - [ ] Setup CI via github actions.
 
 ## Long term
 
- - Restore the `makinacorpus/goat-query` PHP to SQL and SQL to PHP value
+ - [ ] Restore the `makinacorpus/goat-query` PHP to SQL and SQL to PHP value
    converter, in its own package, independently from this one.
- - Implement more and more SQL features.
+ - [ ] Implement more and more SQL features.
 
 # History
 

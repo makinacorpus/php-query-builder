@@ -53,12 +53,79 @@ export default defineConfig({
         ]
       },
       {
-        text: 'Usage',
+        text: 'Basics',
         collapsed: false,
         items: [
           {
-            text: 'Introduction',
-            link: '/usage',
+            text: 'Query basics',
+            link: '/query/basics',
+            items: []
+          },
+          {
+            text: 'Parameter placeholder',
+            link: '/query/placeholder',
+            items: [
+              { text: 'Values and typing', link: '/query/placeholder#value-placeholder-and-typing' },
+              { text: 'Nested expression', link: '/query/placeholder#placeholder-and-expressions' },
+            ]
+          },
+          {
+            text: 'Values',
+            link: '/query/values',
+            items: [
+              { text: 'Value expression', link: '/query/values#general' },
+              { text: 'Constant row', link: '/query/values#constant-row' },
+              { text: 'Constant table', link: '/query/values#constant-table' },
+            ]
+          },
+          {
+            text: 'Typing and casting',
+            link: '/query/cast',
+            items: [
+              { text: 'In raw SQL', link: '/query/cast#typing-values-in-raw-sql' },
+              { text: 'In query builder', link: '/query/cast#typing-values-in-query-builder' },
+              { text: 'SQL Cast', link: '/query/cast#sql-cast' },
+            ]
+          },
+          {
+            text: 'Data types',
+            link: '/query/datatype',
+            items: []
+          },
+        ]
+      },
+      {
+        text: 'Query builder',
+        collapsed: false,
+        items: [
+          {
+            text: 'Select',
+            link: '/query/impl',
+            items: []
+          },
+          {
+            text: 'Insert',
+            link: '/query/impl',
+            items: []
+          },
+          {
+            text: 'Insert as select',
+            link: '/query/impl',
+            items: []
+          },
+          {
+            text: 'Update',
+            link: '/query/impl',
+            items: []
+          },
+          {
+            text: 'Delete',
+            link: '/query/impl',
+            items: []
+          },
+          {
+            text: 'Merge',
+            link: '/query/impl',
             items: []
           },
         ]

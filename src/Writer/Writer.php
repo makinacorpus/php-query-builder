@@ -98,7 +98,7 @@ class Writer
      */
     protected function format(Expression $expression, WriterContext $context, bool $enforceParenthesis = false): string
     {
-        // Query may be overriden by bridges to add functionality.
+        // Queries may be overriden by bridges to add functionality.
         if ($expression instanceof Query) {
             if ($expression instanceof Delete) {
                 $ret = $this->formatDelete($expression, $context);
