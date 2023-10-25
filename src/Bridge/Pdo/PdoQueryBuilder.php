@@ -103,7 +103,7 @@ class PdoQueryBuilder extends AbstractBridge
      */
     public function select(null|string|Expression $table = null, ?string $alias = null): PdoSelect
     {
-        $ret = new PdoSelect();
+        $ret = new PdoSelect($table, $alias);
         $ret->initialize($this);
 
         return $ret;
@@ -114,7 +114,7 @@ class PdoQueryBuilder extends AbstractBridge
      */
     public function update(string|Expression $table, ?string $alias = null): PdoUpdate
     {
-        $ret = new PdoUpdate();
+        $ret = new PdoUpdate($table, $alias);
         $ret->initialize($this);
 
         return $ret;
@@ -125,7 +125,7 @@ class PdoQueryBuilder extends AbstractBridge
      */
     public function insert(string|Expression $table): PdoInsert
     {
-        $ret = new PdoInsert();
+        $ret = new PdoInsert($table);
         $ret->initialize($this);
 
         return $ret;
@@ -136,7 +136,7 @@ class PdoQueryBuilder extends AbstractBridge
      */
     public function merge(string|Expression $table): PdoMerge
     {
-        $ret = new PdoMerge();
+        $ret = new PdoMerge($table);
         $ret->initialize($this);
 
         return $ret;
@@ -147,7 +147,7 @@ class PdoQueryBuilder extends AbstractBridge
      */
     public function delete(string|Expression $table, ?string $alias = null): PdoDelete
     {
-        $ret = new PdoDelete();
+        $ret = new PdoDelete($table, $alias);
         $ret->initialize($this);
 
         return $ret;

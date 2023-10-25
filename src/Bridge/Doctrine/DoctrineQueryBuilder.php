@@ -64,7 +64,7 @@ class DoctrineQueryBuilder extends AbstractBridge
      */
     public function select(null|string|Expression $table = null, ?string $alias = null): DoctrineSelect
     {
-        $ret = new DoctrineSelect();
+        $ret = new DoctrineSelect($table, $alias);
         $ret->initialize($this);
 
         return $ret;
@@ -75,7 +75,7 @@ class DoctrineQueryBuilder extends AbstractBridge
      */
     public function update(string|Expression $table, ?string $alias = null): DoctrineUpdate
     {
-        $ret = new DoctrineUpdate();
+        $ret = new DoctrineUpdate($table, $alias);
         $ret->initialize($this);
 
         return $ret;
@@ -86,7 +86,7 @@ class DoctrineQueryBuilder extends AbstractBridge
      */
     public function insert(string|Expression $table): DoctrineInsert
     {
-        $ret = new DoctrineInsert();
+        $ret = new DoctrineInsert($table);
         $ret->initialize($this);
 
         return $ret;
@@ -97,7 +97,7 @@ class DoctrineQueryBuilder extends AbstractBridge
      */
     public function merge(string|Expression $table): DoctrineMerge
     {
-        $ret = new DoctrineMerge();
+        $ret = new DoctrineMerge($table);
         $ret->initialize($this);
 
         return $ret;
@@ -108,7 +108,7 @@ class DoctrineQueryBuilder extends AbstractBridge
      */
     public function delete(string|Expression $table, ?string $alias = null): DoctrineDelete
     {
-        $ret = new DoctrineDelete();
+        $ret = new DoctrineDelete($table, $alias);
         $ret->initialize($this);
 
         return $ret;
