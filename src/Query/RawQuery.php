@@ -19,9 +19,9 @@ class RawQuery extends AbstractQuery
 
     public function __construct(
         private string $expression,
-        mixed $arguments = null
+        mixed $arguments = null,
+        private bool $returns = true,
     ) {
-        $this->expression = $expression;
         $this->arguments = ExpressionHelper::arguments($arguments);
     }
 
@@ -30,10 +30,7 @@ class RawQuery extends AbstractQuery
      */
     public function willReturnRows(): bool
     {
-        // Since we cannot predict what the user will write here, it's safe
-        // to always return true here, the only consequence is that it might
-        // bypass a few optimisations in rare cases.
-        return true;
+        return $this->returns;
     }
 
     /**

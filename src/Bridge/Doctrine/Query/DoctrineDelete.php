@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Bridge\Doctrine\Query;
 
-use MakinaCorpus\QueryBuilder\Query\Delete as QueryBuilderDelete;
+use MakinaCorpus\QueryBuilder\Query\Delete;
 
-class DoctrineDelete extends QueryBuilderDelete
+class DoctrineDelete extends Delete
 {
     use DoctrineQueryTrait;
 }

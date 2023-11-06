@@ -307,11 +307,11 @@ class Select extends AbstractQuery implements TableExpression
      */
     public function range(int $limit = 0, int $offset = 0): static
     {
-        if (!\is_int($limit) || $limit < 0) {
-            throw new QueryBuilderError(\sprintf("limit must be a positive integer: '%s' given", $limit));
+        if ($limit < 0) {
+            throw new QueryBuilderError(\sprintf("limit must be a positive integer: %d given", $limit));
         }
-        if (!\is_int($offset) || $offset < 0) {
-            throw new QueryBuilderError(\sprintf("offset must be a positive integer: '%s' given", $offset));
+        if ($offset < 0) {
+            throw new QueryBuilderError(\sprintf("offset must be a positive integer: %d given", $offset));
         }
 
         $this->limit = $limit;
@@ -330,8 +330,8 @@ class Select extends AbstractQuery implements TableExpression
      */
     public function page(int $limit = 0, int $page = 1): static
     {
-        if (!\is_int($page) || $page < 1) {
-            throw new QueryBuilderError(\sprintf("page must be a positive integer, starting with 1: '%s' given", $limit));
+        if ($page < 1) {
+            throw new QueryBuilderError(\sprintf("page must be a positive integer, starting with 1: %d given", $limit));
         }
 
         $this->range($limit, ($page - 1) * $limit);

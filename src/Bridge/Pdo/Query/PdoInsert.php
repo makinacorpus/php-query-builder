@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Bridge\Pdo\Query;
 
-use MakinaCorpus\QueryBuilder\Query\Insert as QueryBuilderInsert;
+use MakinaCorpus\QueryBuilder\Query\Insert;
 
-class PdoInsert extends QueryBuilderInsert
+class PdoInsert extends Insert
 {
     use PdoQueryTrait;
 }

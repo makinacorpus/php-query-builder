@@ -60,7 +60,7 @@ trait WhereBuilder
      *   Value is the right operand, if not an expression, assume a user given
      *   PHP value that will be send to arguments.
      */
-    public function comparison(mixed $column = null, mixed $value = null, string $operator = Comparison::EQUAL): static
+    public function compare(mixed $column = null, mixed $value = null, string $operator = Comparison::EQUAL): static
     {
         // @todo Side effect from some sugar candy functions, we sometime
         //   get a Where instance here. We should not care about the
@@ -170,7 +170,7 @@ trait WhereBuilder
      */
     public function isEqual(callable|string|Expression $column, mixed $value): static
     {
-        return $this->comparison($column, $value, Comparison::EQUAL);
+        return $this->compare($column, $value, Comparison::EQUAL);
     }
 
     /**
@@ -180,7 +180,7 @@ trait WhereBuilder
      */
     public function isNotEqual(callable|string|Expression $column, mixed $value): static
     {
-        return $this->comparison($column, $value, Comparison::NOT_EQUAL);
+        return $this->compare($column, $value, Comparison::NOT_EQUAL);
     }
 
     /**
@@ -276,7 +276,7 @@ trait WhereBuilder
      *
     public function isIn(callable|string|Expression $column, mixed $values): static
     {
-        return $this->comparison($column, $values, Comparison::IN);
+        return $this->compare($column, $values, Comparison::IN);
     }
      */
 
@@ -285,7 +285,7 @@ trait WhereBuilder
      *
     public function isNotIn(callable|string|Expression $column, mixed $values): static
     {
-        return $this->comparison($column, $values, Comparison::NOT_IN);
+        return $this->compare($column, $values, Comparison::NOT_IN);
     }
      */
 
@@ -294,7 +294,7 @@ trait WhereBuilder
      */
     public function isGreater(callable|string|Expression $column, mixed $value): static
     {
-        return $this->comparison($column, $value, Comparison::GREATER);
+        return $this->compare($column, $value, Comparison::GREATER);
     }
 
     /**
@@ -302,7 +302,7 @@ trait WhereBuilder
      */
     public function isLess(callable|string|Expression $column, mixed $value): static
     {
-        return $this->comparison($column, $value, Comparison::LESS);
+        return $this->compare($column, $value, Comparison::LESS);
     }
 
     /**
@@ -310,7 +310,7 @@ trait WhereBuilder
      */
     public function isGreaterOrEqual(callable|string|Expression $column, mixed $value): static
     {
-        return $this->comparison($column, $value, Comparison::GREATER_OR_EQUAL);
+        return $this->compare($column, $value, Comparison::GREATER_OR_EQUAL);
     }
 
     /**
@@ -318,7 +318,7 @@ trait WhereBuilder
      */
     public function isLessOrEqual(callable|string|Expression $column, mixed $value): static
     {
-        return $this->comparison($column, $value, Comparison::LESS_OR_EQUAL);
+        return $this->compare($column, $value, Comparison::LESS_OR_EQUAL);
     }
 
     /**
@@ -358,7 +358,7 @@ trait WhereBuilder
      */
     public function isNull(callable|string|Expression $column): static
     {
-        return $this->comparison($column, null, Comparison::IS_NULL);
+        return $this->compare($column, null, Comparison::IS_NULL);
     }
 
     /**
@@ -366,7 +366,7 @@ trait WhereBuilder
      */
     public function isNotNull(callable|string|Expression $column): static
     {
-        return $this->comparison($column, null, Comparison::NOT_IS_NULL);
+        return $this->compare($column, null, Comparison::NOT_IS_NULL);
     }
 
     /**
@@ -376,7 +376,7 @@ trait WhereBuilder
      *
     public function arrayContain(callable|string|array|Expression $column, mixed $value): static
     {
-        return $this->comparison(
+        return $this->compare(
             $this->normalizeArrayColumn($column),
             $this->normalizeArray($value),
             self::ARRAY_CONTAIN
@@ -393,7 +393,7 @@ trait WhereBuilder
      *
     public function arrayContainedBy(callable|string|array|Expression $column, mixed $value): static
     {
-        return $this->comparison(
+        return $this->compare(
             $this->normalizeArrayColumn($column),
             $this->normalizeArray($value),
             self::ARRAY_CONTAINED_BY
@@ -410,7 +410,7 @@ trait WhereBuilder
      *
     public function arrayEqual(callable|string|array|Expression $column, mixed $value): static
     {
-        return $this->comparison(
+        return $this->compare(
             $this->normalizeArrayColumn($column),
             $this->normalizeArray($value),
             self::ARRAY_EQUAL
@@ -427,7 +427,7 @@ trait WhereBuilder
      *
     public function arrayGreater(callable|string|array|Expression $column, mixed $value): static
     {
-        return $this->comparison(
+        return $this->compare(
             $this->normalizeArrayColumn($column),
             $this->normalizeArray($value),
             self::ARRAY_GREATER
@@ -444,7 +444,7 @@ trait WhereBuilder
      *
     public function arrayGreaterOrEqual(callable|string|array|Expression $column, mixed $value): static
     {
-        return $this->comparison(
+        return $this->compare(
             $this->normalizeArrayColumn($column),
             $this->normalizeArray($value),
             self::ARRAY_GREATER_OR_EQUAL
@@ -461,7 +461,7 @@ trait WhereBuilder
      *
     public function arrayLess(callable|string|array|Expression $column, mixed $value): static
     {
-        return $this->comparison(
+        return $this->compare(
             $this->normalizeArrayColumn($column),
             $this->normalizeArray($value),
             self::ARRAY_LESS
@@ -478,7 +478,7 @@ trait WhereBuilder
      *
     public function arrayLessOrEqual(callable|string|array|Expression $column, mixed $value): static
     {
-        return $this->comparison(
+        return $this->compare(
             $this->normalizeArrayColumn($column),
             $this->normalizeArray($value),
             self::ARRAY_LESS_OR_EQUAL
@@ -495,7 +495,7 @@ trait WhereBuilder
      *
     public function arrayNotEqual(callable|string|array|Expression $column, mixed $value): static
     {
-        return $this->comparison(
+        return $this->compare(
             $this->normalizeArrayColumn($column),
             $this->normalizeArray($value),
             self::ARRAY_NOT_EQUAL
@@ -512,7 +512,7 @@ trait WhereBuilder
      *
     public function arrayOverlap(callable|string|array|Expression $column, mixed $value): static
     {
-        return $this->comparison(
+        return $this->compare(
             $this->normalizeArrayColumn($column),
             $this->normalizeArray($value),
             self::ARRAY_OVERLAP
@@ -527,7 +527,7 @@ trait WhereBuilder
      *
     public function jsonContainKey(callable|string|array|Expression $column, string $value): static
     {
-        return $this->comparison(
+        return $this->compare(
             $this->normalizeJsonColumn($column),
             $value,
             self::JSONB_CONTAIN_KEY
@@ -544,7 +544,7 @@ trait WhereBuilder
      *
     public function jsonContainAnyKey(callable|string|array|Expression $column, mixed $value): static
     {
-        return $this->comparison(
+        return $this->compare(
             $this->normalizeJsonColumn($column),
             $this->normalizeJsonKeyArray($value),
             self::JSONB_CONTAIN_KEY_ANY
@@ -561,7 +561,7 @@ trait WhereBuilder
      *
     public function jsonContainAllKey(callable|string|array|Expression $column, mixed $value): static
     {
-        return $this->comparison(
+        return $this->compare(
             $this->normalizeJsonColumn($column),
             $this->normalizeJsonKeyArray($value),
             self::JSONB_CONTAIN_KEY_ALL
@@ -578,7 +578,7 @@ trait WhereBuilder
      *
     public function jsonContainJson(callable|string|array|Expression $column, mixed $value): static
     {
-        return $this->comparison(
+        return $this->compare(
             $this->normalizeJsonColumn($column),
             $this->normalizeJson($value),
             self::JSONB_CONTAIN
@@ -595,7 +595,7 @@ trait WhereBuilder
      *
     public function jsonContainedByJson(callable|string|array|Expression $column, mixed $value): static
     {
-        return $this->comparison(
+        return $this->compare(
             $this->normalizeJsonColumn($column),
             $this->normalizeJson($value),
             self::JSONB_CONTAINED_BY

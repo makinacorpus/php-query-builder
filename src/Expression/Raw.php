@@ -21,7 +21,6 @@ class Raw implements Expression
         mixed $arguments = null,
         private bool $returns = true
     ) {
-        $this->expression = $expression;
         $this->arguments = ExpressionHelper::arguments($arguments);
     }
 

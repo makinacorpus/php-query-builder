@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Bridge\Pdo\Query;
 
-use MakinaCorpus\QueryBuilder\Query\Delete as QueryBuilderDelete;
+use MakinaCorpus\QueryBuilder\Query\Delete;
 
-class PdoDelete extends QueryBuilderDelete
+class PdoDelete extends Delete
 {
     use PdoQueryTrait;
 }

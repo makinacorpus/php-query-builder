@@ -63,7 +63,7 @@ trait WhereClauseTrait
      */
     public function where(mixed $column, mixed $value = null, string $operator = Comparison::EQUAL): static
     {
-        $this->where->comparison($column, $value, $operator);
+        $this->where->compare($column, $value, $operator);
 
         return $this;
     }

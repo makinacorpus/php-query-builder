@@ -65,7 +65,7 @@ class Update extends AbstractQuery
      */
     public function set(string $columnName, mixed $expression): static
     {
-        if (!\is_string($columnName) || false !== \strpos($columnName, '.')) {
+        if (false !== \strpos($columnName, '.')) {
             throw new QueryBuilderError("column names in the set part of an update query can only be a column name, without table prefix");
         }
 

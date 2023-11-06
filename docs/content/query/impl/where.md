@@ -45,7 +45,7 @@ use MakinaCorpus\QueryBuilder\Where;
 
 assert($where instanceof Where);
 
-$where->comparison(
+$where->compare(
     fn () => 'foo.bar',
     12,
 );
@@ -58,7 +58,7 @@ use MakinaCorpus\QueryBuilder\Where;
 
 assert($where instanceof Where);
 
-$where->comparison(
+$where->compare(
     'foo.bar',
     12,
 );

@@ -114,7 +114,7 @@ class Where implements Expression
     }
 
     /**
-     * Add one or more expressions.
+     * Add one or more expressions into this clause.
      */
     public function with(mixed $expression, mixed ...$expressions): static
     {
@@ -127,7 +127,7 @@ class Where implements Expression
     }
 
     /**
-     * Add one or more negated expressions.
+     * Add one or more negated expressions into this clause.
      */
     public function notWith(mixed $expression, mixed ...$expressions): static
     {
@@ -153,7 +153,10 @@ class Where implements Expression
     }
 
     /**
-     * Create new nested where clause, whose operator is OR.
+     * Create an OR clause and add expressions into it.
+     *
+     * @return self
+     *   The newly created clause.
      */
     public function or(mixed ...$expressions): self
     {
@@ -161,7 +164,10 @@ class Where implements Expression
     }
 
     /**
-     * Create new nested where clause, whose operator is AND.
+     * Create an AND clause and add expressions into it.
+     *
+     * @return self
+     *   The newly created clause.
      */
     public function and(mixed ...$expressions): self
     {

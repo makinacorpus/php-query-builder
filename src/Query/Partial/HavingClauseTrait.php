@@ -63,7 +63,7 @@ trait HavingClauseTrait
      */
     public function having(mixed $column, mixed $value = null, string $operator = Comparison::EQUAL): static
     {
-        $this->having->comparison($column, $value, $operator);
+        $this->having->compare($column, $value, $operator);
 
         return $this;
     }

@@ -5,52 +5,34 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Tests\Bridge\Doctrine;
 
 use Doctrine\DBAL\Configuration;
-use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Driver\AbstractSQLiteDriver\Middleware\EnableForeignKeys;
 use Doctrine\DBAL\Driver\OCI8\Middleware\InitializeSession;
 use Doctrine\DBAL\Schema\DefaultSchemaManagerFactory;
+use MakinaCorpus\QueryBuilder\Bridge\AbstractBridge;
 use MakinaCorpus\QueryBuilder\Bridge\Doctrine\DoctrineQueryBuilder;
 use MakinaCorpus\QueryBuilder\Tests\FunctionalTestCase;
 
 abstract class DoctrineTestCase extends FunctionalTestCase
 {
-    private ?Connection $connection = null;
-
-    /** @after */
-    final protected function closeDoctrineConnection(): void
+    /**
+     * Get query builder.
+     */
+    protected function getQueryBuilder(): DoctrineQueryBuilder
     {
-        if ($this->connection) {
-            unset($this->connection);
-        }
+        return $this->getBridge();
     }
 
     /**
-     * Get doctrine connection.
+     * {@inheritdoc}
      */
-    final protected function getDoctrineConnection(): Connection
+    protected function doCreateBridge(array $params): AbstractBridge
     {
-        return $this->connection ??= $this->createDoctrineConnection();
-    }
-
-    /**
-     * Create query builder.
-     */
-    final protected function getQueryBuilder(): DoctrineQueryBuilder
-    {
-        return new DoctrineQueryBuilder($this->getDoctrineConnection());
-    }
-
-    /**
-     * Create doctrine/dbal connection.
-     */
-    private function createDoctrineConnection(): Connection
-    {
-        $params = $this->getConnectionParameters();
-
-        return DriverManager::getConnection(
-            $params,
-            $this->createDoctrineConfiguration($params['driver']),
+        return new DoctrineQueryBuilder(
+            DriverManager::getConnection(
+                $params,
+                $this->createDoctrineConfiguration($params['driver']),
+            ),
         );
     }
 

@@ -46,7 +46,7 @@ class ArrayValue implements Expression
     /**
      * Get value type if specified.
      */
-    public function getValueType(): ?String
+    public function getValueType(): ?string
     {
         return $this->valueType;
     }

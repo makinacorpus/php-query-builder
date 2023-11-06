@@ -11,6 +11,7 @@ use MakinaCorpus\QueryBuilder\Bridge\Pdo\Escaper\PdoMySQLEscaper;
 use MakinaCorpus\QueryBuilder\Bridge\Pdo\Query\PdoDelete;
 use MakinaCorpus\QueryBuilder\Bridge\Pdo\Query\PdoInsert;
 use MakinaCorpus\QueryBuilder\Bridge\Pdo\Query\PdoMerge;
+use MakinaCorpus\QueryBuilder\Bridge\Pdo\Query\PdoRawQuery;
 use MakinaCorpus\QueryBuilder\Bridge\Pdo\Query\PdoSelect;
 use MakinaCorpus\QueryBuilder\Bridge\Pdo\Query\PdoUpdate;
 use MakinaCorpus\QueryBuilder\Escaper\Escaper;
@@ -75,17 +76,11 @@ class PdoQueryBuilder extends AbstractBridge
      */
     protected function createEscaper(): Escaper
     {
-        $serverFlavor = $this->getServerFlavor();
-
-        if (self::SERVER_POSTGRESQL === $serverFlavor) {
-            return new PdoEscaper($this->connection);
-        }
-
-        if (self::SERVER_MARIADB === $serverFlavor) {
-            return new PdoMySQLEscaper($this->connection);
-        }
-
-        return new PdoEscaper($this->connection);
+        return match ($this->getServerFlavor()) {
+            self::SERVER_MARIADB => new PdoMySQLEscaper($this->connection),
+            self::SERVER_MYSQL => new PdoMySQLEscaper($this->connection),
+            default => new PdoEscaper($this->connection),
+        };
     }
 
     /**
@@ -99,7 +94,7 @@ class PdoQueryBuilder extends AbstractBridge
     }
 
     /**
-     * {@inheritdoc}
+     * Create SELECT query builder.
      */
     public function select(null|string|Expression $table = null, ?string $alias = null): PdoSelect
     {
@@ -110,7 +105,7 @@ class PdoQueryBuilder extends AbstractBridge
     }
 
     /**
-     * {@inheritdoc}
+     * Create UPDATE query.
      */
     public function update(string|Expression $table, ?string $alias = null): PdoUpdate
     {
@@ -121,7 +116,7 @@ class PdoQueryBuilder extends AbstractBridge
     }
 
     /**
-     * {@inheritdoc}
+     * Create INSERT query.
      */
     public function insert(string|Expression $table): PdoInsert
     {
@@ -132,7 +127,7 @@ class PdoQueryBuilder extends AbstractBridge
     }
 
     /**
-     * {@inheritdoc}
+     * Create MERGE query.
      */
     public function merge(string|Expression $table): PdoMerge
     {
@@ -143,11 +138,22 @@ class PdoQueryBuilder extends AbstractBridge
     }
 
     /**
-     * {@inheritdoc}
+     * Create DELETE query.
      */
     public function delete(string|Expression $table, ?string $alias = null): PdoDelete
     {
         $ret = new PdoDelete($table, $alias);
+        $ret->initialize($this);
+
+        return $ret;
+    }
+
+    /**
+     * Create raw SQL query.
+     */
+    public function raw(string $expression = null, mixed $arguments = null, bool $returns = false): PdoRawQuery
+    {
+        $ret = new PdoRawQuery($expression, $arguments, $returns);
         $ret->initialize($this);
 
         return $ret;

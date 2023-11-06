@@ -7,6 +7,7 @@ namespace MakinaCorpus\QueryBuilder;
 use MakinaCorpus\QueryBuilder\Query\Delete;
 use MakinaCorpus\QueryBuilder\Query\Insert;
 use MakinaCorpus\QueryBuilder\Query\Merge;
+use MakinaCorpus\QueryBuilder\Query\RawQuery;
 use MakinaCorpus\QueryBuilder\Query\Select;
 use MakinaCorpus\QueryBuilder\Query\Update;
 
@@ -16,7 +17,7 @@ use MakinaCorpus\QueryBuilder\Query\Update;
 class QueryBuilder
 {
     /**
-     * {@inheritdoc}
+     * Create SELECT query.
      */
     public function select(null|string|Expression $table = null, ?string $alias = null): Select
     {
@@ -24,7 +25,7 @@ class QueryBuilder
     }
 
     /**
-     * {@inheritdoc}
+     * Create UPDATE query.
      */
     public function update(string|Expression $table, ?string $alias = null): Update
     {
@@ -32,7 +33,7 @@ class QueryBuilder
     }
 
     /**
-     * {@inheritdoc}
+     * Create INSERT query.
      */
     public function insert(string|Expression $table): Insert
     {
@@ -40,7 +41,7 @@ class QueryBuilder
     }
 
     /**
-     * {@inheritdoc}
+     * Create MERGE query.
      */
     public function merge(string|Expression $table): Merge
     {
@@ -48,10 +49,18 @@ class QueryBuilder
     }
 
     /**
-     * {@inheritdoc}
+     * Create DELETE query.
      */
     public function delete(string|Expression $table, ?string $alias = null): Delete
     {
         return new Delete($table, $alias);
+    }
+
+    /**
+     * Create raw SQL query.
+     */
+    public function raw(string $expression = null, mixed $arguments = null, bool $returns = false): RawQuery
+    {
+        return new RawQuery($expression, $arguments, $returns);
     }
 }

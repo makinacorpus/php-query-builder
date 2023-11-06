@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Bridge\Pdo\Query;
 
-use MakinaCorpus\QueryBuilder\Query\Update as QueryBuilderUpdate;
+use MakinaCorpus\QueryBuilder\Query\Update;
 
-class PdoUpdate extends QueryBuilderUpdate
+class PdoUpdate extends Update
 {
     use PdoQueryTrait;
 }
