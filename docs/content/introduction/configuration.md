@@ -17,9 +17,9 @@ use the PostgreSQL writer in order to support those properly.
 
 The following implementations are provided:
 
- - `MakinaCorpus\QueryBuilder\Platform\Writer\MySQL8Writer` for MySQL >= 8 or MariaDB any versions,
+ - `MakinaCorpus\QueryBuilder\Platform\Writer\MySQL8Writer` for MySQL >= 8.0 and MariaDB >= 10.0,
  - `MakinaCorpus\QueryBuilder\Platform\Writer\MySQLWriter` for MySQL <= 5.7,
- - `MakinaCorpus\QueryBuilder\Platform\Writer\PostgreSQLWriter` for PostgreSQL any versions,
+ - `MakinaCorpus\QueryBuilder\Platform\Writer\PostgreSQLWriter` for PostgreSQL >= 9.5,
  - `MakinaCorpus\QueryBuilder\Platform\Writer\SQLiteWriter` for SQLite any versions,
  - `MakinaCorpus\QueryBuilder\Writer\Writer` for generated standard compliant SQL.
 

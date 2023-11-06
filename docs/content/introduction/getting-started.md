@@ -16,11 +16,9 @@ First of all, you need to chose your SQL dialect, this package provides
 a few implementations:
 
  - **MariaDB** >= 10.0,
- - **MySQL** <= 5.7 and >= 8,
+ - **MySQL** <= 5.7 and >= 8.0,
  - **PostgreSQL** >= 9.5,
  - **SQLlite** (all versions).
-
-Most tested implementation is PostgreSQL.
 
 ### 2. Setup the query builder
 

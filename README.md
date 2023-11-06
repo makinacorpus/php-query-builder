@@ -37,11 +37,10 @@ composer require makinacorpus/query-builder
 First of all, you need to chose your SQL dialect, this package provides
 a few implementations:
 
- - MySQL <= 5.7 and MySQL >= 8,
- - PostgreSQL from 9.5 to current,
+ - MariaDB >= 10.0,
+ - MySQL <= 5.7 and MySQL >= 8.0,
+ - PostgreSQL >= 9.5,
  - SQLlite.
-
-Most tested implementation is PostgreSQL.
 
 ### 2. Setup the query builder
 
