@@ -590,7 +590,7 @@ class Writer
             return $this->format($else, $context);
         }
 
-        return 'case ' . $output . ' else ' . $this->format($else, $context);
+        return 'case ' . $output . ' else ' . $this->format($else, $context) . ' end';
     }
 
     /**

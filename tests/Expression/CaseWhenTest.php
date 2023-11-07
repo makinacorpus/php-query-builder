@@ -60,7 +60,7 @@ class CaseWhenTest extends UnitTestCase
 
         self::assertSameSql(
             <<<SQL
-            case when "foo"."bar" then #1 else null
+            case when "foo"."bar" then #1 else null end
             SQL,
             $expression
         );
@@ -76,7 +76,7 @@ class CaseWhenTest extends UnitTestCase
 
         self::assertSameSql(
             <<<SQL
-            case when "foo"."bar" = #1 then #2 else #3
+            case when "foo"."bar" = #1 then #2 else #3 end
             SQL,
             $expression
         );

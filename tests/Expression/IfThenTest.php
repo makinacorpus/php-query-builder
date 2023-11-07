@@ -33,7 +33,7 @@ class IfThenTest extends UnitTestCase
 
         self::assertSameSql(
             <<<SQL
-            case when "foo"."bar" then #1 else null
+            case when "foo"."bar" then #1 else null end
             SQL,
             $expression
         );
@@ -49,7 +49,7 @@ class IfThenTest extends UnitTestCase
 
         self::assertSameSql(
             <<<SQL
-            case when "foo"."bar" = #1 then #2 else foo()
+            case when "foo"."bar" = #1 then #2 else foo() end
             SQL,
             $expression
         );
