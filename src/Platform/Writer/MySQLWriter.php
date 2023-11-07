@@ -200,6 +200,35 @@ class MySQLWriter extends Writer
     /**
      * {@inheritdoc}
      *
+     * MySQL and types, seriously. Be conservative and fix user basic
+     * errors, but do not attempt to do too much magic and let unknown
+     * types pass.
+     */
+    protected function doFormatCastExpression(string $expressionString, string $type, WriterContext $context): string
+    {
+        $isArray = false;
+
+        if (\str_ends_with($type, '[]')) {
+            $type = \substr($type, 0, -2);
+            $isArray = true;
+        }
+
+        // Do not use "unsigned" on behalf of the user, or it would proceed
+        // accidentally to transparent data alteration.
+        if (\in_array(\strtolower($type), ['int', 'integer', 'int4', 'int8', 'tinyint', 'smallint', 'bigint', 'serial', 'bigserial'])) {
+            $type = 'signed';
+        }
+
+        if ($isArray) {
+            $type .= ' ARRAY';
+        }
+
+        return 'CAST(' . $expressionString . ' AS ' . $type . ')';
+    }
+
+    /**
+     * {@inheritdoc}
+     *
     protected function formatSimilarTo(SimilarTo $value, WriterContext $context): string
     {
         if ($value->hasValue()) {
