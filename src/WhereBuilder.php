@@ -49,6 +49,9 @@ trait WhereBuilder
     const JSONB_DELETE = '-'; // JSON - int|text, negative int count from the end.
     const JSONB_DELETE_PATH = '#-'; // JSON #- PATH, eg. '{a, b}'
 
+    /**
+     * Allows using this trait on other components that the Where class.
+     */
     protected abstract function getInstance(): Where;
 
     /**
@@ -273,21 +276,19 @@ trait WhereBuilder
 
     /**
      * 'in' condition.
-     *
+     */
     public function isIn(callable|string|Expression $column, mixed $values): static
     {
         return $this->compare($column, $values, Comparison::IN);
     }
-     */
 
     /**
      * 'not in' condition.
-     *
+     */
     public function isNotIn(callable|string|Expression $column, mixed $values): static
     {
         return $this->compare($column, $values, Comparison::NOT_IN);
     }
-     */
 
     /**
      * '>' condition.

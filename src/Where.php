@@ -50,7 +50,7 @@ class Where implements Expression
     }
 
     /**
-     * Get all conditions.
+     * Get operator.
      */
     public function getOperator(): string
     {

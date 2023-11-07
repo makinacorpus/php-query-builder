@@ -6,10 +6,12 @@ namespace MakinaCorpus\QueryBuilder\Tests;
 
 use MakinaCorpus\QueryBuilder\Where;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
+use MakinaCorpus\QueryBuilder\Expression\Row;
+use MakinaCorpus\QueryBuilder\Query\Select;
 
 class WhereBuilderTest extends UnitTestCase
 {
-    public function testExpression(): void
+    public function testRaw(): void
     {
         $expression = new Where();
         $expression->raw('this is an arbitrary expression ?', ['foo']);
@@ -183,6 +185,84 @@ class WhereBuilderTest extends UnitTestCase
         self::assertSameSql(
             <<<SQL
             not "foo"."bar" similar to 'coucou%'
+            SQL,
+            $expression
+        );
+    }
+
+    public function testIsIn(): void
+    {
+        $expression = new Where();
+        $expression->isIn('foo.bar', ['fizz', 'buzz']);
+
+        self::assertSameSql(
+            <<<SQL
+            "foo"."bar" in (#1, #2)
+            SQL,
+            $expression
+        );
+    }
+
+    public function testIsInRow(): void
+    {
+        $expression = new Where();
+        $expression->isIn('foo.bar', new Row(['fizz', 'buzz']));
+
+        self::assertSameSql(
+            <<<SQL
+            "foo"."bar" in (#1, #2)
+            SQL,
+            $expression
+        );
+    }
+
+    public function testIsInExpression(): void
+    {
+        $expression = new Where();
+        $expression->isIn('foo.bar', (new Select('some_table'))->column('some_column'));
+
+        self::assertSameSql(
+            <<<SQL
+            "foo"."bar" in (select "some_column" from "some_table")
+            SQL,
+            $expression
+        );
+    }
+
+    public function testIsNotIn(): void
+    {
+        $expression = new Where();
+        $expression->isNotIn('foo.bar', ['fizz', 'buzz']);
+
+        self::assertSameSql(
+            <<<SQL
+            "foo"."bar" not in (#1, #2)
+            SQL,
+            $expression
+        );
+    }
+
+    public function testIsNotInRow(): void
+    {
+        $expression = new Where();
+        $expression->isNotIn('foo.bar', new Row(['fizz', 'buzz']));
+
+        self::assertSameSql(
+            <<<SQL
+            "foo"."bar" not in (#1, #2)
+            SQL,
+            $expression
+        );
+    }
+
+    public function testIsNotInExpression(): void
+    {
+        $expression = new Where();
+        $expression->isNotIn('foo.bar', (new Select('some_table'))->column('some_column'));
+
+        self::assertSameSql(
+            <<<SQL
+            "foo"."bar" not in (select "some_column" from "some_table")
             SQL,
             $expression
         );
