@@ -22,6 +22,8 @@ use MakinaCorpus\QueryBuilder\Expression\Identifier;
 use MakinaCorpus\QueryBuilder\Expression\IfThen;
 use MakinaCorpus\QueryBuilder\Expression\Not;
 use MakinaCorpus\QueryBuilder\Expression\NullValue;
+use MakinaCorpus\QueryBuilder\Expression\Random;
+use MakinaCorpus\QueryBuilder\Expression\RandomInt;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\Expression\Row;
 use MakinaCorpus\QueryBuilder\Expression\SimilarTo;
@@ -137,6 +139,8 @@ class Writer
                 Raw::class => $this->formatRaw($expression, $context),
                 Row::class => $this->formatRow($expression, $context),
                 SimilarTo::class => $this->formatSimilarTo($expression, $context),
+                Random::class => $this->formatRandom($expression, $context),
+                RandomInt::class => $this->formatRandomInt($expression, $context),
                 TableName:: class => $this->formatIdentifier($expression, $context),
                 Value::class => $this->formatValue($expression, $context),
                 Where::class => $this->formatWhere($expression, $context),
@@ -624,6 +628,41 @@ class Writer
     protected function formatIfThen(IfThen $expression, WriterContext $context): string
     {
         return $this->formatCaseWhen($expression->toCaseWhen(), $context);
+    }
+
+    /**
+     * Format a function call.
+     *
+     * This is non standard SQL, and returns the PostgreSQL variant.
+     */
+    protected function formatRandom(Random $expression, WriterContext $context): string
+    {
+        return 'random()';
+    }
+
+    /**
+     * Format a function call.
+     */
+    protected function formatRandomInt(RandomInt $expression, WriterContext $context): string
+    {
+        $min = $expression->getMin();
+        $max = $expression->getMax();
+
+        if ($max < $min) {
+            $max = $min;
+            $min = $expression->getMax();
+        }
+
+        return $this->formatCast(
+            new Cast(
+                new Raw(
+                    '? * (? - ? + 1) + ?',
+                    [new Random(), $max, $min, $min]
+                ),
+                'int',
+            ),
+            $context,
+        );
     }
 
     /**

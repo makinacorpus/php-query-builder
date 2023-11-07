@@ -6,6 +6,7 @@ namespace MakinaCorpus\QueryBuilder\Platform\Writer;
 
 use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
+use MakinaCorpus\QueryBuilder\Expression\Random;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\Query\Delete;
 use MakinaCorpus\QueryBuilder\Query\Merge;
@@ -228,6 +229,16 @@ class MySQLWriter extends Writer
         }
 
         return 'CAST(' . $expressionString . ' AS ' . $type . ')';
+    }
+
+    /**
+     * Format a function call.
+     *
+     * This is non standard SQL, and returns the PostgreSQL variant.
+     */
+    protected function formatRandom(Random $expression, WriterContext $context): string
+    {
+        return 'rand()';
     }
 
     /**
