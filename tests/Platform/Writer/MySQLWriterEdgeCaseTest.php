@@ -32,6 +32,16 @@ class MySQLWriterEdgeCaseTest extends UnitTestCase
         );
     }
 
+    public function testCastText(): void
+    {
+        self::assertSameSql(
+            <<<SQL
+            cast(foo() as char)
+            SQL,
+            new Cast(new Raw('foo()'), 'text'),
+        );
+    }
+
     public function testCastAnythingArray(): void
     {
         self::assertSameSql(

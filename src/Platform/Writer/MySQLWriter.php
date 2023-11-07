@@ -203,6 +203,8 @@ class MySQLWriter extends Writer
      * MySQL and types, seriously. Be conservative and fix user basic
      * errors, but do not attempt to do too much magic and let unknown
      * types pass.
+     *
+     * @see https://dev.mysql.com/doc/refman/8.2/en/cast-functions.html#function_cast
      */
     protected function doFormatCastExpression(string $expressionString, string $type, WriterContext $context): string
     {
@@ -216,7 +218,9 @@ class MySQLWriter extends Writer
         // Do not use "unsigned" on behalf of the user, or it would proceed
         // accidentally to transparent data alteration.
         if (\in_array(\strtolower($type), ['int', 'integer', 'int4', 'int8', 'tinyint', 'smallint', 'bigint', 'serial', 'bigserial'])) {
-            $type = 'signed';
+            $type = 'SIGNED';
+        } else if (\in_array(\strtolower($type), ['text', 'string', 'varchar'])) {
+            $type = 'CHAR';
         }
 
         if ($isArray) {
