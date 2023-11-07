@@ -17,6 +17,7 @@ use MakinaCorpus\QueryBuilder\Expression\Cast;
 use MakinaCorpus\QueryBuilder\Expression\ColumnName;
 use MakinaCorpus\QueryBuilder\Expression\Comparison;
 use MakinaCorpus\QueryBuilder\Expression\ConstantTable;
+use MakinaCorpus\QueryBuilder\Expression\FunctionCall;
 use MakinaCorpus\QueryBuilder\Expression\Identifier;
 use MakinaCorpus\QueryBuilder\Expression\IfThen;
 use MakinaCorpus\QueryBuilder\Expression\Not;
@@ -117,6 +118,8 @@ class Writer
             } else {
                 throw new QueryBuilderError(\sprintf("Unexpected expression object type: %s", \get_class($expression)));
             }
+        } else if ($expression instanceof FunctionCall) {
+            $ret = $this->formatFunctionCall($expression, $context);
         } else {
             $ret = match (\get_class($expression)) {
                 Aliased::class => $this->formatAliased($expression, $context),
@@ -588,6 +591,28 @@ class Writer
         }
 
         return 'case ' . $output . ' else ' . $this->format($else, $context);
+    }
+
+    /**
+     * Format a function call.
+     */
+    protected function formatFunctionCall(FunctionCall $expression, WriterContext $context): string
+    {
+        $name = $expression->getName();
+
+        if (!\ctype_alnum($name)) {
+            $name = $this->escaper->escapeIdentifier($name);
+        }
+
+        $inner = '';
+        foreach ($expression->getArguments() as $argument) {
+            if ($inner) {
+                $inner .= ', ';
+            }
+            $inner .= $this->format($argument, $context);
+        }
+
+        return $name . '(' . $inner . ')';
     }
 
     /**
