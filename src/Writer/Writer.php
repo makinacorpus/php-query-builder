@@ -12,11 +12,13 @@ use MakinaCorpus\QueryBuilder\Escaper\Escaper;
 use MakinaCorpus\QueryBuilder\Expression\Aliased;
 use MakinaCorpus\QueryBuilder\Expression\ArrayValue;
 use MakinaCorpus\QueryBuilder\Expression\Between;
+use MakinaCorpus\QueryBuilder\Expression\CaseWhen;
 use MakinaCorpus\QueryBuilder\Expression\Cast;
 use MakinaCorpus\QueryBuilder\Expression\ColumnName;
 use MakinaCorpus\QueryBuilder\Expression\Comparison;
 use MakinaCorpus\QueryBuilder\Expression\ConstantTable;
 use MakinaCorpus\QueryBuilder\Expression\Identifier;
+use MakinaCorpus\QueryBuilder\Expression\IfThen;
 use MakinaCorpus\QueryBuilder\Expression\Not;
 use MakinaCorpus\QueryBuilder\Expression\NullValue;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
@@ -120,11 +122,13 @@ class Writer
                 Aliased::class => $this->formatAliased($expression, $context),
                 ArrayValue::class => $this->formatArrayValue($expression, $context),
                 Between::class => $this->formatBetween($expression, $context),
+                CaseWhen::class => $this->formatCaseWhen($expression, $context),
                 Cast::class => $this->formatCast($expression, $context),
                 ColumnName::class => $this->formatIdentifier($expression, $context),
                 ConstantTable::class => $this->formatConstantTable($expression, $context),
                 Comparison::class => $this->formatComparison($expression, $context),
                 Identifier::class => $this->formatIdentifier($expression, $context),
+                IfThen::class => $this->formatIfThen($expression, $context),
                 Not::class => $this->formatNot($expression, $context),
                 NullValue::class => $this->formatNullValue($expression, $context),
                 Raw::class => $this->formatRaw($expression, $context),
@@ -563,6 +567,38 @@ class Writer
                 $columnNames
             )
         );
+    }
+
+    /**
+     * Format a CASE WHEN .. THEN .. ELSE .. statement.
+     */
+    protected function formatCaseWhen(CaseWhen $expression, WriterContext $context): string
+    {
+        $output = '';
+
+        foreach ($expression->getCases() as $case) {
+            \assert($case instanceof IfThen);
+            $output .= "\n when " . $this->format($case->getCondition(), $context) . ' then ' . $this->format($case->getThen(), $context);
+        }
+
+        $else = $expression->getElse();
+
+        if (!$output) {
+            return $this->format($else, $context);
+        }
+
+        return 'case ' . $output . ' else ' . $this->format($else, $context);
+    }
+
+    /**
+     * Format an IF .. THEN .. ELSE .. statement.
+     *
+     * Default implementation is formatting as a CASE .. WHEN expression,
+     * it works on all officially supported RDBMS.
+     */
+    protected function formatIfThen(IfThen $expression, WriterContext $context): string
+    {
+        return $this->formatCaseWhen($expression->toCaseWhen(), $context);
     }
 
     /**
