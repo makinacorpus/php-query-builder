@@ -14,6 +14,7 @@ use MakinaCorpus\QueryBuilder\Query\Partial\FromClauseTrait;
 use MakinaCorpus\QueryBuilder\Query\Partial\HavingClauseTrait;
 use MakinaCorpus\QueryBuilder\Query\Partial\SelectColumn;
 use MakinaCorpus\QueryBuilder\Query\Partial\WhereClauseTrait;
+use MakinaCorpus\QueryBuilder\Expression\Random;
 
 /**
  * Represents a SELECT query.
@@ -261,6 +262,21 @@ class Select extends AbstractQuery implements TableExpression
     public function orderBy(mixed $column, int $order = Query::ORDER_ASC, int $null = Query::NULL_IGNORE): static
     {
         $this->orders[] = [ExpressionHelper::column($column), $order, $null];
+
+        return $this;
+    }
+
+    /**
+     * Add an order by random clause.
+     *
+     * @param int $order
+     *   One of the Query::ORDER_* constants.
+     * @param int $null
+     *   Null behavior, nulls first, nulls last, or leave the backend default.
+     */
+    public function orderByRandom(int $order = Query::ORDER_ASC, int $null = Query::NULL_IGNORE): static
+    {
+        $this->orders[] = [new Random(), $order, $null];
 
         return $this;
     }
