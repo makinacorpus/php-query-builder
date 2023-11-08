@@ -35,13 +35,13 @@ abstract class PdoTestCase extends FunctionalTestCase
     private function createPdoConnectionMySQL(array $params): \PDO
     {
         $dsn = [];
-        if ($value = $params['host']) {
+        if ($value = ($params['host'] ?? null)) {
             $dsn[] = 'host=' . $value;
         }
-        if ($value = $params['port']) {
+        if ($value = ($params['port'] ?? null)) {
             $dsn[] = 'port=' . $value;
         }
-        if ($value = $params['dbname']) {
+        if ($value = ($params['dbname'] ?? null)) {
             $dsn[] = 'dbname=' . $value;
         }
 
@@ -51,13 +51,13 @@ abstract class PdoTestCase extends FunctionalTestCase
     private function createPdoConnectionPostgreSQL(array $params): \PDO
     {
         $dsn = [];
-        if ($value = $params['host']) {
+        if ($value = ($params['host'] ?? null)) {
             $dsn[] = 'host=' . $value;
         }
-        if ($value = $params['port']) {
+        if ($value = ($params['port'] ?? null)) {
             $dsn[] = 'port=' . $value;
         }
-        if ($value = $params['dbname']) {
+        if ($value = ($params['dbname'] ?? null)) {
             $dsn[] = 'dbname=' . $value;
         }
 
