@@ -661,6 +661,10 @@ class Writer
         // leave it here. In case of any problem with it, please file an
         // issue, and this code will move into the PostgreSQL specific
         // implementation.
+        // I have no certitude here, but it may be because PDO issues real
+        // PREPARE statements, at some point, and that PostgreSQL optimises
+        // the query prior to having the real parameter values, which means
+        // that it doesn't know the user input will be an integer.
         return $this->formatRaw(
             new Raw(
                 'FLOOR(? * (? - ? + 1) + ?)',
