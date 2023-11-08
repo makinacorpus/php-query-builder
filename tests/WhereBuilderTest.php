@@ -125,6 +125,19 @@ class WhereBuilderTest extends UnitTestCase
         );
     }
 
+    public function testIsLikeExpression(): void
+    {
+        $expression = new Where();
+        $expression->isLike('foo.bar', new Raw('foo()'));
+
+        self::assertSameSql(
+            <<<SQL
+            "foo"."bar" like foo()
+            SQL,
+            $expression
+        );
+    }
+
     public function testIsNotLike(): void
     {
         $expression = new Where();
@@ -172,6 +185,19 @@ class WhereBuilderTest extends UnitTestCase
         self::assertSameSql(
             <<<SQL
             "foo"."bar" similar to 'coucou%'
+            SQL,
+            $expression
+        );
+    }
+
+    public function testIsSimilarToExpression(): void
+    {
+        $expression = new Where();
+        $expression->isSimilarTo('foo.bar', new Raw('foo()'));
+
+        self::assertSameSql(
+            <<<SQL
+            "foo"."bar" similar to foo()
             SQL,
             $expression
         );

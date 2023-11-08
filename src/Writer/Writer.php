@@ -8,6 +8,7 @@ use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\SqlString;
 use MakinaCorpus\QueryBuilder\Where;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
+use MakinaCorpus\QueryBuilder\Error\UnsupportedExpressionError;
 use MakinaCorpus\QueryBuilder\Escaper\Escaper;
 use MakinaCorpus\QueryBuilder\Expression\Aliased;
 use MakinaCorpus\QueryBuilder\Expression\ArrayValue;
@@ -20,13 +21,14 @@ use MakinaCorpus\QueryBuilder\Expression\ConstantTable;
 use MakinaCorpus\QueryBuilder\Expression\FunctionCall;
 use MakinaCorpus\QueryBuilder\Expression\Identifier;
 use MakinaCorpus\QueryBuilder\Expression\IfThen;
+use MakinaCorpus\QueryBuilder\Expression\LikePattern;
 use MakinaCorpus\QueryBuilder\Expression\Not;
 use MakinaCorpus\QueryBuilder\Expression\NullValue;
 use MakinaCorpus\QueryBuilder\Expression\Random;
 use MakinaCorpus\QueryBuilder\Expression\RandomInt;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\Expression\Row;
-use MakinaCorpus\QueryBuilder\Expression\SimilarTo;
+use MakinaCorpus\QueryBuilder\Expression\SimilarToPattern;
 use MakinaCorpus\QueryBuilder\Expression\TableName;
 use MakinaCorpus\QueryBuilder\Expression\Value;
 use MakinaCorpus\QueryBuilder\Expression\WithAlias;
@@ -118,34 +120,43 @@ class Writer
             } else if ($expression instanceof Update) {
                 $ret = $this->formatUpdate($expression, $context);
             } else {
-                throw new QueryBuilderError(\sprintf("Unexpected expression object type: %s", \get_class($expression)));
+                throw new UnsupportedExpressionError(\sprintf("Unexpected expression object type: %s", \get_class($expression)));
             }
-        } else if ($expression instanceof FunctionCall) {
-            $ret = $this->formatFunctionCall($expression, $context);
         } else {
-            $ret = match (\get_class($expression)) {
-                Aliased::class => $this->formatAliased($expression, $context),
-                ArrayValue::class => $this->formatArrayValue($expression, $context),
-                Between::class => $this->formatBetween($expression, $context),
-                CaseWhen::class => $this->formatCaseWhen($expression, $context),
-                Cast::class => $this->formatCast($expression, $context),
-                ColumnName::class => $this->formatIdentifier($expression, $context),
-                ConstantTable::class => $this->formatConstantTable($expression, $context),
-                Comparison::class => $this->formatComparison($expression, $context),
-                Identifier::class => $this->formatIdentifier($expression, $context),
-                IfThen::class => $this->formatIfThen($expression, $context),
-                Not::class => $this->formatNot($expression, $context),
-                NullValue::class => $this->formatNullValue($expression, $context),
-                Raw::class => $this->formatRaw($expression, $context),
-                Row::class => $this->formatRow($expression, $context),
-                SimilarTo::class => $this->formatSimilarTo($expression, $context),
-                Random::class => $this->formatRandom($expression, $context),
-                RandomInt::class => $this->formatRandomInt($expression, $context),
-                TableName:: class => $this->formatIdentifier($expression, $context),
-                Value::class => $this->formatValue($expression, $context),
-                Where::class => $this->formatWhere($expression, $context),
-                default => throw new QueryBuilderError(\sprintf("Unexpected expression object type: %s", \get_class($expression))),
-            };
+            try {
+                $ret = match (\get_class($expression)) {
+                    Aliased::class => $this->formatAliased($expression, $context),
+                    ArrayValue::class => $this->formatArrayValue($expression, $context),
+                    Between::class => $this->formatBetween($expression, $context),
+                    CaseWhen::class => $this->formatCaseWhen($expression, $context),
+                    Cast::class => $this->formatCast($expression, $context),
+                    ColumnName::class => $this->formatIdentifier($expression, $context),
+                    ConstantTable::class => $this->formatConstantTable($expression, $context),
+                    Comparison::class => $this->formatComparison($expression, $context),
+                    Identifier::class => $this->formatIdentifier($expression, $context),
+                    IfThen::class => $this->formatIfThen($expression, $context),
+                    Not::class => $this->formatNot($expression, $context),
+                    NullValue::class => $this->formatNullValue($expression, $context),
+                    Raw::class => $this->formatRaw($expression, $context),
+                    Row::class => $this->formatRow($expression, $context),
+                    Random::class => $this->formatRandom($expression, $context),
+                    RandomInt::class => $this->formatRandomInt($expression, $context),
+                    LikePattern::class => $this->formatLikePattern($expression, $context),
+                    SimilarToPattern::class => $this->formatSimilarToPattern($expression, $context),
+                    TableName:: class => $this->formatIdentifier($expression, $context),
+                    Value::class => $this->formatValue($expression, $context),
+                    Where::class => $this->formatWhere($expression, $context),
+                    default => throw new UnsupportedExpressionError(\sprintf("Unexpected expression object type: %s", \get_class($expression))),
+                };
+            } catch (UnsupportedExpressionError $e) {
+                if ($expression instanceof FunctionCall) {
+                    $ret = $this->formatFunctionCall($expression, $context);
+                } else if ($expression instanceof Comparison) {
+                    $ret = $this->formatComparison($expression, $context);
+                } else {
+                    throw $e;
+                }
+            }
         }
 
         // Working with Aliased special case, we need to write parenthesis
@@ -1195,26 +1206,33 @@ class Writer
     }
 
     /**
-     * Format like expression.
+     * Format LIKE pattern expression.
      */
-    protected function formatSimilarTo(SimilarTo $expression, WriterContext $context): string
+    protected function formatLikePattern(LikePattern $expression, WriterContext $context): string
     {
-        $isRegex = $expression->isRegex();
         $escapedValue = null;
-
         if ($expression->hasValue()) {
-            if ($isRegex) {
-                $escapedValue = $this->escaper->escapeSimilarTo($expression->getUnsafeValue());
-            } else {
-                $escapedValue = $this->escaper->escapeLike($expression->getUnsafeValue());
-            }
+            $escapedValue = $this->escaper->escapeLike($expression->getUnsafeValue());
         }
 
         $pattern = $expression->getPattern($escapedValue);
 
-        $operator = $isRegex ? 'similar to' : ($expression->isCaseSensitive() ? 'like' : 'ilike');
+        return $this->escaper->escapeLiteral($pattern);
+    }
 
-        return $this->format($expression->getColumn(), $context) . ' ' . $operator . ' ' . $this->escaper->escapeLiteral($pattern);
+    /**
+     * Format SIMILAR TO pattern expression.
+     */
+    protected function formatSimilarToPattern(SimilarToPattern $expression, WriterContext $context): string
+    {
+        $escapedValue = null;
+        if ($expression->hasValue()) {
+            $escapedValue = $this->escaper->escapeSimilarTo($expression->getUnsafeValue());
+        }
+
+        $pattern = $expression->getPattern($escapedValue);
+
+        return $this->escaper->escapeLiteral($pattern);
     }
 
     /**

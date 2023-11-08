@@ -7,8 +7,11 @@ namespace MakinaCorpus\QueryBuilder;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Expression\Between;
 use MakinaCorpus\QueryBuilder\Expression\Comparison;
+use MakinaCorpus\QueryBuilder\Expression\Like;
+use MakinaCorpus\QueryBuilder\Expression\LikePattern;
 use MakinaCorpus\QueryBuilder\Expression\Row;
 use MakinaCorpus\QueryBuilder\Expression\SimilarTo;
+use MakinaCorpus\QueryBuilder\Expression\SimilarToPattern;
 
 /**
  * Where expressions factory methods.
@@ -191,9 +194,11 @@ trait WhereBuilder
     /**
      * 'like' condition.
      */
-    public function isLike(callable|string|Expression $column, string $pattern, ?string $value = null, ?string $wildcard = null): static
+    public function isLike(callable|string|Expression $column, string|Expression $pattern, ?string $value = null, ?string $wildcard = null): static
     {
-        $this->getInstance()->with(new SimilarTo($column, $pattern, $value, $wildcard, false, false));
+        $pattern = \is_string($pattern) ? new LikePattern($pattern, $value, $wildcard) : $pattern;
+
+        $this->getInstance()->with(new Like($column, $pattern, true));
 
         return $this;
     }
@@ -210,9 +215,11 @@ trait WhereBuilder
      * @param ?string $wildcard
      *   Wilcard if different, default is '?'.
      */
-    public function isNotLike(callable|string|Expression $column, string $pattern, ?string $value = null, ?string $wildcard = null): static
+    public function isNotLike(callable|string|Expression $column, string|Expression $pattern, ?string $value = null, ?string $wildcard = null): static
     {
-        $this->getInstance()->notWith(new SimilarTo($column, $pattern, $value, $wildcard, false, false));
+        $pattern = \is_string($pattern) ? new LikePattern($pattern, $value, $wildcard) : $pattern;
+
+        $this->getInstance()->notWith(new Like($column, $pattern, true));
 
         return $this;
     }
@@ -229,9 +236,11 @@ trait WhereBuilder
      * @param ?string $wildcard
      *   Wilcard if different, default is '?'.
      */
-    public function isLikeInsensitive(callable|string|Expression $column, string $pattern, ?string $value = null, ?string $wildcard = null): static
+    public function isLikeInsensitive(callable|string|Expression $column, string|Expression $pattern, ?string $value = null, ?string $wildcard = null): static
     {
-        $this->getInstance()->with(new SimilarTo($column, $pattern, $value, $wildcard, false, true));
+        $pattern = \is_string($pattern) ? new LikePattern($pattern, $value, $wildcard) : $pattern;
+
+        $this->getInstance()->with(new Like($column, $pattern, false));
 
         return $this;
     }
@@ -239,9 +248,11 @@ trait WhereBuilder
     /**
      * 'not ilike' condition.
      */
-    public function isNotLikeInsensitive(callable|string|Expression $column, string $pattern, ?string $value = null, ?string $wildcard = null): static
+    public function isNotLikeInsensitive(callable|string|Expression $column, string|Expression $pattern, ?string $value = null, ?string $wildcard = null): static
     {
-        $this->getInstance()->notWith(new SimilarTo($column, $pattern, $value, $wildcard, false, true));
+        $pattern = \is_string($pattern) ? new LikePattern($pattern, $value, $wildcard) : $pattern;
+
+        $this->getInstance()->notWith(new Like($column, $pattern, false));
 
         return $this;
     }
@@ -259,9 +270,11 @@ trait WhereBuilder
      * @param ?string $wildcard
      *   Wilcard if different, default is '?'.
      */
-    public function isSimilarTo(callable|string|Expression $column, string $pattern, ?string $value = null, ?string $wildcard = null): static
+    public function isSimilarTo(callable|string|Expression $column, string|Expression $pattern, ?string $value = null, ?string $wildcard = null): static
     {
-        $this->getInstance()->with(new SimilarTo($column, $pattern, $value, $wildcard, true, true));
+        $pattern = \is_string($pattern) ? new SimilarToPattern($pattern, $value, $wildcard) : $pattern;
+
+        $this->getInstance()->with(new SimilarTo($column, $pattern));
 
         return $this;
     }
@@ -269,9 +282,11 @@ trait WhereBuilder
     /**
      * 'not similar to' condition, same as 'not like' but with regex.
      */
-    public function isNotSimilarTo(callable|string|Expression $column, string $pattern, ?string $value = null, ?string $wildcard = null): static
+    public function isNotSimilarTo(callable|string|Expression $column, string|Expression $pattern, ?string $value = null, ?string $wildcard = null): static
     {
-        $this->getInstance()->notWith(new SimilarTo($column, $pattern, $value, $wildcard, true, true));
+        $pattern = \is_string($pattern) ? new SimilarToPattern($pattern, $value, $wildcard) : $pattern;
+
+        $this->getInstance()->notWith(new SimilarTo($column, $pattern));
 
         return $this;
     }
