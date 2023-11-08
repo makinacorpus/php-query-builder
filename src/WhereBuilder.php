@@ -23,6 +23,7 @@ use MakinaCorpus\QueryBuilder\Expression\SimilarTo;
  */
 trait WhereBuilder
 {
+    /*
     const ARRAY_CONTAIN = '@>';
     const ARRAY_CONTAINED_BY = '<@';
     const ARRAY_EQUAL = '=';
@@ -32,7 +33,7 @@ trait WhereBuilder
     const ARRAY_LESS_OR_EQUAL = '<=';
     const ARRAY_NOT_EQUAL = '<>';
     const ARRAY_OVERLAP = '&&';
-    /* Those are NOT comparison operators. */
+    /* Those are NOT comparison operators. * /
     const ARRAY_CONCAT = '||'; // Most interesting one.
 
     const JSONB_CONTAIN = '@>'; // JSON <@ JSON
@@ -40,7 +41,7 @@ trait WhereBuilder
     const JSONB_CONTAIN_KEY_ALL = '?&'; // JSON ?& text[], eg. array['a', 'b']
     const JSONB_CONTAIN_KEY_ANY = '?|'; // JSON ?| text[], eg. array['a', 'b']
     const JSONB_CONTAINED_BY = '<@'; // JSON @> JSON
-    /* Those are NOT comparison operators. */
+    /* Those are NOT comparison operators. * /
     const JSON_ARRAY_ELEMENT_AT = '->>'; // JSON ->> int
     const JSON_OBJECT_ELEMENT_AT = '->'; // JSON -> int|text, negative int count from the end.
     const JSON_PATH = '#>'; // JSON #> PATH, eg. '{a, b}'
@@ -48,6 +49,7 @@ trait WhereBuilder
     const JSONB_CONCAT = '||'; // JSON || JSON
     const JSONB_DELETE = '-'; // JSON - int|text, negative int count from the end.
     const JSONB_DELETE_PATH = '#-'; // JSON #- PATH, eg. '{a, b}'
+     */
 
     /**
      * Allows using this trait on other components that the Where class.
