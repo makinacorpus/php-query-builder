@@ -31,7 +31,7 @@ class ConcatTest extends UnitTestCase
 
         self::assertSameSql(
             <<<SQL
-            concat(#1, #2, bar())
+            #1 || #2 || bar()
             SQL,
             $expression
         );

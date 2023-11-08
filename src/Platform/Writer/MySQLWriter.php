@@ -6,6 +6,7 @@ namespace MakinaCorpus\QueryBuilder\Platform\Writer;
 
 use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
+use MakinaCorpus\QueryBuilder\Expression\Concat;
 use MakinaCorpus\QueryBuilder\Expression\Random;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\Query\Delete;
@@ -229,6 +230,22 @@ class MySQLWriter extends Writer
         }
 
         return 'CAST(' . $expressionString . ' AS ' . $type . ')';
+    }
+
+    /**
+     * Format a function call.
+     */
+    protected function formatConcat(Concat $expression, WriterContext $context): string
+    {
+        $output = '';
+        foreach ($expression->getArguments() as $argument) {
+            if ($output) {
+                $output .= ', ';
+            }
+            $output .= $this->format($argument, $context);
+        }
+
+        return 'CONCAT(' . $output . ')';
     }
 
     /**

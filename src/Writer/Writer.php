@@ -17,6 +17,7 @@ use MakinaCorpus\QueryBuilder\Expression\CaseWhen;
 use MakinaCorpus\QueryBuilder\Expression\Cast;
 use MakinaCorpus\QueryBuilder\Expression\ColumnName;
 use MakinaCorpus\QueryBuilder\Expression\Comparison;
+use MakinaCorpus\QueryBuilder\Expression\Concat;
 use MakinaCorpus\QueryBuilder\Expression\ConstantTable;
 use MakinaCorpus\QueryBuilder\Expression\FunctionCall;
 use MakinaCorpus\QueryBuilder\Expression\Identifier;
@@ -131,6 +132,7 @@ class Writer
                     CaseWhen::class => $this->formatCaseWhen($expression, $context),
                     Cast::class => $this->formatCast($expression, $context),
                     ColumnName::class => $this->formatIdentifier($expression, $context),
+                    Concat::class => $this->formatConcat($expression, $context),
                     ConstantTable::class => $this->formatConstantTable($expression, $context),
                     Comparison::class => $this->formatComparison($expression, $context),
                     Identifier::class => $this->formatIdentifier($expression, $context),
@@ -628,6 +630,22 @@ class Writer
         }
 
         return $name . '(' . $inner . ')';
+    }
+
+    /**
+     * Format a function call.
+     */
+    protected function formatConcat(Concat $expression, WriterContext $context): string
+    {
+        $output = '';
+        foreach ($expression->getArguments() as $argument) {
+            if ($output) {
+                $output .= ' || ';
+            }
+            $output .= $this->format($argument, $context);
+        }
+
+        return $output;
     }
 
     /**
