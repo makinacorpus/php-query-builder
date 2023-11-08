@@ -653,13 +653,18 @@ class Writer
             $min = $expression->getMax();
         }
 
-        return $this->formatCast(
-            new Cast(
-                new Raw(
-                    '? * (? - ? + 1) + ?',
-                    [new Random(), $max, $min, $min]
-                ),
-                'int',
+        // This is weird one, PostgreSQL when used over PDO or doctrine/dbal
+        // is unable to discover the second parameter type, which makes the
+        // "-" operator being undetermined, because it exists for more than
+        // one type.
+        // Since CAST() is standard SQL and supported by everyone, we will
+        // leave it here. In case of any problem with it, please file an
+        // issue, and this code will move into the PostgreSQL specific
+        // implementation.
+        return $this->formatRaw(
+            new Raw(
+                'FLOOR(? * (? - ? + 1) + ?)',
+                [new Random(), new Cast($max, 'int'), $min, $min]
             ),
             $context,
         );

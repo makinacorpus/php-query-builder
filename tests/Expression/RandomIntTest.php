@@ -32,7 +32,7 @@ class RandomIntTest extends UnitTestCase
 
         self::assertSameSql(
             <<<SQL
-            cast(random() * (#1 - #2 + 1) + #3 as int)
+            floor(random() * (cast(#1 as int) - #2 + 1) + #3)
             SQL,
             $prepared
         );
@@ -51,7 +51,7 @@ class RandomIntTest extends UnitTestCase
 
         self::assertSameSql(
             <<<SQL
-            cast(random() * (#1 - #2 + 1) + #3 as int)
+            floor(random() * (cast(#1 as int) - #2 + 1) + #3)
             SQL,
             $prepared
         );
