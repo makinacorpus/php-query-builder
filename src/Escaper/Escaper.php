@@ -43,7 +43,12 @@ interface Escaper
     /**
      * Escape like (string).
      */
-    public function escapeLike(string $string, ?string $reservedChars = null): string;
+    public function escapeLike(string $string): string;
+
+    /**
+     * Escape similar to (string).
+     */
+    public function escapeSimilarTo(string $string): string;
 
     /**
      * Get backend escape sequences.

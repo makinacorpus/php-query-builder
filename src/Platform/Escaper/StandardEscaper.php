@@ -82,11 +82,35 @@ class StandardEscaper implements Escaper
     }
 
     /**
+     * Get LIKE expression reserved characters.
+     */
+    protected function getReservedCharsLike(): string
+    {
+        return '\\%_';
+    }
+
+    /**
      * {@inheritdoc}
      */
-    public function escapeLike(string $string, ?string $reservedChars = null): string
+    public function escapeLike(string $string): string
     {
-        return \addcslashes($string, $reservedChars ?? '\%_');
+        return \addcslashes($string, $this->getReservedCharsLike());
+    }
+
+    /**
+     * Get LIKE expression reserved characters.
+     */
+    protected function getReservedCharsSimilarTo(): string
+    {
+        return '\\%_|*+?{}()[]';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function escapeSimilarto(string $string): string
+    {
+        return \addcslashes($string, $this->getReservedCharsSimilarTo());
     }
 
     /**

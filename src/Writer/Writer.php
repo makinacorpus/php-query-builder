@@ -1199,18 +1199,20 @@ class Writer
      */
     protected function formatSimilarTo(SimilarTo $expression, WriterContext $context): string
     {
+        $isRegex = $expression->isRegex();
+        $escapedValue = null;
+
         if ($expression->hasValue()) {
-            $pattern = $expression->getPattern(
-                $this->escaper->escapeLike(
-                    $expression->getUnsafeValue(),
-                    $expression->getReservedChars()
-                )
-            );
-        } else {
-            $pattern = $expression->getPattern();
+            if ($isRegex) {
+                $escapedValue = $this->escaper->escapeSimilarTo($expression->getUnsafeValue());
+            } else {
+                $escapedValue = $this->escaper->escapeLike($expression->getUnsafeValue());
+            }
         }
 
-        $operator = $expression->isRegex() ? 'similar to' : ($expression->isCaseSensitive() ? 'like' : 'ilike');
+        $pattern = $expression->getPattern($escapedValue);
+
+        $operator = $isRegex ? 'similar to' : ($expression->isCaseSensitive() ? 'like' : 'ilike');
 
         return $this->format($expression->getColumn(), $context) . ' ' . $operator . ' ' . $this->escaper->escapeLiteral($pattern);
     }

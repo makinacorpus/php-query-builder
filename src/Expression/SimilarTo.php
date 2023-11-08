@@ -13,9 +13,6 @@ use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
  */
 class SimilarTo implements Expression
 {
-    const LIKE_RESERVED_CHARS = '\\%_';
-    const SIMILAR_TO_RESERVED_CHARS = '\\%_|*+?{}()[]';
-
     private Expression $column;
 
     /**
@@ -63,11 +60,6 @@ class SimilarTo implements Expression
     public function returns(): bool
     {
         return true;
-    }
-
-    public function getReservedChars(): string
-    {
-        return $this->regex ? self::SIMILAR_TO_RESERVED_CHARS : self::LIKE_RESERVED_CHARS;
     }
 
     public function getColumn(): Expression
