@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Query;
 
+use MakinaCorpus\QueryBuilder\ExpressionFactory;
 use MakinaCorpus\QueryBuilder\OptionsBag;
 use MakinaCorpus\QueryBuilder\Query\Partial\AliasHolderTrait;
 use MakinaCorpus\QueryBuilder\Query\Partial\WithClauseTrait;
@@ -15,6 +16,7 @@ abstract class AbstractQuery implements Query
 
     private ?string $identifier = null;
     private ?OptionsBag $options = null;
+    private ?ExpressionFactory $expressionFactory = null;
 
     /**
      * {@inheritdoc}
@@ -22,6 +24,14 @@ abstract class AbstractQuery implements Query
     public function returns(): bool
     {
         return $this->willReturnRows();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function expression(): ExpressionFactory
+    {
+        return $this->expressionFactory ??= new ExpressionFactory();
     }
 
     /**

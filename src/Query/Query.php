@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Query;
 
 use MakinaCorpus\QueryBuilder\Expression;
+use MakinaCorpus\QueryBuilder\ExpressionFactory;
 use MakinaCorpus\QueryBuilder\OptionsBag;
 
 interface Query extends Expression
@@ -22,6 +23,11 @@ interface Query extends Expression
     const ORDER_DESC = 2;
     const CONFLICT_IGNORE = 1;
     const CONFLICT_UPDATE = 2;
+
+    /**
+     * Get expression builder instance.
+     */
+    public function expression(): ExpressionFactory;
 
     /**
      * Get query identifier.
