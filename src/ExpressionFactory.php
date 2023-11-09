@@ -184,7 +184,7 @@ class ExpressionFactory
      */
     public static function randomInt(int $max, int $min = 0): RandomInt
     {
-        return new RandomInt();
+        return new RandomInt($max, $min);
     }
 
     /**
