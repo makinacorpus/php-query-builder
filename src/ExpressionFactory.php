@@ -83,7 +83,7 @@ class ExpressionFactory
      *   Set this to true if your column name contains any `.` and you don't
      *   have a table name.
      */
-    public static function column(string $column, string $table, bool $noAutomaticNamespace = false): ColumnName
+    public static function column(string $column, ?string $table = null, bool $noAutomaticNamespace = false): ColumnName
     {
         return new ColumnName($column, $table, $noAutomaticNamespace);
     }
@@ -233,5 +233,21 @@ class ExpressionFactory
     public static function value(mixed $value, ?string $type = null): Value
     {
         return new Value($value, $type);
+    }
+
+    /**
+     * Create a new (expr AND expr AND ...) boolean clause.
+     */
+    public static function where(?string $operator = null): Where
+    {
+        return new Where($operator ?? Where::AND);
+    }
+
+    /**
+     * Create a new (expr OR expr OR ...) boolean clause.
+     */
+    public static function whereOr(): Where
+    {
+        return self::where(Where::OR);
     }
 }
