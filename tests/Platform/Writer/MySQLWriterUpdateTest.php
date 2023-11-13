@@ -36,7 +36,7 @@ class MySQLWriterUpdateTest extends UpdateTest
             inner join "fizz"
                 on (buzz)
             set
-                "foo" = #1
+                "bar"."foo" = #1
             SQL,
             $query
         );

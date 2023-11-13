@@ -166,9 +166,13 @@ class MySQLWriter extends Writer
             throw new QueryBuilderError("cannot run an update query without any columns to update");
         }
 
+        // @todo For MySQL <8, convert WITH as JOIN statements.
+        $output[] = $this->doFormatWith($context, $query->getAllWith());
+
         // From the SQL 92 standard (which PostgreSQL does support here) the
         // FROM and JOIN must be written AFTER the SET clause. MySQL does not.
-        $output[] = 'update ' . $this->format($query->getTable(), $context);
+        $table = $query->getTable();
+        $output[] = 'update ' . $this->format($table, $context);
 
         // MySQL don't do UPDATE t1 SET [...] FROM t2 but uses the SELECT
         // syntax and just append the set after the JOIN clause.
@@ -184,11 +188,25 @@ class MySQLWriter extends Writer
         }
 
         // SET clause.
-        $output[] = 'set ' . $this->doFormatUpdateSet($context, $columns) . "\n";
+        // MySQL may UPDATE in more than one table at once, hence when you
+        // specify a column name in set, it will raise an "Column 'foo' in
+        // field list is ambiguous" when you update a column which has the
+        // same name as any other columns in JOIN'ed tables.
+        // This method will forcefully prefix all SET column names using the
+        // UPDATE'd table name.
+        if ($from || $join) {
+            $output[] = 'set ' . $this->doFormatUpdateSetWithTableName(
+                $context,
+                $table->getAlias() ?? $table->getName(),
+                $columns
+            ) . "\n";
+        } else {
+            $output[] = 'set ' . $this->doFormatUpdateSet($context, $columns) . "\n";
+        }
 
         $where = $query->getWhere();
         if (!$where->isEmpty()) {
-            $output[] = 'where ' . $this->formatWhere($context, $where);
+            $output[] = 'where ' . $this->formatWhere($where, $context);
         }
 
         $return = $query->getAllReturn();
@@ -197,6 +215,41 @@ class MySQLWriter extends Writer
         }
 
         return \implode("\n", $output);
+    }
+
+    /**
+     * Format a single set clause (update queries).
+     */
+    protected function doFormatUpdateSetWithTableNameItem(
+        WriterContext $context,
+        string $tableName,
+        string $columnName,
+        string|Expression $expression
+    ): string {
+        $columnString = $this->escaper->escapeIdentifier($tableName) . '.' . $this->escaper->escapeIdentifier($columnName);
+
+        if ($expression instanceof Expression) {
+            return $columnString . ' = ' . $this->format($expression, $context, true);
+        }
+        return $columnString . ' = ' . $this->escaper->escapeLiteral($expression);
+    }
+
+    /**
+     * Format all set clauses (update queries).
+     *
+     * @param string[]|Expression[] $columns
+     *   Keys are column names, values are strings or Expression instances
+     */
+    protected function doFormatUpdateSetWithTableName(WriterContext $context, string $tableName, array $columns): string
+    {
+        $inner = '';
+        foreach ($columns as $column => $value) {
+            if ($inner) {
+                $inner .= ",\n";
+            }
+            $inner .= $this->doFormatUpdateSetWithTableNameItem($context, $tableName, $column, $value);
+        }
+        return $inner;
     }
 
     /**
