@@ -5,15 +5,16 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Writer;
 
 use MakinaCorpus\QueryBuilder\ArgumentBag;
+use MakinaCorpus\QueryBuilder\Converter\Converter;
 
 final class WriterContext
 {
     private ArgumentBag $arguments;
     private int $currentIndex = 0;
 
-    public function __construct()
+    public function __construct(Converter $converter)
     {
-        $this->arguments = new ArgumentBag();
+        $this->arguments = new ArgumentBag($converter);
     }
 
     public function append(mixed $value, ?string $type = null): int

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder;
 
+use MakinaCorpus\QueryBuilder\Converter\Converter;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Expression\Value;
 
@@ -18,6 +19,13 @@ final class ArgumentBag
     private array $data = [];
     private array $types = [];
     private int $index = 0;
+    private ?array $converted = null;
+    private Converter $converter;
+
+    public function __construct(?Converter $converter = null)
+    {
+        $this->converter = $converter ?? new Converter();
+    }
 
     /**
      * Append the given array to this instance
@@ -42,6 +50,8 @@ final class ArgumentBag
      */
     public function add(mixed $value, ?string $type = null): int
     {
+        $this->converted = null;
+
         if ($value instanceof Value) {
             if (!$type) {
                 $type = $value->getType();
@@ -69,9 +79,28 @@ final class ArgumentBag
     }
 
     /**
-     * Get all values.
+     * Get all values converted to SQL value strings.
      */
     public function getAll(): array
+    {
+        if (null === $this->converted) {
+            $this->converted = [];
+
+            foreach ($this->data as $index => $value) {
+                $this->converted[] = $this->converter->toSql(
+                    $value,
+                    $this->getTypeAt($index)
+                );
+            }
+        }
+
+        return $this->converted;
+    }
+
+    /**
+     * Get all raw values as given by the API user.
+     */
+    public function getAllRaw(): array
     {
         return $this->data;
     }

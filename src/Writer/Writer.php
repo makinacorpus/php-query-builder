@@ -7,6 +7,7 @@ namespace MakinaCorpus\QueryBuilder\Writer;
 use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\SqlString;
 use MakinaCorpus\QueryBuilder\Where;
+use MakinaCorpus\QueryBuilder\Converter\Converter;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Error\UnsupportedExpressionError;
 use MakinaCorpus\QueryBuilder\Escaper\Escaper;
@@ -65,11 +66,21 @@ class Writer
 {
     private string $matchParametersRegex;
     protected Escaper $escaper;
+    protected Converter $converter;
 
-    public function __construct(?Escaper $escaper = null)
+    public function __construct(?Escaper $escaper = null, ?Converter $converter = null)
     {
+        $this->converter = $converter ?? $this->createConverter();
         $this->escaper = $escaper ?? new StandardEscaper();
         $this->buildParameterRegex();
+    }
+
+    /**
+     * Create default converter.
+     */
+    protected function createConverter(): Converter
+    {
+        return new Converter();
     }
 
     /**
@@ -90,7 +101,7 @@ class Writer
             //   then $identifier = $sql->getIdentifier();
         }
 
-        $context = new WriterContext();
+        $context = new WriterContext($this->converter);
         $rawSql = $this->format($sql, $context);
 
         return new SqlString(
@@ -210,12 +221,14 @@ class Writer
             return $asString;
         }
 
+        $converter = $this->converter;
+
         // See https://stackoverflow.com/a/3735908 for the  starting
         // sequence explaination, the rest should be comprehensible.
         $localIndex = -1;
         return \preg_replace_callback(
             $this->matchParametersRegex,
-            function ($matches) use (&$localIndex, $values, $context) {
+            function ($matches) use (&$localIndex, $values, $context, $converter) {
                 $match  = $matches[0];
 
                 if ('??' === $match) {
@@ -237,13 +250,11 @@ class Writer
                 if (\is_array($value)) {
                     $value = new Row($value);
                 }
-                if ($value instanceof Expression) {
-                    return $this->format($value, $context);
-                } else {
-                    $index = $context->append($value, empty($matches[6]) ? null : $matches[6]);
 
-                    return $this->escaper->writePlaceholder($index);
-                }
+                return $this->format(
+                    $converter->toExpression($value, $matches[6] ?? null),
+                    $context
+                );
             },
             $asString
         );

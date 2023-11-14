@@ -59,6 +59,52 @@ $writer->prepare(
 );
 ```
 
+## Placeholder typing and conversion
+
+You might want to write such query:
+
+```php
+use MakinaCorpus\QueryBuilder\Writer\Writer;
+
+assert($writer instanceof Writer);
+
+$writer->prepare(
+    <<<SQL
+    SELECT ? FROM ?
+    SQL,
+    [
+        ExpressionFactory::column('foo'),
+        ExpressionFactory::table('bar'),
+    ]
+);
+```
+
+A shortcut exists for typing expressions and enforce their conversion when
+query is being built, the `?::TYPE` placeholder syntax.
+
+Using the `?::TYPE` PostgreSQL-like cast will trigger the corresponding value
+conversion from the `$arguments` array to be done while query is being written
+by the writer instance.
+
+This behavior will be pluggable in the future, as of now, the following
+conversion table exists:
+
+ - `?::array`: `ExpressionFactory::array($value)`, creates an array expression,
+ - `?::column`: `ExpressionFactory::column($value)`, escape a column name,
+ - `?::identifier`: `ExpressionFactory::identifier($value)`, escape any identifier,
+ - `?::row`: `ExpressionFactory::row($value)`, creates a constant row expression,
+ - `?::table`: `ExpressionFactory::table($value)`, escape a table name,
+ - `?::value`: `ExpressionFactory::value($value)` (which is the default behavior).
+
+Unhandlded type cast will keep the type arbitrary string and set it in the
+resulting argument bag for the corresponding value.
+
+::: warning
+Using the `::type` syntax unpreceeded with the `?` character will be left as-is
+within the query. This type cast syntax is PostgreSQL specific and you can use
+it in your raw SQL.
+:::
+
 ## Placeholder and expressions
 
 The placeholder is much more than a value placeholder, it can also be used to

@@ -222,7 +222,7 @@ class ExpressionFactory
      *   Set this to true if your column name contains any `.` and you don't
      *   have a table name.
      */
-    public static function table(string $name, ?string $alias, ?string $namespace = null, bool $noAutomaticNamespace = false): TableName
+    public static function table(string $name, ?string $alias = null, ?string $namespace = null, bool $noAutomaticNamespace = false): TableName
     {
         return new TableName($name, $alias, $namespace, $noAutomaticNamespace);
     }
