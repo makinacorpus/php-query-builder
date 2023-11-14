@@ -99,6 +99,14 @@ abstract class AbstractBridge
     }
 
     /**
+     * Alias of QueryBuilder::raw() which executes the query.
+     *
+     * @return null|int
+     *   Affected row count if applyable and driver supports it.
+     */
+    public abstract function executeStatement(string $expression = null, mixed $arguments = null): ?int;
+
+    /**
      * Please override.
      */
     protected function lookupServerVersion(): ?string

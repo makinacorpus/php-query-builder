@@ -84,6 +84,14 @@ class PdoQueryBuilder extends AbstractBridge
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function executeStatement(string $expression = null, mixed $arguments = null): ?int
+    {
+        return $this->raw($expression, $arguments)->executeStatement();
+    }
+
+    /**
      * Get connection.
      *
      * @internal
