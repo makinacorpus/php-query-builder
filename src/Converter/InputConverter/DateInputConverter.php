@@ -6,6 +6,7 @@ namespace MakinaCorpus\QueryBuilder\Converter\InputConverter;
 
 use MakinaCorpus\QueryBuilder\Converter\ConverterContext;
 use MakinaCorpus\QueryBuilder\Converter\InputConverter;
+use MakinaCorpus\QueryBuilder\Converter\InputTypeGuesser;
 use MakinaCorpus\QueryBuilder\Error\UnexpectedInputValueTypeError;
 
 /**
@@ -30,7 +31,7 @@ use MakinaCorpus\QueryBuilder\Error\UnexpectedInputValueTypeError;
  *
  * @see https://www.postgresql.org/docs/13/datatype-datetime.html
  */
-class DateInputConverter implements InputConverter
+class DateInputConverter implements InputConverter, InputTypeGuesser
 {
     const FORMAT_DATE = 'Y-m-d';
     const FORMAT_DATETIME = 'Y-m-d H:i:s';
@@ -73,7 +74,7 @@ class DateInputConverter implements InputConverter
     /**
      * {@inheritdoc}
      */
-    public function toSql(string $type, mixed $value, ConverterContext $context): null|string
+    public function toSql(string $type, mixed $value, ConverterContext $context): null|int|float|string
     {
         if (!$value instanceof \DateTimeInterface) {
             throw UnexpectedInputValueTypeError::create(\DateTimeInterface::class, $value);

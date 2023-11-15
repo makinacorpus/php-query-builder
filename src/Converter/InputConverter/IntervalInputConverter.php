@@ -6,9 +6,10 @@ namespace MakinaCorpus\QueryBuilder\Converter\InputConverter;
 
 use MakinaCorpus\QueryBuilder\Converter\ConverterContext;
 use MakinaCorpus\QueryBuilder\Converter\InputConverter;
+use MakinaCorpus\QueryBuilder\Converter\InputTypeGuesser;
 use MakinaCorpus\QueryBuilder\Error\UnexpectedInputValueTypeError;
 
-class IntervalInputConverter implements InputConverter
+class IntervalInputConverter implements InputConverter, InputTypeGuesser
 {
     /**
      * Format interval as an ISO8601 string.
@@ -61,7 +62,7 @@ class IntervalInputConverter implements InputConverter
     /**
      * {@inheritdoc}
      */
-    public function toSql(string $type, mixed $value, ConverterContext $context): null|string
+    public function toSql(string $type, mixed $value, ConverterContext $context): null|int|float|string
     {
         if (!$value instanceof \DateInterval) {
             throw UnexpectedInputValueTypeError::create(\DateInterval::class, $value);

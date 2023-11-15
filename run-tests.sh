@@ -4,7 +4,7 @@
 # You need docker on your box for it work.
 
 echo "Running docker compose up and waiting for 10 seconds."
-echo "In order to shut it donw after tests, manually run: "
+echo "In order to shut it down after tests, manually run: "
 echo "    docker compose -p query_builder_test down"
 docker compose -p query_builder_test up -d --force-recreate --remove-orphans
 sleep 10

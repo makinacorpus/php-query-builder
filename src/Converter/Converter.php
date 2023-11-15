@@ -46,12 +46,22 @@ class Converter
      */
     public function register(ConverterPlugin $plugin): void
     {
+        $found = false;
         if ($plugin instanceof InputConverter) {
+            $found = true;
+
             foreach ($plugin->supportedInputTypes() as $type) {
                 $this->inputConverters[$type][] = $plugin;
             }
+        }
+
+        if ($plugin instanceof InputTypeGuesser) {
+            $found = true;
+
             $this->typeGuessers[] = $plugin;
-        } else {
+        }
+
+        if (!$found) {
             throw new \InvalidArgumentException(\sprintf("Unsupported plugin class %s", \get_class($plugin)));
         }
     }
@@ -123,7 +133,26 @@ class Converter
             throw new ValueConversionError("Handling arrays is not implemented yet.");
         }
 
-        $firstError = null;
+        try {
+            return $this->toSqlUsingPlugins($value, $type);
+        } catch (ValueConversionError) {}
+
+        try {
+            return $this->toSqlUsingPlugins($value, '*', $type);
+        } catch (ValueConversionError) {}
+
+        // Calling default implementation after plugins allows API users to
+        // override default behavior and implement their own logic pretty
+        // much everywhere.
+        return $this->toSqlDefault($type, $value);
+    }
+
+    /**
+     * Run all plugins to convert a value.
+     */
+    protected function toSqlUsingPlugins(mixed $value, string $type, ?string $realType = null): null|int|float|string|object
+    {
+        $realType ??= $type;
 
         if ($plugins = ($this->inputConverters[$type] ?? null)) {
             $context = $this->getConverterContext();
@@ -132,23 +161,12 @@ class Converter
                 \assert($plugin instanceof InputConverter);
 
                 try {
-                    return $plugin->toSql($type, $value, $context);
-                } catch (ValueConversionError $e) {
-                    if (!$firstError) {
-                        $firstError = $e;
-                    }
-                }
+                    return $plugin->toSql($realType, $value, $context);
+                } catch (ValueConversionError) {}
             }
         }
 
-        if ($firstError) {
-            throw $firstError;
-        }
-
-        // Calling default implementation after plugins allows API users to
-        // override default behavior and implement their own logic pretty
-        // much everywhere.
-        return $this->toSqlDefault($type, $value);
+        throw new ValueConversionError();
     }
 
     /**
@@ -166,7 +184,8 @@ class Converter
     {
         if (\is_object($value)) {
             foreach ($this->typeGuessers as $plugin) {
-                \assert($plugin instanceof InputConverter);
+                \assert($plugin instanceof InputTypeGuesser);
+
                 if ($type = $plugin->guessInputType($value)) {
                     return $type;
                 }

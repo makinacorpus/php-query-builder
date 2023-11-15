@@ -15,13 +15,10 @@ interface InputConverter extends ConverterPlugin
      * Get supported SQL types.
      *
      * @return array<string>
+     *   If you return ['*'], the input converted will be dynamically called
+     *   late if no other was able to deal with the given type as a fallback.
      */
     public function supportedInputTypes(): array;
-
-    /**
-     * Guess input type of given value.
-     */
-    public function guessInputType(mixed $value): ?string;
 
     /**
      * Convert PHP native value to given SQL type.
@@ -36,5 +33,5 @@ interface InputConverter extends ConverterPlugin
      * @throws ValueConversionError
      *   In case of value conversion error.
      */
-    public function toSql(string $type, mixed $value, ConverterContext $context): null|string;
+    public function toSql(string $type, mixed $value, ConverterContext $context): null|int|float|string;
 }

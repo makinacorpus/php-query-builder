@@ -8,6 +8,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\ServerInfoAwareConnection;
 use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Bridge\AbstractBridge;
+use MakinaCorpus\QueryBuilder\Bridge\Doctrine\Converter\InputConverter\DoctrineInputConverter;
 use MakinaCorpus\QueryBuilder\Bridge\Doctrine\Escaper\DoctrineEscaper;
 use MakinaCorpus\QueryBuilder\Bridge\Doctrine\Escaper\DoctrineMySQLEscaper;
 use MakinaCorpus\QueryBuilder\Bridge\Doctrine\Query\DoctrineDelete;
@@ -16,7 +17,9 @@ use MakinaCorpus\QueryBuilder\Bridge\Doctrine\Query\DoctrineMerge;
 use MakinaCorpus\QueryBuilder\Bridge\Doctrine\Query\DoctrineRawQuery;
 use MakinaCorpus\QueryBuilder\Bridge\Doctrine\Query\DoctrineSelect;
 use MakinaCorpus\QueryBuilder\Bridge\Doctrine\Query\DoctrineUpdate;
+use MakinaCorpus\QueryBuilder\Converter\Converter;
 use MakinaCorpus\QueryBuilder\Escaper\Escaper;
+use MakinaCorpus\QueryBuilder\Writer\Writer;
 
 class DoctrineQueryBuilder extends AbstractBridge
 {
@@ -53,6 +56,13 @@ class DoctrineQueryBuilder extends AbstractBridge
             self::SERVER_MYSQL => new DoctrineMySQLEscaper($this->connection),
             default => new DoctrineEscaper($this->connection),
         };
+    }
+
+    protected function createWriter(Escaper $escaper, Converter $converter): Writer
+    {
+        $converter->register(new DoctrineInputConverter($this->connection));
+
+        return parent::createWriter($escaper, $converter);
     }
 
     /**

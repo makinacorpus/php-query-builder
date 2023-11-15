@@ -6,6 +6,7 @@ namespace MakinaCorpus\QueryBuilder\Converter\InputConverter;
 
 use MakinaCorpus\QueryBuilder\Converter\ConverterContext;
 use MakinaCorpus\QueryBuilder\Converter\InputConverter;
+use MakinaCorpus\QueryBuilder\Converter\InputTypeGuesser;
 use MakinaCorpus\QueryBuilder\Error\UnexpectedInputValueTypeError;
 use Ramsey\Uuid\UuidInterface;
 
@@ -14,7 +15,7 @@ use Ramsey\Uuid\UuidInterface;
  *
  * @see https://www.postgresql.org/docs/13/datatype-uuid.html
  */
-class RamseyUuidInputConverter implements InputConverter
+class RamseyUuidInputConverter implements InputConverter, InputTypeGuesser
 {
     /**
      * {@inheritdoc}
@@ -41,7 +42,7 @@ class RamseyUuidInputConverter implements InputConverter
     /**
      * {@inheritdoc}
      */
-    public function toSql(string $type, mixed $value, ConverterContext $context): null|string
+    public function toSql(string $type, mixed $value, ConverterContext $context): null|int|float|string
     {
         if (!$value instanceof UuidInterface) {
             throw UnexpectedInputValueTypeError::create(UuidInterface::class, $value);
