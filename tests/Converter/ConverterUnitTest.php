@@ -13,7 +13,7 @@ use MakinaCorpus\QueryBuilder\Expression\TableName;
 use MakinaCorpus\QueryBuilder\Expression\Value;
 use MakinaCorpus\QueryBuilder\Tests\UnitTestCase;
 
-class ConverterTest extends UnitTestCase
+class ConverterUnitTest extends UnitTestCase
 {
     public function testToExpression(): void
     {

@@ -20,53 +20,7 @@ $writer->prepare("select ?::int" [1]);
 $writer->prepare("select ?::date" [new \DateTimeImmutable()]);
 ```
 
-Which will then generate the following SQL code:
-
-```sql
-select ?;
-select ?;
-```
-
-Type information is erased from final generated SQL code, only kept in the
-`MakinaCorpus\QueryBuilder\ArgumentBag` instance that results from the
-SQL code generation.
-
-Please note that you may additionnaly propagate the type information using
-a `MakinaCorpus\QueryBuilder\Expression\Value` instance instead. The following
-code is semantically equivalent to the upper example:
-
-```php
-use MakinaCorpus\QueryBuilder\Expression\Value;
-use MakinaCorpus\QueryBuilder\Writer\Writer;
-
-assert($writer instanceof Writer);
-
-$writer->prepare("select ?" [new Value(1, 'int')]);
-$writer->prepare("select ?" [new Value(new \DateTimeImmutable(), 'date')]);
-```
-
-:::warning
-Please note that anything you cast which is not ``?`` will be left untouched.
-:::
-
-For example:
-
-```php
-use MakinaCorpus\QueryBuilder\Writer\Writer;
-
-assert($writer instanceof Writer);
-
-$writer->prepare("select 1::int");
-```
-
-Will be sent to the server as:
-
-```sql
-select 1::int
-```
-
-Which is probably not something you want to do when you are not using
-PostgreSQL.
+For more information please refer to the [placeholder type hint documentation](../placholder-type-hint).
 
 ## Typing values in query builder
 

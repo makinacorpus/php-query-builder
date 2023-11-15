@@ -241,16 +241,6 @@ class Writer
                 $localIndex++;
                 $value = $values[$localIndex] ?? null;
 
-                // Pure user sugar candy: when a value is an array, convert it
-                // to a constant row automatically in order to automatically
-                // expand:
-                //     WHERE foo IN ?
-                // into the follow form:
-                //     WHERE foo IN (?, ?, ...)
-                if (\is_array($value)) {
-                    $value = new Row($value);
-                }
-
                 return $this->format(
                     $converter->toExpression($value, $matches[6] ?? null),
                     $context

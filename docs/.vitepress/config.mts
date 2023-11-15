@@ -70,6 +70,14 @@ export default defineConfig({
             ]
           },
           {
+            text: 'Placeholder type hint',
+            link: '/query/placeholder-type-hint',
+            items: [
+              { text: 'Identifier escaping', link: '/query/placeholder#value-placeholder-and-typing' },
+              { text: 'Value type hint', link: '/query/placeholder#placeholder-and-expressions' },
+            ]
+          },
+          {
             text: 'Values',
             link: '/query/values',
             items: [
@@ -86,6 +94,11 @@ export default defineConfig({
               { text: 'In query builder', link: '/query/cast#typing-values-in-query-builder' },
               { text: 'SQL Cast', link: '/query/cast#sql-cast' },
             ]
+          },
+          {
+            text: 'Value converter',
+            link: '/converter/converter',
+            items: []
           },
           {
             text: 'Data types',

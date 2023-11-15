@@ -15,24 +15,26 @@ integer, and a set of type aliases, for example ``int4`` refers to ``int``.
 
 ## Data type matrix
 
-| Type      | Aliases  | PHP Native type            | SQL type        | Notes                                                     |
-|-----------|----------|----------------------------|-----------------|-----------------------------------------------------------|
-| bigint    | int8     | int                        | bigint          | size (32 or 64 bits) depends on your arch                 |
-| bigserial | serial8  | int                        | bigserial       | size (32 or 64 bits) depends on your arch                 |
-| bool      | boolean  | bool                       | boolean         |                                                           |
-| bytea     | blob     | string or resource         | bytea           | some drivers will give you a resource instead of a string |
-| date      |          | \DateTimeImmutable         | date            | PHP has no date type, timezone might cause you trouble    |
-| decimal   | numeric  | float                      | decimal         |                                                           |
-| float4    | real     | float                      | float4          | May loose precision                                       |
-| float8    | real     | float                      | float8          |                                                           |
-| int       | int4     | int                        | int             | size (32 or 64 bits) depends on your arch                 |
-| interval  |          | \DateInterval              | interval        | you probably will need to deambiguate from time           |
-| json      | jsonb    | array                      | json            | difference between json and jsonb is in storage           |
-| serial    | serial4  | int                        | serial          | size (32 or 64 bits) depends on your arch                 |
-| time      |          | \DateInterval              | time            | you probably will need to deambiguate from interval       |
-| timestamp | datetime | \DateTimeImmutable         | timestamp       |                                                           |
-| uuid      | uuid     | \Ramsey\Uuid\UuidInterface | uuid            | you will need to install ramsey/uuid in order to use it   |
-| varchar   | text     | string                     | varchar or text |                                                           |
+| Type      | Aliases  | PHP Native type             | SQL type        | Notes                                                     |
+|-----------|----------|-----------------------------|-----------------|-----------------------------------------------------------|
+| bigint    | int8     | int                         | bigint          | size (32 or 64 bits) depends on your arch                 |
+| bigserial | serial8  | int                         | bigserial       | size (32 or 64 bits) depends on your arch                 |
+| bool      | boolean  | bool                        | boolean         |                                                           |
+| bytea     | blob     | string or resource          | bytea           | some drivers will give you a resource instead of a string |
+| date      |          | \DateTimeInterface          | date            | PHP has no date type, timezone might cause you trouble    |
+| decimal   | numeric  | float                       | decimal         |                                                           |
+| float4    | real     | float                       | float4          | May loose precision                                       |
+| float8    | real     | float                       | float8          |                                                           |
+| int       | int4     | int                         | int             | size (32 or 64 bits) depends on your arch                 |
+| interval  |          | \DateInterval               | interval        | you probably will need to deambiguate from time           |
+| json      | jsonb    | array                       | json            | difference between json and jsonb is in storage           |
+| serial    | serial4  | int                         | serial          | size (32 or 64 bits) depends on your arch                 |
+| time      |          | \DateInterval               | time            | you probably will need to deambiguate from interval       |
+| timestamp | datetime | \DateTimeInterface          | timestamp       |                                                           |
+| ulid      |          | \Symfony\Component\Uid\Ulid | uuid            | you will need to install symfony/uid in order to use it   |
+| uuid      |          | \Ramsey\Uuid\UuidInterface  | uuid            | you will need to install ramsey/uuid in order to use it   |
+| uuid      |          | \Symfony\Component\Uid\Uuid | uuid            | you will need to install symfony/uid in order to use it   |
+| varchar   | text     | string                      | varchar or text |                                                           |
 
 ## ARRAY
 
