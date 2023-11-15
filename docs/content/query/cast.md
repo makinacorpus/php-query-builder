@@ -20,7 +20,7 @@ $writer->prepare("select ?::int" [1]);
 $writer->prepare("select ?::date" [new \DateTimeImmutable()]);
 ```
 
-For more information please refer to the [placeholder type hint documentation](../placholder-type-hint).
+For more information please refer to the [placeholder type hint documentation](../placeholder).
 
 ## Typing values in query builder
 

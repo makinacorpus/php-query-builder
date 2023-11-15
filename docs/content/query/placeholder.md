@@ -1,6 +1,6 @@
 # Parameters placeholders
 
-## Value placeholder and typing
+## Placeholder value type-hinting
 
 Independently from the final database driver, all parameters within arbitrary SQL
 must be written using the `?` placeholder in raw SQL:
@@ -59,22 +59,30 @@ $writer->prepare(
 );
 ```
 
-## Placeholder typing and conversion
+## Placeholder identifier escaping
 
-You might want to write such query:
+Raw SQL [placeholders](./placeholder) can be used to set user-given values to
+prevent injection or complex expressions inside a raw SQL string, but they also
+can help you set dynamic identifiers in your queries.
+
+For example, you might want to write such query:
 
 ```php
+use MakinaCorpus\QueryBuilder\Expression\ColumnName;
+use MakinaCorpus\QueryBuilder\Expression\Identifier;
+use MakinaCorpus\QueryBuilder\Expression\TableName;
 use MakinaCorpus\QueryBuilder\Writer\Writer;
 
 assert($writer instanceof Writer);
 
 $writer->prepare(
     <<<SQL
-    SELECT ? FROM ?
+    SELECT ? AS ? FROM ?
     SQL,
     [
-        ExpressionFactory::column('foo'),
-        ExpressionFactory::table('bar'),
+        new ColumnName('foo', 'bar'),
+        new Identifier('some.escaped.alias'),
+        new TableName('bar', 'table_schema'),
     ]
 );
 ```
@@ -86,18 +94,50 @@ Using the `?::TYPE` PostgreSQL-like cast will trigger the corresponding value
 conversion from the `$arguments` array to be done while query is being written
 by the writer instance.
 
-This behavior will be pluggable in the future, as of now, the following
-conversion table exists:
 
- - `?::array`: `ExpressionFactory::array($value)`, creates an array expression,
- - `?::column`: `ExpressionFactory::column($value)`, escape a column name,
- - `?::identifier`: `ExpressionFactory::identifier($value)`, escape any identifier,
- - `?::row`: `ExpressionFactory::row($value)`, creates a constant row expression,
- - `?::table`: `ExpressionFactory::table($value)`, escape a table name,
- - `?::value`: `ExpressionFactory::value($value)` (which is the default behavior).
 
-Unhandlded type cast will keep the type arbitrary string and set it in the
-resulting argument bag for the corresponding value.
+Use the `?::ESCAPER` where `ESCAPER` can be any one of the following table:
+
+| Escaper    | Type of escaping                       | Outputs                               | Removes placeholder |
+|------------|----------------------------------------|---------------------------------------|---------------------|
+| array      | Hint the value as being an array       | `\QueryBuilder\Expression\ArrayValue` | No                  |
+| column     | Escape string a column name            | `\QueryBuilder\Expression\ColumnName` | Yes                 |
+| identifier | Escape string an abitrary identifier   | `\QueryBuilder\Expression\Identifier` | Yes                 |
+| row        | Hint the value as being a constant row | `\QueryBuilder\Expression\Row`        | No                  |
+| table      | Escape string a table name             | `\QueryBuilder\Expression\TableName`  | Yes                 |
+| value      | Hint the value as being a vlaue        | `\QueryBuilder\Expression\Value`      | No                  |
+
+For example:
+
+```php
+use MakinaCorpus\QueryBuilder\Expression\ColumnName;
+use MakinaCorpus\QueryBuilder\Expression\TableName;
+use MakinaCorpus\QueryBuilder\Writer\Writer;
+
+assert($writer instanceof Writer);
+
+$writer->prepare(
+    <<<SQL
+    SELECT ?::column AS ?::identifier FROM ?::table
+    SQL,
+    [
+        'bar.foo',
+        'some.escaped.alias',
+        'table_schema.bar',
+    ]
+);
+```
+
+will generate the following SQL code:
+
+```sql
+    select "bar"."foo" as "some.escaped.alias" from "table_schema"."bar"
+```
+
+::: warning
+Typo errors in escaper names will not raise errors, but will be silently passed
+as a value type hint instead.
+:::
 
 ::: warning
 Using the `::type` syntax unpreceeded with the `?` character will be left as-is
@@ -159,7 +199,7 @@ The resulting argument bag will have the correct number of parameters and
 values matching the resulting SQL code.
 :::
 
-## Escape placholder
+## Escape placeholder
 
 In order to escape the `?` character, double it, hence the following
 SQL query:

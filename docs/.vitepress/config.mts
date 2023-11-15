@@ -65,16 +65,9 @@ export default defineConfig({
             text: 'Parameter placeholder',
             link: '/query/placeholder',
             items: [
-              { text: 'Values and typing', link: '/query/placeholder#value-placeholder-and-typing' },
+              { text: 'Values type-hinting', link: '/query/placeholder#placeholder-value-type-hinting' },
+              { text: 'Dynamic identifier escaping', link: '/query/placeholder#placeholder-identifier-escaping' },
               { text: 'Nested expression', link: '/query/placeholder#placeholder-and-expressions' },
-            ]
-          },
-          {
-            text: 'Placeholder type hint',
-            link: '/query/placeholder-type-hint',
-            items: [
-              { text: 'Identifier escaping', link: '/query/placeholder#value-placeholder-and-typing' },
-              { text: 'Value type hint', link: '/query/placeholder#placeholder-and-expressions' },
             ]
           },
           {
