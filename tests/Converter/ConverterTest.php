@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace MakinaCorpus\QueryBuilder\Tests;
+namespace MakinaCorpus\QueryBuilder\Tests\Converter;
 
 use MakinaCorpus\QueryBuilder\Converter\Converter;
 use MakinaCorpus\QueryBuilder\Expression\ArrayValue;
@@ -11,9 +11,9 @@ use MakinaCorpus\QueryBuilder\Expression\Identifier;
 use MakinaCorpus\QueryBuilder\Expression\Row;
 use MakinaCorpus\QueryBuilder\Expression\TableName;
 use MakinaCorpus\QueryBuilder\Expression\Value;
-use PHPUnit\Framework\TestCase;
+use MakinaCorpus\QueryBuilder\Tests\UnitTestCase;
 
-class ConverterTest extends TestCase
+class ConverterTest extends UnitTestCase
 {
     public function testToExpression(): void
     {

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Bridge;
 
+use MakinaCorpus\QueryBuilder\Converter\Converter;
 use MakinaCorpus\QueryBuilder\Escaper\Escaper;
+use MakinaCorpus\QueryBuilder\Platform\Converter\MySQLConverter;
 use MakinaCorpus\QueryBuilder\Platform\Escaper\MySQLEscaper;
 use MakinaCorpus\QueryBuilder\Platform\Escaper\StandardEscaper;
 use MakinaCorpus\QueryBuilder\Platform\Writer\MySQL8Writer;
@@ -117,45 +119,50 @@ abstract class AbstractBridge
     /**
      * Create default writer based upon server name and version and driver.
      */
+    protected function createConverter(): Converter
+    {
+        return match ($this->getServerFlavor()) {
+            self::SERVER_MARIADB => new MySQLConverter(),
+            self::SERVER_MYSQL => new MySQLConverter(),
+            default => new Converter(),
+        };
+    }
+
+    /**
+     * Create default writer based upon server name and version and driver.
+     */
     protected function createEscaper(): Escaper
     {
-        $serverName = \strtolower($this->getServerName());
-
-        if (\str_contains($serverName, 'mysql')) {
-            return new MySQLEscaper();
-        }
-
-        if (\str_contains($serverName, 'maria')) {
-            return new MySQLEscaper();
-        }
-
-        return new StandardEscaper();
+        return match ($this->getServerFlavor()) {
+            self::SERVER_MARIADB => new MySQLEscaper(),
+            self::SERVER_MYSQL => new MySQLEscaper(),
+            default => new StandardEscaper(),
+        };
     }
 
     /**
      * Create default writer based upon server name and version.
      */
-    protected function createWriter(): Writer
+    protected function createWriter(Escaper $escaper, Converter $converter): Writer
     {
-        $escaper = $this->createEscaper();
         $serverFlavor = $this->getServerFlavor();
 
         if (self::SERVER_POSTGRESQL === $serverFlavor) {
-            return new PostgreSQLWriter($escaper);
+            return new PostgreSQLWriter($escaper, $converter);
         }
 
         if (self::SERVER_MYSQL === $serverFlavor) {
             if (($serverVersion = $this->getServerVersion()) && 0 < \version_compare('8.0', $serverVersion)) {
-                return new MySQLWriter($escaper);
+                return new MySQLWriter($escaper, $converter);
             }
-            return new MySQL8Writer($escaper);
+            return new MySQL8Writer($escaper, $converter);
         }
 
         if (self::SERVER_MARIADB === $serverFlavor) {
-            return new MySQL8Writer($escaper);
+            return new MySQL8Writer($escaper, $converter);
         }
 
-        return new Writer();
+        return new Writer($escaper, $converter);
     }
 
     /**
@@ -163,6 +170,6 @@ abstract class AbstractBridge
      */
     public function getWriter(): Writer
     {
-        return $this->writer ??= $this->createWriter();
+        return $this->writer ??= $this->createWriter($this->createEscaper(), $this->createConverter());
     }
 }

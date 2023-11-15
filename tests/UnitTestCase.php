@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Tests;
 
 use MakinaCorpus\QueryBuilder\Expression;
+use MakinaCorpus\QueryBuilder\OptionsBag;
+use MakinaCorpus\QueryBuilder\Converter\Converter;
+use MakinaCorpus\QueryBuilder\Converter\ConverterContext;
 use MakinaCorpus\QueryBuilder\Platform\Escaper\StandardEscaper;
 use MakinaCorpus\QueryBuilder\Writer\Writer;
 use PHPUnit\Framework\TestCase;
@@ -22,6 +25,28 @@ abstract class UnitTestCase extends TestCase
         $string = \trim($string);
 
         return $string;
+    }
+
+    protected static function context(?Converter $converter = null): ConverterContext
+    {
+        return new ConverterContext(
+            $converter ?? self::defaultConverter(),
+        );
+    }
+
+    protected static function contextWithTimeZone(string $clientTimeZone, ?Converter $converter = null): ConverterContext
+    {
+        return new ConverterContext(
+            $converter ?? self::defaultConverter(),
+            new OptionsBag([
+                'client_timezone' => $clientTimeZone,
+            ]),
+        );
+    }
+
+    protected static function defaultConverter(): ?Converter
+    {
+        return new Converter();
     }
 
     protected static function setTestWriter(?Writer $writer): void

@@ -6,23 +6,38 @@ namespace MakinaCorpus\QueryBuilder\Converter;
 
 use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\ExpressionFactory;
+use MakinaCorpus\QueryBuilder\Converter\InputConverter\DateInputConverter;
+use MakinaCorpus\QueryBuilder\Converter\InputConverter\IntervalInputConverter;
+use MakinaCorpus\QueryBuilder\Converter\InputConverter\RamseyUuidInputConverter;
+use MakinaCorpus\QueryBuilder\Converter\InputConverter\SymfonyUidInputConverter;
 use MakinaCorpus\QueryBuilder\Error\ValueConversionError;
+use Ramsey\Uuid\UuidInterface;
+use Symfony\Component\Uid\AbstractUid;
 
 class Converter
 {
     /** @var array<string,array<InputConverter>> */
     private array $inputConverters = [];
-    private array $inputParsers = [];
+    /** @var array<InputConverter> */
+    private array $typeGuessers = [];
 
     /** @param iterable<ConverterPlugin> $plugins */
     public function __construct(?iterable $plugins = null)
     {
-        if (null === $plugins) {
-            // @todo Create default.
-        } else {
+        if (null !== $plugins) {
             foreach ($plugins as $plugin) {
                 $this->register($plugin);
             }
+        }
+
+        // Register defaults.
+        $this->register(new DateInputConverter());
+        $this->register(new IntervalInputConverter());
+        if (\class_exists(UuidInterface::class)) {
+            $this->register(new RamseyUuidInputConverter());
+        }
+        if (\class_exists(AbstractUid::class)) {
+            $this->register(new SymfonyUidInputConverter());
         }
     }
 
@@ -32,9 +47,10 @@ class Converter
     public function register(ConverterPlugin $plugin): void
     {
         if ($plugin instanceof InputConverter) {
-            foreach ($plugin->getSupportedTypes() as $type) {
+            foreach ($plugin->supportedInputTypes() as $type) {
                 $this->inputConverters[$type][] = $plugin;
             }
+            $this->typeGuessers[] = $plugin;
         } else {
             throw new \InvalidArgumentException(\sprintf("Unsupported plugin class %s", \get_class($plugin)));
         }
@@ -49,7 +65,7 @@ class Converter
      * @throws ValueConversionError
      *   In case of value conversion error.
      */
-    public function toExpression(mixed $value, ?string $type = null): ?Expression
+    public function toExpression(mixed $value, ?string $type = null): Expression
     {
         if (null === $value) {
             return ExpressionFactory::null();
@@ -148,10 +164,16 @@ class Converter
      */
     protected function toSqlGuessType(mixed $value): string
     {
-        if (!\is_object($value)) {
-            return \get_debug_type($value);
+        if (\is_object($value)) {
+            foreach ($this->typeGuessers as $plugin) {
+                \assert($plugin instanceof InputConverter);
+                if ($type = $plugin->guessInputType($value)) {
+                    return $type;
+                }
+            }
         }
-        return \get_class($value);
+
+        return \get_debug_type($value);
     }
 
     /**
@@ -163,8 +185,8 @@ class Converter
             'bigint' => (int) $value,
             'bigserial' => (int) $value,
             'blob' => (string) $value,
-            'bool' => $value ? 't' : 'f',
-            'boolean' => $value ? 't' : 'f',
+            'bool' => $value ? 'true' : 'false',
+            'boolean' => $value ? 'true' : 'false',
             'bytea' => (string) $value,
             'char' => (string) $value,
             'character' => (string) $value,
@@ -190,7 +212,6 @@ class Converter
             'smallserial' => (int) $value,
             'string' => (string) $value,
             'text' => (string) $value,
-            /* uuid' => if ($this->supportsUuid()) { return Uuid::fromString($value); } return (string) $value; */
             'varchar' => (string) $value,
             default => $value,
         };

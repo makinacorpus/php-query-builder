@@ -4,10 +4,15 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Converter;
 
+use MakinaCorpus\QueryBuilder\OptionsBag;
+
 class ConverterContext
 {
+    private ?string $phpDefaultTimeZone = null;
+
     public function __construct(
-        private Converter $converter
+        private Converter $converter,
+        private ?OptionsBag $options = null,
     ) {}
 
     public function getConverter(): Converter
@@ -17,13 +22,11 @@ class ConverterContext
 
     public function getClientTimeZone(): string
     {
-        // @todo Make this configurable.
-        return (@\date_default_timezone_get()) ?? 'UTC';
+        return $this->options?->get('client_timezone') ?? ($this->phpDefaultTimeZone ??= (@\date_default_timezone_get()) ?? 'UTC');
     }
 
     public function getClientEncoding(): string
     {
-        // @todo Make this configurable.
-        return 'UTF-8';
+        return $this->options?->get('client_encoding') ?? 'UTF-8';
     }
 }
