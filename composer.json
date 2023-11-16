@@ -2,7 +2,7 @@
     "name" : "makinacorpus/query-builder",
     "type": "library",
     "description": "Driver agnostic SQL query builder.",
-    "keywords": ["postgresql", "mysql", "symfony"],
+    "keywords": ["postgresql", "mysql", "symfony", "query-builder", "sql"],
     "homepage": "http://github.com/makinacorpus/php-query-builder",
     "license": "MIT",
     "authors": [

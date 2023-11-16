@@ -17,10 +17,10 @@ features of your favorite RDBMS without worrying about this API limitations.
 This API by itself is only a SQL string generator, in order to use it
 transparently, a few bridges are provided:
 
- - `doctring/dbal:^3` query builder,
- - soon a `doctring/dbal:^4` query builder,
- - `PDO` query builder,
- - Symfony bundle will be available in a separate package.
+ - `doctrine/dbal:^3` bridge and query builder,
+ - soon a `doctrine/dbal:^4` bridge and query builder,
+ - `PDO` bridge and query builder,
+ - Symfony bundle is available in a separate package http://github.com/makinacorpus/query-builder-bundle
 
 # Getting started
 
@@ -181,21 +181,6 @@ composer install
 
 Please understand that the testing environment is currently at the prototype
 stage, and will remain as-is until github actions CI is configured.
-
-# Roadmap
-
-## Short-term
-
- - [ ] Document everything!
- - [x] Add `doctrine/dbal` bridge for using it transparently.
- - [ ] Add a Symfony bundle for using it transparently along `doctrine/dbal`,
- - [ ] Setup CI via github actions.
-
-## Long term
-
- - [ ] Restore the `makinacorpus/goat-query` PHP to SQL and SQL to PHP value
-   converter, in its own package, independently from this one.
- - [ ] Implement more and more SQL features.
 
 # History
 
