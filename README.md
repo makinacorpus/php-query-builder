@@ -20,7 +20,7 @@ transparently, a few bridges are provided:
  - `doctrine/dbal:^3` bridge and query builder,
  - soon a `doctrine/dbal:^4` bridge and query builder,
  - `PDO` bridge and query builder,
- - Symfony bundle is available in a separate package http://github.com/makinacorpus/query-builder-bundle
+ - Symfony bundle is available in the [makinacorpus/query-builder-bundle](https://github.com/makinacorpus/query-builder-bundle) package
 
 # Getting started
 
