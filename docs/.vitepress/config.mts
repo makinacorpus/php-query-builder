@@ -53,12 +53,17 @@ export default defineConfig({
         ]
       },
       {
-        text: 'Basics',
+        text: 'Writing queries',
         collapsed: false,
         items: [
           {
             text: 'Query basics',
             link: '/query/basics',
+            items: []
+          },
+          {
+            text: 'Expressions',
+            link: '/query/expression',
             items: []
           },
           {
