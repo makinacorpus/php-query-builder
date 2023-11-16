@@ -77,6 +77,10 @@ class Writer
 
     /**
      * Create default converter.
+     *
+     * This is a fallback, during production runtime, the converter should have
+     * been injected by setup code, in order to inherit from the converter
+     * registry and user implementations.
      */
     protected function createConverter(): Converter
     {

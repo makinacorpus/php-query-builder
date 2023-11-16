@@ -6,64 +6,28 @@ namespace MakinaCorpus\QueryBuilder\Converter;
 
 use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\ExpressionFactory;
-use MakinaCorpus\QueryBuilder\Converter\InputConverter\DateInputConverter;
-use MakinaCorpus\QueryBuilder\Converter\InputConverter\IntervalInputConverter;
-use MakinaCorpus\QueryBuilder\Converter\InputConverter\RamseyUuidInputConverter;
-use MakinaCorpus\QueryBuilder\Converter\InputConverter\SymfonyUidInputConverter;
 use MakinaCorpus\QueryBuilder\Error\ValueConversionError;
-use Ramsey\Uuid\UuidInterface;
-use Symfony\Component\Uid\AbstractUid;
 
 class Converter
 {
-    /** @var array<string,array<InputConverter>> */
-    private array $inputConverters = [];
-    /** @var array<InputConverter> */
-    private array $typeGuessers = [];
+    private ConverterPluginRegistry $registry;
 
-    /** @param iterable<ConverterPlugin> $plugins */
-    public function __construct(?iterable $plugins = null)
+    public function __construct()
     {
-        if (null !== $plugins) {
-            foreach ($plugins as $plugin) {
-                $this->register($plugin);
-            }
-        }
-
-        // Register defaults.
-        $this->register(new DateInputConverter());
-        $this->register(new IntervalInputConverter());
-        if (\class_exists(UuidInterface::class)) {
-            $this->register(new RamseyUuidInputConverter());
-        }
-        if (\class_exists(AbstractUid::class)) {
-            $this->register(new SymfonyUidInputConverter());
-        }
+        $this->registry = new ConverterPluginRegistry();
     }
 
     /**
-     * Register a custom value converter.
+     * Set converter plugin registry.
+     *
+     * @internal
+     *   For dependency injection usage. This is what allows global converter
+     *   plugins configuration in Symfony bundle, for example, and sharing
+     *   user configuration to all databases connections.
      */
-    public function register(ConverterPlugin $plugin): void
+    public function setConverterPluginRegistry(ConverterPluginRegistry $converterPluginRegistry): void
     {
-        $found = false;
-        if ($plugin instanceof InputConverter) {
-            $found = true;
-
-            foreach ($plugin->supportedInputTypes() as $type) {
-                $this->inputConverters[$type][] = $plugin;
-            }
-        }
-
-        if ($plugin instanceof InputTypeGuesser) {
-            $found = true;
-
-            $this->typeGuessers[] = $plugin;
-        }
-
-        if (!$found) {
-            throw new \InvalidArgumentException(\sprintf("Unsupported plugin class %s", \get_class($plugin)));
-        }
+        $this->registry = $converterPluginRegistry;
     }
 
     /**
@@ -153,17 +117,14 @@ class Converter
     protected function toSqlUsingPlugins(mixed $value, string $type, ?string $realType = null): null|int|float|string|object
     {
         $realType ??= $type;
+        $context = $this->getConverterContext();
 
-        if ($plugins = ($this->inputConverters[$type] ?? null)) {
-            $context = $this->getConverterContext();
+        foreach ($this->registry->getInputConverters($type) as $plugin) {
+            \assert($plugin instanceof InputConverter);
 
-            foreach ($plugins as $plugin) {
-                \assert($plugin instanceof InputConverter);
-
-                try {
-                    return $plugin->toSql($realType, $value, $context);
-                } catch (ValueConversionError) {}
-            }
+            try {
+                return $plugin->toSql($realType, $value, $context);
+            } catch (ValueConversionError) {}
         }
 
         throw new ValueConversionError();
@@ -183,7 +144,7 @@ class Converter
     protected function toSqlGuessType(mixed $value): string
     {
         if (\is_object($value)) {
-            foreach ($this->typeGuessers as $plugin) {
+            foreach ($this->registry->getTypeGuessers() as $plugin) {
                 \assert($plugin instanceof InputTypeGuesser);
 
                 if ($type = $plugin->guessInputType($value)) {

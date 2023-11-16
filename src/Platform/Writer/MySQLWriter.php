@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Platform\Writer;
 
 use MakinaCorpus\QueryBuilder\Expression;
+use MakinaCorpus\QueryBuilder\Converter\Converter;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Expression\Concat;
 use MakinaCorpus\QueryBuilder\Expression\Random;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
+use MakinaCorpus\QueryBuilder\Platform\Converter\MySQLConverter;
 use MakinaCorpus\QueryBuilder\Query\Delete;
 use MakinaCorpus\QueryBuilder\Query\Merge;
 use MakinaCorpus\QueryBuilder\Query\Query;
@@ -21,6 +23,14 @@ use MakinaCorpus\QueryBuilder\Writer\WriterContext;
  */
 class MySQLWriter extends Writer
 {
+    /**
+     * {@inheritdoc}
+     */
+    protected function createConverter(): Converter
+    {
+        return new MySQLConverter();
+    }
+
     /**
      * {@inheritdoc}
      */

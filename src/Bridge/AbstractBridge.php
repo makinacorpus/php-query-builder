@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Bridge;
 
 use MakinaCorpus\QueryBuilder\Converter\Converter;
+use MakinaCorpus\QueryBuilder\Converter\ConverterPluginRegistry;
 use MakinaCorpus\QueryBuilder\Escaper\Escaper;
 use MakinaCorpus\QueryBuilder\Platform\Converter\MySQLConverter;
 use MakinaCorpus\QueryBuilder\Platform\Escaper\MySQLEscaper;
@@ -21,12 +22,35 @@ abstract class AbstractBridge
     const SERVER_POSTGRESQL = 'postgresql';
     const SERVER_SQLITE = 'sqlite';
 
+    private ?ConverterPluginRegistry $converterPluginRegistry = null;
     private ?Writer $writer = null;
     private ?string $serverName = null;
     private bool $serverNameLookedUp = false;
     private ?string $serverVersion = null;
     private bool $serverVersionLookekUp = false;
     private ?string $serverFlavor = null;
+
+    public function __construct(?ConverterPluginRegistry $converterPluginRegistry = null)
+    {
+        $this->converterPluginRegistry = $converterPluginRegistry;
+    }
+
+    /**
+     * @internal
+     *   For dependency injection only.
+     */
+    public function setConverterPluginRegistry(ConverterPluginRegistry $converterPluginRegistry): void
+    {
+        $this->converterPluginRegistry = $converterPluginRegistry;
+    }
+
+    /**
+     * Get converter plugin registry.
+     */
+    protected function getConverterPluginRegistry(): ConverterPluginRegistry
+    {
+        return $this->converterPluginRegistry ??= new ConverterPluginRegistry();
+    }
 
     /**
      * Set server information (avoids lookup).
@@ -119,12 +143,12 @@ abstract class AbstractBridge
     /**
      * Create default writer based upon server name and version and driver.
      */
-    protected function createConverter(): Converter
+    protected function createConverter(ConverterPluginRegistry $converterPluginRegistry): Converter
     {
         return match ($this->getServerFlavor()) {
-            self::SERVER_MARIADB => new MySQLConverter(),
-            self::SERVER_MYSQL => new MySQLConverter(),
-            default => new Converter(),
+            self::SERVER_MARIADB => new MySQLConverter($converterPluginRegistry),
+            self::SERVER_MYSQL => new MySQLConverter($converterPluginRegistry),
+            default => new Converter($converterPluginRegistry),
         };
     }
 
@@ -170,6 +194,11 @@ abstract class AbstractBridge
      */
     public function getWriter(): Writer
     {
-        return $this->writer ??= $this->createWriter($this->createEscaper(), $this->createConverter());
+        return $this->writer ??= $this->createWriter(
+            $this->createEscaper(),
+            $this->createConverter(
+                $this->getConverterPluginRegistry(),
+            ),
+        );
     }
 }
