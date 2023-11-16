@@ -60,7 +60,10 @@ class DoctrineQueryBuilder extends AbstractBridge
 
     protected function createWriter(Escaper $escaper, Converter $converter): Writer
     {
-        $converter->register(new DoctrineInputConverter($this->connection));
+        // @todo Temporary deactivated, needs a way to add converter
+        //   locally for the given converter without polluting global
+        //   converter plugin registry.
+        // $converter->register(new DoctrineInputConverter($this->connection));
 
         return parent::createWriter($escaper, $converter);
     }
