@@ -437,7 +437,9 @@ class Writer
         $condition = $join->getCondition();
 
         if ($condition->isEmpty()) {
-            return $prefix . ' ' . $this->format($join->getTable(), $context, true);
+            // When there is no conditions, CROSS JOIN must be applied.
+            // @todo Should we raise an error if join mode is not the default?
+            return 'cross join ' . $this->format($join->getTable(), $context, true);
         }
         return $prefix . ' ' . $this->format($join->getTable(), $context, true) . ' on (' . $this->format($condition, $context, false) . ')';
     }
@@ -793,16 +795,35 @@ class Writer
     }
 
     /**
-     * Format a constant table expression.
+     * Format a constant table expression when used in INSERT/MERGE.
+     *
+     * SQL standard uses the SQL standard VALUES constant table expression.
      */
-    protected function doFormatConstantTable(ConstantTable $expression, WriterContext $context, ?string $alias): string
+    protected function doFormatValuesInsert(ConstantTable $expression, WriterContext $context, ?string $alias): string
+    {
+        return $this->doFormatConstantTable($expression, $context, $alias, true);
+    }
+
+    /**
+     * Format a constant table expression.
+     *
+     * SQL standard is VALUES (?,?), (?, ?), ... but sadly, MySQL doesn't speak
+     * standard SQL, whereas MariaDB has diverged and now does uses the standard
+     * variant.
+     *
+     * This is why the doFormatConstantTableRow() function exists.
+     *
+     * @see https://www.postgresql.org/docs/current/sql-values.html
+     *   PostgreSQL is the nearest thing we could find of standard SQL.
+     */
+    protected function doFormatConstantTable(ConstantTable $expression, WriterContext $context, ?string $alias, bool $inInsert = false): string
     {
         $inner = null;
         foreach ($expression->getRows() as $row) {
             if ($inner) {
-                $inner .= "\n," . $this->formatRow($row, $context);
+                $inner .= "\n," . $this->doFormatConstantTableRow($row, $context, $inInsert);
             } else {
-                $inner = $this->formatRow($row, $context);
+                $inner = $this->doFormatConstantTableRow($row, $context, $inInsert);
             }
         }
 
@@ -824,11 +845,22 @@ class Writer
     }
 
     /**
+     * Format a constant table row.
+     *
+     * @see https://www.postgresql.org/docs/current/sql-values.html
+     *   PostgreSQL is the nearest thing we could find of standard SQL.
+     */
+    protected function doFormatConstantTableRow(Row $expression, WriterContext $context, bool $inInsert = false): string
+    {
+        return $this->formatRow($expression, $context);
+    }
+
+    /**
      * Format a constant table expression.
      */
     protected function formatConstantTable(ConstantTable $expression, WriterContext $context): string
     {
-        return $this->doFormatConstantTable($expression, $context, null);
+        return $this->doFormatConstantTable($expression, $context, null, false);
     }
 
     /**
@@ -949,7 +981,7 @@ class Writer
         $using = $query->getQuery();
         if ($using instanceof ConstantTable) {
             if (\count($columns)) {
-                $output[] = $this->format($using, $context);
+                $output[] = $this->doFormatConstantTable($using, $context, null, true);
             } else {
                 // Assume there is no specific values, for PostgreSQL, we need to set
                 // "DEFAULT VALUES" explicitely, for MySQL "() VALUES ()" will do the
@@ -1187,7 +1219,7 @@ class Writer
             $inner .= $this->format($item, $context, true);
         }
 
-        $output = 'ARRAY[' . $inner .  ']';
+        $output = 'array[' . $inner .  ']';
 
         if ($value->shouldCast()) {
             return $this->doFormatCastExpression($output, $value->getValueType() . '[]', $context);
@@ -1200,7 +1232,7 @@ class Writer
      */
     protected function formatNullValue(NullValue $expression, WriterContext $context): string
     {
-        return 'NULL';
+        return 'null';
     }
 
     /**
@@ -1208,7 +1240,7 @@ class Writer
      */
     protected function doFormatCastExpression(string $expressionString, string $type, WriterContext $context): string
     {
-        return 'CAST(' . $expressionString . ' AS ' . $type . ')';
+        return 'cast(' . $expressionString . ' as ' . $type . ')';
     }
 
     /**
@@ -1269,7 +1301,7 @@ class Writer
         if ($alias) {
             // Exception for constant table, see doFormatConstantTable().
             if ($nestedExpression instanceof ConstantTable) {
-                return $this->doFormatConstantTable($nestedExpression, $context, $alias);
+                return $this->doFormatConstantTable($nestedExpression, $context, $alias, false);
             }
 
             return $this->format($nestedExpression, $context, true) . ' as ' . $this->escaper->escapeIdentifier($alias);

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Tests;
 
+use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Bridge\AbstractBridge;
-use MakinaCorpus\QueryBuilder\Bridge\Doctrine\DoctrineQueryBuilder;
-use MakinaCorpus\QueryBuilder\Bridge\Pdo\PdoQueryBuilder;
-use MakinaCorpus\QueryBuilder\Expression\Identifier;
+use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
+use MakinaCorpus\QueryBuilder\Expression\Raw;
 
 abstract class FunctionalTestCase extends UnitTestCase
 {
@@ -47,6 +47,100 @@ abstract class FunctionalTestCase extends UnitTestCase
     abstract protected function doCreateBridge(array $params): AbstractBridge;
 
     /**
+     * Pass a raw string or query and execute statement over the bridge.
+     *
+     * This doesn't return any result; but may return affected row count.
+     *
+     * This is a proxy function to $this->getBridge()->executeStatement();
+     */
+    protected function executeStatement(string|Expression $query, ?array $arguments = null): ?int
+    {
+        try {
+            return $this->getBridge()->executeStatement($query, $arguments);
+        } catch (\Throwable $e) {
+            throw new QueryBuilderError(
+                \sprintf(
+                    <<<TXT
+                    Error when executing query, error is: %s
+                    Query was:
+                    %s
+                    TXT,
+                    $e->getMessage(),
+                    $this->getBridge()->getWriter()->prepare(\is_string($query) ? new Raw($query, $arguments) : $query)->toString()
+                ),
+                $e->getCode(),
+                $e
+            );
+        }
+    }
+
+    /**
+     * Skip for given database.
+     */
+    protected function skipIfDatabase(string $database, ?string $message = null): void
+    {
+        if ($this->getBridge()->getServerFlavor() === $database) {
+            self::markTestSkipped(\sprintf("Test disabled for database '%s'", $database));
+        }
+    }
+
+    /**
+     * Skip for given database, and greater than version.
+     */
+    protected function skipIfDatabaseGreaterThan(string $database, string $version, ?string $message = null): void
+    {
+        $this->skipIfDatabase($database);
+
+        $serverVersion = $this->getBridge()->getServerVersion();
+
+        if (null === $serverVersion) {
+            throw new \Exception(\sprintf("Database '%s', server version is null", $database));
+        }
+
+        $serverVersion = $this->normalizeVersion($version);
+        $version = $this->normalizeVersion($version);
+
+        if (0 >= \version_compare($serverVersion, $version)) {
+            self::markTestSkipped($message ?? \sprintf("Test disabled for database '%s' at version >= '%s'", $database, $version));
+        }
+    }
+
+    /**
+     * Skip for given database, and lower than version.
+     */
+    protected function skipIfDatabaseLessThan(string $database, string $version, ?string $message = null): void
+    {
+        if ($this->getBridge()->getServerFlavor() !== $database) {
+            return;
+        }
+
+        $serverVersion = $this->getBridge()->getServerVersion();
+
+        if (null === $serverVersion) {
+            throw new \Exception(\sprintf("Database '%s', server version is null", $database));
+        }
+
+        $serverVersion = $this->normalizeVersion($version);
+        $version = $this->normalizeVersion($version);
+
+        if (0 < \version_compare($serverVersion, $version)) {
+            self::markTestSkipped($message ?? \sprintf("Test disabled for database '%s' at version <= '%s'", $database, $version));
+        }
+    }
+
+    /**
+     * Normalize version to an x.y.z semantic version string.
+     */
+    protected function normalizeVersion(string $version): string
+    {
+        $matches = [];
+        if (\preg_match('/(\d+)(\.\d+|)(\.\d+|).*/ims', $version, $matches)) {
+            return $matches[1] . ($matches[2] ?: '.0') . ($matches[3] ?: '.0');
+        }
+        throw new \Exception(\sprintf("Database version '%s', is not in 'x.y.z' semantic format", $version));
+    }
+
+    /**
      * Create connection.
      */
     private function createBridge(): AbstractBridge
@@ -68,13 +162,7 @@ abstract class FunctionalTestCase extends UnitTestCase
         $privBridge = $this->getPriviledgedBridge();
 
         try {
-            if ($privBridge instanceof DoctrineQueryBuilder) {
-                $privBridge->raw("CREATE DATABASE ?", [new Identifier('test_db')])->executeStatement();
-            } else if ($privBridge instanceof PdoQueryBuilder) {
-                $privBridge->raw("CREATE DATABASE ?", [new Identifier('test_db')])->executeStatement();
-            } else {
-                throw new \Exception("Unsupported bridge.");
-            }
+            $privBridge->executeStatement("CREATE DATABASE ?::identifier", ['test_db']);
         } catch (\Throwable $e) {
             // Check database already exists or not.
             if (!\str_contains($e->getMessage(), 'exist')) {

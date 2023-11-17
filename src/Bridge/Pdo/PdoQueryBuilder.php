@@ -86,9 +86,12 @@ class PdoQueryBuilder extends AbstractBridge
     /**
      * {@inheritdoc}
      */
-    public function executeStatement(string $expression = null, mixed $arguments = null): ?int
+    protected function doExecuteStatement(string $expression, array $arguments = []): ?int
     {
-        return $this->raw($expression, $arguments)->executeStatement();
+        $statement = $this->connection->prepare($expression);
+        $statement->execute($arguments);
+
+        return $statement->rowCount();
     }
 
     /**

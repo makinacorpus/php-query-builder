@@ -8,6 +8,7 @@ use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Converter\Converter;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Expression\Concat;
+use MakinaCorpus\QueryBuilder\Expression\ConstantTable;
 use MakinaCorpus\QueryBuilder\Expression\Random;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\Platform\Converter\MySQLConverter;
@@ -85,7 +86,12 @@ class MySQLWriter extends Writer
             $output[] = '(' . $this->doFormatColumnNameList($context, $columns) . ')';
         }
 
-        $output[] = $this->format($query->getQuery(), $context);
+        $using = $query->getQuery();
+        if ($using instanceof ConstantTable) {
+            $output[] = $this->doFormatConstantTable($using, $context, null, true);
+        } else {
+            $output[] = $this->format($using, $context);
+        }
 
         if (!$isIgnore) {
             switch ($mode = $query->getConflictBehaviour()) {

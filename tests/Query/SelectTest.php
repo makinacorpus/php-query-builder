@@ -721,14 +721,14 @@ class SelectTest extends UnitTestCase
         $expression->row([1, 2, 3]);
 
         $query = new Select('foo');
-        $query->join($expression);
+        $query->join($expression, 'true');
 
         self::assertSameSql(
             <<<SQL
             select * from "foo"
             inner join (
                 values (?, ?, ?)
-            ) as "mcqb_1"
+            ) as "mcqb_1" on (true)
             SQL,
             $query
         );
@@ -740,12 +740,31 @@ class SelectTest extends UnitTestCase
         $expression->row([1, 2, 3]);
 
         $query = new Select('foo');
-        $query->join($expression, null, 'mooh');
+        $query->join($expression, 'true', 'mooh');
 
         self::assertSameSql(
             <<<SQL
             select * from "foo"
             inner join (
+                values (?, ?, ?)
+            ) as "mooh" on (true)
+            SQL,
+            $query
+        );
+    }
+
+    public function testJoinWithoutConditionIsCrossJoin(): void
+    {
+        $expression = new ConstantTable();
+        $expression->row([1, 2, 3]);
+
+        $query = new Select('foo');
+        $query->join($expression, null, 'mooh');
+
+        self::assertSameSql(
+            <<<SQL
+            select * from "foo"
+            cross join (
                 values (?, ?, ?)
             ) as "mooh"
             SQL,

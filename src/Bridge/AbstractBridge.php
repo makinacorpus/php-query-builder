@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Bridge;
 
+use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Converter\Converter;
 use MakinaCorpus\QueryBuilder\Converter\ConverterPluginRegistry;
+use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Escaper\Escaper;
+use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\Platform\Converter\MySQLConverter;
 use MakinaCorpus\QueryBuilder\Platform\Escaper\MySQLEscaper;
 use MakinaCorpus\QueryBuilder\Platform\Escaper\StandardEscaper;
+use MakinaCorpus\QueryBuilder\Platform\Writer\MariaDBWriter;
 use MakinaCorpus\QueryBuilder\Platform\Writer\MySQL8Writer;
 use MakinaCorpus\QueryBuilder\Platform\Writer\MySQLWriter;
 use MakinaCorpus\QueryBuilder\Platform\Writer\PostgreSQLWriter;
@@ -121,7 +125,14 @@ abstract class AbstractBridge
 
         $this->serverVersionLookekUp = true;
 
-        return $this->serverVersion= $this->lookupServerVersion();
+        $serverVersion = $this->lookupServerVersion();
+
+        $matches = [];
+        if ($serverVersion && \preg_match('/(\d+\.|)\d+\.\d+/ims', $serverVersion, $matches)) {
+            $serverVersion = $matches[0];
+        }
+
+        return $this->serverVersion = $serverVersion;
     }
 
     /**
@@ -130,7 +141,26 @@ abstract class AbstractBridge
      * @return null|int
      *   Affected row count if applyable and driver supports it.
      */
-    public abstract function executeStatement(string $expression = null, mixed $arguments = null): ?int;
+    protected abstract function doExecuteStatement(string $expression, array $arguments = []): ?int;
+
+    /**
+     * Execute query and return affected row count if possible.
+     *
+     * @return null|int
+     *   Affected row count if applyable and driver supports it.
+     */
+    public function executeStatement(string|Expression $expression = null, mixed $arguments = null): ?int
+    {
+        if (\is_string($expression)) {
+            $expression = new Raw($expression, $arguments);
+        } else if ($arguments) {
+            throw new QueryBuilderError("Cannot pass \$arguments if \$query is not a string.");
+        }
+
+        $prepared = $this->getWriter()->prepare($expression);
+
+        return $this->doExecuteStatement($prepared->toString(), $prepared->getArguments()->getAll());
+    }
 
     /**
      * Please override.
@@ -183,7 +213,7 @@ abstract class AbstractBridge
         }
 
         if (self::SERVER_MARIADB === $serverFlavor) {
-            return new MySQL8Writer($escaper, $converter);
+            return new MariaDBWriter($escaper, $converter);
         }
 
         return new Writer($escaper, $converter);
