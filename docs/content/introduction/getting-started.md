@@ -27,16 +27,12 @@ use MakinaCorpus\QueryBuilder\Platform\Escaper\StandardEscaper;
 use MakinaCorpus\QueryBuilder\Platform\Writer\PostgreSQLWriter;
 use MakinaCorpus\QueryBuilder\QueryBuidler;
 
-/*
- * Escaper is the component that ties the query-builder with third-party
- * Database Access Layers, such as `doctrine/dbal` or simply `PDO`.
- */
+// Escaper is the component that ties the query-builder with third-party
+// Database Access Layers, such as `doctrine/dbal` or simply `PDO`.
 $escaper = new StandardEscaper();
 
-/*
- * Writer is the component that writes the SQL code which will take care
- * of supported RDMS dialects.
- */
+// Writer is the component that writes the SQL code which will take care
+// of supported RDMS dialects.
 $writer = new PostgreSQLWriter($escaper);
 
 /*
@@ -47,6 +43,8 @@ $queryBuilder = new QueryBuilder();
 
 ### 3. Write your query
 
+Let's write a simple query:
+
 ```php
 use MakinaCorpus\QueryBuilder\QueryBuidler;
 
@@ -54,45 +52,16 @@ $queryBuilder = new QueryBuilder();
 
 $query = $queryBuilder
     ->select('users')
-    ->column('id')
-    ->column('name')
-    ->column(
-        $queryBuilder
-            ->select('orders')
-            ->columnRaw('count(*)')
-            ->where('user_id', new Column('users.id')),
-        'order_count'
-    )
-    ->columnRaw(
-        <<<SQL
-        (
-            SELECT max("login")
-            FROM "login_history"
-            WHERE
-                "user_id" = "users"."id"
-            SQL
-        )
-        'last_login'
-    )
+    ->column('*')
     ->where('id', 'john.doe@example.com')
 ;
 ```
 
-This is a simple one, but the query builder can help you for many things:
-
- - write CTE (`with "foo" as (select ...)` clauses,
- - handle many `JOIN` types, in `DELETE`, `SELECT` and `UPDATE` queries and
-   generating them using the chosen SQL dialect,
- - write complex `WHERE` expressions,
- - properly escape identifiers and other string literals in generated SQL,
-   security oriented unit tests exist for this,
- - replace user-given arbitrary parameters using the placeholder schema of
-   your choice,
- - and much more!
+Now you can use your favorite database access layer and execute it.
 
 ### 4. Generate the SQL and execute it
 
-Considering you have a DBAL of your own with the following method:
+Considering you have any database access layer with the following method:
 
 ```php
 interface MyDbal
@@ -114,8 +83,13 @@ $myDbal->execute(
 );
 ```
 
-If you need to convert PHP native values to SQL first, please see the
-next chapter.
+:::tip
+Raw PHP values that were passed as arguments in your queries will automatically
+run throught the converter and be converted to values that the SQL server
+understands.
+
+See [the datatype matrix](../query/datatype) for supported data types conversions.
+:::
 
 ## Doctrine DBAL setup
 
@@ -134,18 +108,13 @@ Setting it up is easier than standalone setup:
 ```php
 use MakinaCorpus\QueryBuilder\Bridge\Doctrine\DoctrineQueryBuilder;
 
-/*
- * Create or fetch your DBAL connection.
- */
-
+// Create or fetch your doctrine/dbal connection.
 $connection = DriverManager::getConnection([
     'driver' => 'pdo_pgsql',
     // ... driver options.
 ]);
 
-/*
- * User facade for you to build SQL queries.
- */
+// Create the query builder.
 $queryBuilder = new DoctrineQueryBuilder($connection);
 ```
 
@@ -157,29 +126,12 @@ query to do so.
 
 ### 3. Write your query and execute it
 
+Now we can write a query and execute it directly:
+
 ```php
 $result = $queryBuilder
     ->select('users')
-    ->column('id')
-    ->column('name')
-    ->column(
-        $queryBuilder
-            ->select('orders')
-            ->columnRaw('count(*)')
-            ->where('user_id', new Column('users.id')),
-        'order_count'
-    )
-    ->columnRaw(
-        <<<SQL
-        (
-            SELECT max("login")
-            FROM "login_history"
-            WHERE
-                "user_id" = "users"."id"
-            SQL
-        )
-        'last_login'
-    )
+    ->column('*')
     ->where('id', 'john.doe@example.com')
     ->executeQuery()
 ;
@@ -187,6 +139,14 @@ $result = $queryBuilder
 
 :::tip
 `$result` is an instance of `Doctrine\DBAL\Result`.
+:::
+
+:::tip
+Raw PHP values that were passed as arguments in your queries will automatically
+run throught the converter and be converted to values that the SQL server
+understands prior being sent as arguments to `doctrine/dbal`.
+
+See [the datatype matrix](../query/datatype) for supported data types conversions.
 :::
 
 ## PDO setup
@@ -206,15 +166,10 @@ Setting it up is easier than standalone setup:
 ```php
 use MakinaCorpus\QueryBuilder\Bridge\Pdo\PdoQueryBuilder;
 
-/*
- * Create or fetch your PDO connection.
- */
-
+// Create or fetch your PDO connection.
 $connection = new \PDO('pgsql:...');
 
-/*
- * User facade for you to build SQL queries.
- */
+// User facade for you to build SQL queries.
 $queryBuilder = new PdoQueryBuilder($connection);
 ```
 
@@ -228,26 +183,7 @@ the `PDO` connection automatically.
 ```php
 $result = $queryBuilder
     ->select('users')
-    ->column('id')
-    ->column('name')
-    ->column(
-        $queryBuilder
-            ->select('orders')
-            ->columnRaw('count(*)')
-            ->where('user_id', new Column('users.id')),
-        'order_count'
-    )
-    ->columnRaw(
-        <<<SQL
-        (
-            SELECT max("login")
-            FROM "login_history"
-            WHERE
-                "user_id" = "users"."id"
-            SQL
-        )
-        'last_login'
-    )
+    ->column('*')
     ->where('id', 'john.doe@example.com')
     ->executeQuery()
 ;
@@ -257,3 +193,95 @@ $result = $queryBuilder
 `$result` is an instance of `\PDOStatement`.
 :::
 
+:::tip
+Raw PHP values that were passed as arguments in your queries will automatically
+run throught the converter and be converted to values that the SQL server
+understands prior being sent as arguments to `PDOStatement`.
+
+See [the datatype matrix](../query/datatype) for supported data types conversions.
+:::
+
+## Symfony setup
+
+### 1. Install and register bundle
+
+:::tip
+For this to work, you need to setup a `doctrine/dbal` connection using the
+`doctrine/doctrine-bundle` integration first.
+:::
+
+
+Install the composer dependency as such:
+
+```sh
+composer require makinacorpus/query-builder-bundle
+```
+
+If Symfony Flex didn't find the bundle (it should have), then register it in
+your `config/bundles.php` file as such:
+
+```php
+<?php
+
+return [
+    // ... Your other bundles.
+    MakinaCorpus\QueryBuilderBundle\QueryBuilderBundle::class => ['all' => true],
+];
+```
+
+### 2. Inject it into a component and use it
+
+Here is a controller action example:
+
+```php
+<?php
+
+declare (strict_types=1);
+
+namespace App\Controller;
+
+use MakinaCorpus\QueryBuilder\Bridge\Doctrine\DoctrineQueryBuilder;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
+
+class TestingController extends AbstractController
+{
+    #[Route('/testing/query-builder', name: 'testing_query_builder')]
+    public function testQueryBuilder(
+        DoctrineQueryBuilder $queryBuilder,
+    ): Response {
+        $result = $queryBuilder
+            ->select('some_table')
+            ->executeQuery()
+        ;
+
+        $data = [];
+        foreach ($result->iterateAssociative() as $row) {
+            $data[] = $row;
+        }
+
+        return $this->json($data);
+    }
+}
+```
+
+:::warning
+This will inject the query builder instance plugged on the `default` connection.
+
+If you need to use another connection, please read the next chapter.
+:::
+
+### Using a query builder for another connection
+
+You may have configured more than one `doctrine/dbal` connection, this bundle
+will register as many `MakinaCorpus\QueryBuilder\Bridge\Doctrine\DoctrineQueryBuilder`
+services as doctrine connections being configured.
+
+Each service identifier is `query_builder.doctrine.CONNECTION_NAME` where
+`CONNECTION_NAME` is the Doctrine bundle configured connection identifier.
+
+:::tip
+`query_builder.doctrine.default` is registered as well if you need to deambiguate
+or inject it explicitely.
+:::

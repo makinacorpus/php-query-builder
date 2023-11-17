@@ -41,7 +41,7 @@ they are passed into.
 This explicitely allows you to go beyond the query builder capabilities and write
 custom or specific arbitrary SQL.
 
-::: warning
+:::warning
 **Never allow arbitrary user values to pass down as raw SQL string**:
 since they are not properly escaped, they represent a security risk.
 
@@ -229,9 +229,8 @@ to store `json` or `jsonb` or an SQL `ARRAY`.
 It will pass the type cast whenever necessary in queries, allowing the
 converter to deambiguate values types.
 
-:::warning
-Value conversion and representation in SQL is left to the driver or the brige
-in use, and is not the responsability of the query builder.
+:::tip
+Value conversion and representation in SQL is done by the [converter](../converter/converter).
 :::
 
 #### Simple exemple
@@ -242,11 +241,14 @@ use MakinaCorpus\QueryBuilder\Expression\Value;
 new Value(12);
 ```
 
-Will be formatted as:
+Will always be formatted as in the generated SQL code as a placeholder:
 
 ```sql
 ?
 ```
+
+Type will be dynamically guessed by the converter as being `int`, converted
+then sent as an argument to the underlaying database access layer.
 
 #### With a type
 
@@ -256,11 +258,8 @@ use MakinaCorpus\QueryBuilder\Expression\Value;
 new Value(12, 'int');
 ```
 
-Will be formatted as:
-
-```sql
-?::int
-```
+Type will be treated as an `int` directly by the converter, which prevent it
+from doing a dynamic lookup and is more performant.
 
 #### JSON
 
@@ -270,11 +269,7 @@ use MakinaCorpus\QueryBuilder\Expression\Value;
 new Value(['foo' => 'bar', 'baz' => [1, 2, 3]], 'json');
 ```
 
-Will be formatted as:
-
-```sql
-?::json
-```
+Value will simply be converted to JSON and sent as-is.
 
 #### ARRAY
 
@@ -284,8 +279,8 @@ use MakinaCorpus\QueryBuilder\Expression\Value;
 new Value([1, 2, 3], 'int[]');
 ```
 
-Will be formatted as:
+And will be converted as:
 
 ```sql
-?::int[]
+ARRAY[1, 2, 3]
 ```

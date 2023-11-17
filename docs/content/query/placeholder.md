@@ -134,12 +134,12 @@ will generate the following SQL code:
     select "bar"."foo" as "some.escaped.alias" from "table_schema"."bar"
 ```
 
-::: warning
+:::warning
 Typo errors in escaper names will not raise errors, but will be silently passed
 as a value type hint instead.
 :::
 
-::: warning
+:::warning
 Using the `::type` syntax unpreceeded with the `?` character will be left as-is
 within the query. This type cast syntax is PostgreSQL specific and you can use
 it in your raw SQL.

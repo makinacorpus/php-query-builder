@@ -5,14 +5,21 @@
 This API defines numerous SQL expression as classes that you can inject at
 various (if not all) places of the builder.
 
-Each expression is in PHP a stateless class you can instanciate with values
-which will result in the writer converting it into nice SQL code.
+Each expression is a PHP class you can instanciate with values
+which will result in the writer converting it into SQL code compatible with
+the configured dialect.
 
 There are four different ways to instanciate expressions, depending upon
 the context you are in, which allows you to easily create them.
 
-The choice of the method is up to you, there is no better way, all methods
+**The choice of the method is up to you, there is no best way**, all methods
 are and will remain supported for the current major version lifetime.
+
+:::tip
+**The query builder never write SQL code, solely the writer does**: this
+avoids coupling of the writer inside the query builder, and makes the
+expression tree dialect-free, and more portable.
+:::
 
 ## Implicit creation
 
@@ -39,7 +46,7 @@ $select->havingRaw('count(?::column) = 2', ['some_other_column']);
 
 This is true for every method of the builder.
 
-::: tip
+:::tip
 The primary goal of this API is to easier SQL code writing for you, the more
 expressions are created implicitely, the easier it will be for you to use
 it.
@@ -75,10 +82,16 @@ $select->having(
 );
 ```
 
-::: tip
-Using this syntax can lead into having a lot of `use` statements, that you
-probably may not want to have. It also makes the code harder to read in most
-cases.
+:::tip
+Code is more explicit, it can be easier to read for some, harder for others.
+But in all cases, it's the most verbose syntax, which leads into having a lot
+of `use` statements.
+:::
+
+:::warning
+This method is the one that will create the biggest dependency of your code
+on the query builder, and may be the hardest one to migrate in a future next
+major version in case of backward compatibility break.
 :::
 
 ## Using the ExpressionFactory
@@ -112,7 +125,7 @@ $select->having(
 );
 ```
 
-::: tip
+:::tip
 Using `ExpressionFactory` will give you a complete, self-documenting and
 comprehensive list of supported expressions if your editor supports
 automatic completion.
@@ -128,11 +141,10 @@ Once again, same code:
 ```php
 use MakinaCorpus\QueryBuilder\Query\Select;
 
+// For the sake of example, use implicit name here.
 $select = new Select('my_table');
 
-// This actually simply return `new ExpressionFactory()` without further ado.
-// ExpressionFactory methods are static, but PHP allows static methods to be
-// called dynamically, it is semantically correct and will work transparently.
+// Get the factory.
 $expr = $select->expression();
 
 $select->column(
@@ -148,3 +160,10 @@ $select->having(
     )
 );
 ```
+
+:::tip
+`Query::expression()` method simply return `new ExpressionFactory()`.
+
+`ExpressionFactory` methods are static, PHP allows static methods to be
+called dynamically, it is semantically correct and will work transparently.
+:::
