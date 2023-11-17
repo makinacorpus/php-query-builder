@@ -11,6 +11,7 @@ use MakinaCorpus\QueryBuilder\Converter\Converter;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Error\UnsupportedExpressionError;
 use MakinaCorpus\QueryBuilder\Escaper\Escaper;
+use MakinaCorpus\QueryBuilder\Expression\Aggregate;
 use MakinaCorpus\QueryBuilder\Expression\Aliased;
 use MakinaCorpus\QueryBuilder\Expression\ArrayValue;
 use MakinaCorpus\QueryBuilder\Expression\Between;
@@ -33,6 +34,7 @@ use MakinaCorpus\QueryBuilder\Expression\Row;
 use MakinaCorpus\QueryBuilder\Expression\SimilarToPattern;
 use MakinaCorpus\QueryBuilder\Expression\TableName;
 use MakinaCorpus\QueryBuilder\Expression\Value;
+use MakinaCorpus\QueryBuilder\Expression\Window;
 use MakinaCorpus\QueryBuilder\Expression\WithAlias;
 use MakinaCorpus\QueryBuilder\Platform\Escaper\StandardEscaper;
 use MakinaCorpus\QueryBuilder\Query\Delete;
@@ -141,6 +143,7 @@ class Writer
         } else {
             try {
                 $ret = match (\get_class($expression)) {
+                    Aggregate::class => $this->formatAggregate($expression, $context),
                     Aliased::class => $this->formatAliased($expression, $context),
                     ArrayValue::class => $this->formatArrayValue($expression, $context),
                     Between::class => $this->formatBetween($expression, $context),
@@ -163,6 +166,7 @@ class Writer
                     TableName:: class => $this->formatIdentifier($expression, $context),
                     Value::class => $this->formatValue($expression, $context),
                     Where::class => $this->formatWhere($expression, $context),
+                    Window::class => $this->formatWindow($expression, $context),
                     default => throw new UnsupportedExpressionError(\sprintf("Unexpected expression object type: %s", \get_class($expression))),
                 };
             } catch (UnsupportedExpressionError $e) {
@@ -797,6 +801,18 @@ class Writer
         return $output;
     }
 
+    protected function formatWindow(Window $expression, WriterContext $context): string
+    {
+        $output = '(';
+        if ($partitionBy = $expression->getPartitionBy()) {
+            $output .= ' partition by ' . $this->format($partitionBy, $context);
+        }
+        if ($orderByAll = $expression->getAllOrderBy()) {
+            $output .= $this->doFormatOrderBy($context, $orderByAll);
+        }
+        return $output . ')';
+    }
+
     /**
      * Format a constant table expression when used in INSERT/MERGE.
      *
@@ -1291,6 +1307,27 @@ class Writer
         $pattern = $expression->getPattern($escapedValue);
 
         return $this->escaper->escapeLiteral($pattern);
+    }
+
+    protected function formatAggregate(Aggregate $expression, WriterContext $context): string
+    {
+        $output .= $this->escaper->escapeIdentifier($expression->getFunctionName()) . '(';
+
+        if ($column = $expression->getColumn()) {
+            $output .= $this->format($column, $context);
+        }
+
+        $output .= ')';
+
+        if ($filter = $expression->getFilter()) {
+            $output .= ' filter (where ' . $this->format($filter, $context, false) . ')';
+        }
+
+        if ($over = $expression->getOverWindow()) {
+            $output .= ' over ' . $this->format($over, $context, !$over instanceof Window);
+        }
+
+        return $output;
     }
 
     /**
