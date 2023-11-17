@@ -12,9 +12,9 @@ use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\Query\Partial\FromClauseTrait;
 use MakinaCorpus\QueryBuilder\Query\Partial\HavingClauseTrait;
+use MakinaCorpus\QueryBuilder\Query\Partial\OrderByTrait;
 use MakinaCorpus\QueryBuilder\Query\Partial\SelectColumn;
 use MakinaCorpus\QueryBuilder\Query\Partial\WhereClauseTrait;
-use MakinaCorpus\QueryBuilder\Expression\Random;
 
 /**
  * Represents a SELECT query.
@@ -24,6 +24,7 @@ class Select extends AbstractQuery implements TableExpression
     use FromClauseTrait;
     use HavingClauseTrait;
     use WhereClauseTrait;
+    use OrderByTrait;
 
     /** @var SelectColumn[] */
     private array $columns = [];
@@ -31,7 +32,6 @@ class Select extends AbstractQuery implements TableExpression
     private array $groups = [];
     private int $limit = 0;
     private int $offset = 0;
-    private array $orders = [];
     private bool $performOnly = false;
     /** @var Expression[] */
     private array $unions = [];
@@ -230,14 +230,6 @@ class Select extends AbstractQuery implements TableExpression
     }
 
     /**
-     * Get order by clauses array.
-     */
-    public function getAllOrderBy(): array
-    {
-        return $this->orders;
-    }
-
-    /**
      * Get query range.
      *
      * @return int[]
@@ -246,57 +238,6 @@ class Select extends AbstractQuery implements TableExpression
     public function getRange(): array
     {
         return [$this->limit, $this->offset];
-    }
-
-    /**
-     * Add an order by clause.
-     *
-     * @param string|Expression $column
-     *   Column identifier must contain the table alias, if might be a raw SQL
-     *   string if you wish, for example, to write a case when statement.
-     * @param int $order
-     *   One of the Query::ORDER_* constants.
-     * @param int $null
-     *   Null behavior, nulls first, nulls last, or leave the backend default.
-     */
-    public function orderBy(mixed $column, int $order = Query::ORDER_ASC, int $null = Query::NULL_IGNORE): static
-    {
-        $this->orders[] = [ExpressionHelper::column($column), $order, $null];
-
-        return $this;
-    }
-
-    /**
-     * Add an order by random clause.
-     *
-     * @param int $order
-     *   One of the Query::ORDER_* constants.
-     * @param int $null
-     *   Null behavior, nulls first, nulls last, or leave the backend default.
-     */
-    public function orderByRandom(int $order = Query::ORDER_ASC, int $null = Query::NULL_IGNORE): static
-    {
-        $this->orders[] = [new Random(), $order, $null];
-
-        return $this;
-    }
-
-    /**
-     * Add an order by clause as a raw SQL expression.
-     *
-     * @param string|Expression $column
-     *   Column identifier must contain the table alias, if might be a raw SQL
-     *   string if you wish, for example, to write a case when statement.
-     * @param int $order
-     *   One of the Query::ORDER_* constants.
-     * @param int $null
-     *   Null behavior, nulls first, nulls last, or leave the backend default.
-     */
-    public function orderByRaw(mixed $column, int $order = Query::ORDER_ASC, int $null = Query::NULL_IGNORE): static
-    {
-        $this->orders[] = [ExpressionHelper::raw($column), $order, $null];
-
-        return $this;
     }
 
     /**
@@ -314,35 +255,46 @@ class Select extends AbstractQuery implements TableExpression
     }
 
     /**
-     * Set limit/offset.
-     *
-     * @param int $limit
-     *   If empty or null, removes the current limit.
-     * @param int $offset
-     *   If empty or null, removes the current offset.
+     * Set limit.
      */
-    public function range(int $limit = 0, int $offset = 0): static
+    public function limit(int $limit = 0): static
     {
         if ($limit < 0) {
             throw new QueryBuilderError(\sprintf("limit must be a positive integer: %d given", $limit));
         }
+
+        $this->limit = $limit;
+
+        return $this;
+    }
+
+    /**
+     * Set offset.
+     */
+    public function offset(int $offset = 0): static
+    {
         if ($offset < 0) {
             throw new QueryBuilderError(\sprintf("offset must be a positive integer: %d given", $offset));
         }
 
-        $this->limit = $limit;
         $this->offset = $offset;
 
         return $this;
     }
 
     /**
+     * Set limit/offset.
+     */
+    public function range(int $limit = 0, int $offset = 0): static
+    {
+        $this->limit($limit);
+        $this->offset($offset);
+
+        return $this;
+    }
+
+    /**
      * Set limit/offset using a page number.
-     *
-     * @param int $limit
-     *   If empty or null, removes the current limit.
-     * @param int $page
-     *   Page number, starts with one.
      */
     public function page(int $limit = 0, int $page = 1): static
     {
@@ -394,13 +346,11 @@ class Select extends AbstractQuery implements TableExpression
     {
         $this->cloneWith();
         $this->cloneFrom();
+        $this->cloneOrder();
         $this->where = clone $this->where;
         $this->having = clone $this->having;
         foreach ($this->columns as $index => $column) {
             $this->columns[$index] = clone $column;
-        }
-        foreach ($this->orders as $index => $order) {
-            $this->orders[$index][0] = clone $order[0];
         }
     }
 }
