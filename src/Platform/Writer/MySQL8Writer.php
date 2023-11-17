@@ -11,6 +11,8 @@ use MakinaCorpus\QueryBuilder\Writer\WriterContext;
 
 /**
  * MySQL >= 8.
+ *
+ * @see https://stackoverflow.com/questions/255517/mysql-offset-infinite-rows
  */
 class MySQL8Writer extends MySQLWriter
 {
@@ -50,5 +52,24 @@ class MySQL8Writer extends MySQLWriter
             return $this->formatRow($expression, $context);
         }
         return 'row ' . $this->formatRow($expression, $context);
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * MySQL does not support OFFSET alone.
+     */
+    protected function doFormatRange(WriterContext $context, int $limit = 0, int $offset = 0): string
+    {
+        if ($limit) {
+            if (!$offset) {
+                return 'limit ' . $limit;
+            }
+            return 'limit ' . $limit . ' offset ' . $offset;
+        }
+        if ($offset) {
+            return 'limit 18446744073709551610 offset ' . $offset;
+        }
+        return '';
     }
 }

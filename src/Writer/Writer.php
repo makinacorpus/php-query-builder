@@ -574,6 +574,9 @@ class Writer
     protected function doFormatRange(WriterContext $context, int $limit = 0, int $offset = 0): string
     {
         if ($limit) {
+            if (!$offset) {
+                return 'limit ' . $limit;
+            }
             return 'limit ' . $limit . ' offset ' . $offset;
         }
         if ($offset) {

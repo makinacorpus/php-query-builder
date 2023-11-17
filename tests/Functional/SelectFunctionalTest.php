@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Tests\Functional;
 
+use MakinaCorpus\QueryBuilder\Bridge\AbstractBridge;
 use MakinaCorpus\QueryBuilder\Expression\Cast;
 use MakinaCorpus\QueryBuilder\Expression\ColumnName;
 use MakinaCorpus\QueryBuilder\Expression\ConstantTable;
@@ -12,7 +13,6 @@ use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\Expression\Value;
 use MakinaCorpus\QueryBuilder\Query\Select;
 use MakinaCorpus\QueryBuilder\Tests\Bridge\Doctrine\DoctrineTestCase;
-use MakinaCorpus\QueryBuilder\Bridge\AbstractBridge;
 
 class SelectFunctionalTest extends DoctrineTestCase
 {
@@ -221,6 +221,44 @@ class SelectFunctionalTest extends DoctrineTestCase
         $this->executeStatement($select);
 
         self::expectNotToPerformAssertions();
+    }
+
+    public function testLimit(): void
+    {
+        $select = new Select('foo');
+        $select->orderBy('id');
+        $select->limit(2);
+
+        $this->executeStatement($select);
+
+        self::expectNotToPerformAssertions();
+    }
+
+    public function testOffset(): void
+    {
+        $select = new Select('foo');
+        $select->orderBy('id');
+        $select->offset(2);
+
+        $this->executeStatement($select);
+
+        self::expectNotToPerformAssertions();
+    }
+
+    public function testLimitOffset(): void
+    {
+        $select = new Select('foo');
+        $select->orderBy('id');
+        $select->range(2, 2);
+
+        $this->executeStatement($select);
+
+        self::expectNotToPerformAssertions();
+    }
+
+    public function testGroupBy(): void
+    {
+        self::markTestSkipped("Implement me.");
     }
 
     public function testWhere(): void
