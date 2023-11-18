@@ -7,6 +7,7 @@ namespace MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\ExpressionHelper;
 use MakinaCorpus\QueryBuilder\Query\Partial\OrderByTrait;
+use MakinaCorpus\QueryBuilder\Query\Partial\OrderByStatement;
 
 /**
  * Represent a WINDOW.
@@ -31,7 +32,7 @@ class Window implements Expression
     use OrderByTrait;
 
     public function __construct(
-        // @todo validation
+        /** @var OrderByStatement[] */
         ?array $orders = null,
         // @todo validation
         private ?Expression $partitionBy = null,

@@ -10,6 +10,7 @@ use MakinaCorpus\QueryBuilder\TableExpression;
 use MakinaCorpus\QueryBuilder\Where;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
+use MakinaCorpus\QueryBuilder\Expression\Window;
 use MakinaCorpus\QueryBuilder\Query\Partial\FromClauseTrait;
 use MakinaCorpus\QueryBuilder\Query\Partial\HavingClauseTrait;
 use MakinaCorpus\QueryBuilder\Query\Partial\OrderByTrait;
@@ -33,6 +34,8 @@ class Select extends AbstractQuery implements TableExpression
     private int $limit = 0;
     private int $offset = 0;
     private bool $performOnly = false;
+    /** @var Window[] */
+    private array $windows = [];
     /** @var Expression[] */
     private array $unions = [];
 
@@ -219,6 +222,37 @@ class Select extends AbstractQuery implements TableExpression
     public function hasColumn(string $alias): bool
     {
         return null !== $this->findColumnIndex($alias);
+    }
+
+    /**
+     * Create a window function, and register it at the FROM level.
+     *
+     * Eg.:
+     *    SELECT
+     *       foo() OVER (window_alias)
+     *    FROM bar
+     *    WINDOW window_alias AS (EXPR)
+     */
+    public function window(string $alias, mixed $partitionBy = null): static
+    {
+        $this->windows[] = new Window(null, $partitionBy ? ExpressionHelper::column($partitionBy) : null, $alias);
+
+        return $this;
+    }
+
+    /**
+     * Create a window function, and register it at the FROM level, and
+     * return the instance for building it.
+     *
+     * Eg.:
+     *    SELECT
+     *       foo() OVER (window_alias)
+     *    FROM bar
+     *    WINDOW window_alias AS (EXPR)
+     */
+    public function createWindow(string $alias, mixed $partitionBy = null): Window
+    {
+        return $this->windows[] = new Window(null, $partitionBy ? ExpressionHelper::column($partitionBy) : null, $alias);
     }
 
     /**

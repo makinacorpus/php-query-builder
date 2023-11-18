@@ -16,6 +16,7 @@ use MakinaCorpus\QueryBuilder\Query\Query;
  */
 trait OrderByTrait
 {
+    /** @var OrderByStatement[] */
     private array $orders = [];
 
     /**
@@ -39,7 +40,7 @@ trait OrderByTrait
      */
     public function orderBy(mixed $column, int $order = Query::ORDER_ASC, int $null = Query::NULL_IGNORE): static
     {
-        $this->orders[] = [ExpressionHelper::column($column), $order, $null];
+        $this->orders[] = new OrderByStatement($column, $order, $null);
 
         return $this;
     }
@@ -54,7 +55,7 @@ trait OrderByTrait
      */
     public function orderByRandom(int $order = Query::ORDER_ASC, int $null = Query::NULL_IGNORE): static
     {
-        $this->orders[] = [new Random(), $order, $null];
+        $this->orders[] = new OrderByStatement(new Random(), $order, $null);
 
         return $this;
     }
@@ -72,7 +73,7 @@ trait OrderByTrait
      */
     public function orderByRaw(mixed $column, int $order = Query::ORDER_ASC, int $null = Query::NULL_IGNORE): static
     {
-        $this->orders[] = [ExpressionHelper::raw($column), $order, $null];
+        $this->orders[] = new OrderByStatement(ExpressionHelper::raw($column), $order, $null);
 
         return $this;
     }
@@ -83,7 +84,7 @@ trait OrderByTrait
     protected function cloneOrder()
     {
         foreach ($this->orders as $index => $order) {
-            $this->orders[$index][0] = clone $order[0];
+            $this->orders[$index] = clone $order;
         }
     }
 }

@@ -47,6 +47,7 @@ use MakinaCorpus\QueryBuilder\Query\Update;
 use MakinaCorpus\QueryBuilder\Query\Partial\JoinStatement;
 use MakinaCorpus\QueryBuilder\Query\Partial\SelectColumn;
 use MakinaCorpus\QueryBuilder\Query\Partial\WithStatement;
+use MakinaCorpus\QueryBuilder\Query\Partial\OrderByStatement;
 
 /**
  * Standard SQL query formatter: this implementation conforms as much as it
@@ -381,11 +382,7 @@ class Writer
      *
      * @todo Convert $orders items to an Order class.
      *
-     * @param array $orders
-     *   Each order is an array that must contain:
-     *     - 0: Expression
-     *     - 1: Query::ORDER_* constant
-     *     - 2: Query::NULL_* constant
+     * @param OrderByStatement[] $orders
      */
     protected function doFormatOrderBy(WriterContext $context, array $orders): string
     {
@@ -395,9 +392,9 @@ class Writer
 
         $output = [];
 
-        foreach ($orders as $data) {
-            list($column, $order, $null) = $data;
-            $output[] = $this->doFormatOrderByItem($context, $column, $order, $null);
+        foreach ($orders as $order) {
+            \assert($order instanceof OrderByStatement);
+            $output[] = $this->doFormatOrderByItem($context, $order->column, $order->order, $order->null);
         }
 
         return "order by " . \implode(", ", $output);
@@ -428,7 +425,7 @@ class Writer
      */
     protected function doFormatJoinItem(WriterContext $context, JoinStatement $join): string
     {
-        $prefix = match ($mode = $join->getJoinMode()) {
+        $prefix = match ($mode = $join->mode) {
             Query::JOIN_NATURAL => 'natural join',
             Query::JOIN_LEFT => 'left outer join',
             Query::JOIN_LEFT_OUTER => 'left outer join',
@@ -438,14 +435,12 @@ class Writer
             default => $mode,
         };
 
-        $condition = $join->getCondition();
-
-        if ($condition->isEmpty()) {
+        if ($join->condition->isEmpty()) {
             // When there is no conditions, CROSS JOIN must be applied.
             // @todo Should we raise an error if join mode is not the default?
-            return 'cross join ' . $this->format($join->getTable(), $context, true);
+            return 'cross join ' . $this->format($join->table, $context, true);
         }
-        return $prefix . ' ' . $this->format($join->getTable(), $context, true) . ' on (' . $this->format($condition, $context, false) . ')';
+        return $prefix . ' ' . $this->format($join->table, $context, true) . ' on (' . $this->format($join->condition, $context, false) . ')';
     }
 
     /**
@@ -470,28 +465,24 @@ class Writer
             $first = \array_shift($join);
             \assert($first instanceof JoinStatement);
 
-            $mode = $first->getJoinMode();
-            $table = $first->getTable();
-            $condition = $first->getCondition();
-
             // First join must be an inner join, there is no choice, and first join
             // condition will become a where clause in the global query instead
-            if (!\in_array($mode, [Query::JOIN_INNER, Query::JOIN_NATURAL])) {
+            if (!\in_array($first->mode, [Query::JOIN_INNER, Query::JOIN_NATURAL])) {
                 throw new QueryBuilderError("First join in an update query must be inner or natural, it will serve as the first FROM or USING table.");
             }
 
             if ($fromPrefix) {
-                $output[] = $fromPrefix . ' ' . $this->format($table, $context, true);
+                $output[] = $fromPrefix . ' ' . $this->format($first->table, $context, true);
             } else {
-                $output[] = $this->format($table, $context, true);
+                $output[] = $this->format($first->table, $context, true);
             }
 
-            if (!$condition->isEmpty()) {
+            if (!$first->condition->isEmpty()) {
                 if (!$query) {
                     throw new QueryBuilderError("Something very bad happened.");
                 }
                 // @phpstan-ignore-next-line
-                $query->getWhere()->raw($condition);
+                $query->getWhere()->raw($first->condition);
             }
         }
 

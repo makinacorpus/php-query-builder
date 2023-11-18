@@ -8,6 +8,7 @@ use MakinaCorpus\QueryBuilder\Expression\ColumnName;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\Expression\Window;
 use MakinaCorpus\QueryBuilder\Query\Query;
+use MakinaCorpus\QueryBuilder\Query\Partial\OrderByStatement;
 use MakinaCorpus\QueryBuilder\Tests\UnitTestCase;
 
 class WindowTest extends UnitTestCase
@@ -41,7 +42,9 @@ class WindowTest extends UnitTestCase
 
     public function testOrderBy(): void
     {
-        $expression = new Window([[new ColumnName('foo'), Query::ORDER_ASC, Query::NULL_FIRST]]);
+        $expression = new Window([
+            new OrderByStatement('foo', Query::ORDER_ASC, Query::NULL_FIRST),
+        ]);
 
         self::assertSameSql(
             <<<SQL
@@ -54,8 +57,8 @@ class WindowTest extends UnitTestCase
     public function testOrderByMultiple(): void
     {
         $expression = new Window([
-            [new ColumnName('foo'), Query::ORDER_ASC, Query::NULL_FIRST],
-            [new ColumnName('bla'), Query::ORDER_DESC, Query::NULL_IGNORE],
+            new OrderByStatement('foo', Query::ORDER_ASC, Query::NULL_FIRST),
+            new OrderByStatement('bla', Query::ORDER_DESC, Query::NULL_IGNORE),
         ]);
 
         self::assertSameSql(
@@ -82,7 +85,7 @@ class WindowTest extends UnitTestCase
     {
         $expression = new Window(
             [
-                [new ColumnName('foo'), Query::ORDER_ASC, Query::NULL_FIRST]
+                new OrderByStatement('foo', Query::ORDER_ASC, Query::NULL_FIRST),
             ],
             new Raw("foo()"),
         );

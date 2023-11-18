@@ -9,8 +9,9 @@ use MakinaCorpus\QueryBuilder\Expression\Aggregate;
 use MakinaCorpus\QueryBuilder\Expression\ColumnName;
 use MakinaCorpus\QueryBuilder\Expression\Comparison;
 use MakinaCorpus\QueryBuilder\Expression\Window;
-use MakinaCorpus\QueryBuilder\Tests\UnitTestCase;
 use MakinaCorpus\QueryBuilder\Query\Query;
+use MakinaCorpus\QueryBuilder\Query\Partial\OrderByStatement;
+use MakinaCorpus\QueryBuilder\Tests\UnitTestCase;
 
 class AggregateTest extends UnitTestCase
 {
@@ -91,7 +92,7 @@ class AggregateTest extends UnitTestCase
             new ColumnName('bla'),
             null,
             new Window(
-                [[new ColumnName("pouet"), Query::ORDER_DESC, Query::NULL_IGNORE]],
+                [new OrderByStatement("pouet", Query::ORDER_DESC, Query::NULL_IGNORE)],
             ),
         );
 
@@ -113,7 +114,7 @@ class AggregateTest extends UnitTestCase
             new ColumnName('bla'),
             new Comparison(new ColumnName('a'), new ColumnName('b'), '='),
             new Window(
-                [[new ColumnName("pouet"), Query::ORDER_DESC, Query::NULL_IGNORE]],
+                [new OrderByStatement("pouet", Query::ORDER_DESC, Query::NULL_IGNORE)],
             ),
         );
 

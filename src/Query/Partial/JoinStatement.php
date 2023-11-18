@@ -9,11 +9,14 @@ use MakinaCorpus\QueryBuilder\ExpressionHelper;
 use MakinaCorpus\QueryBuilder\Where;
 use MakinaCorpus\QueryBuilder\Query\Query;
 
+/**
+ * @internal
+ */
 final class JoinStatement
 {
-    private Expression $table;
-    private Where $condition;
-    private string $mode = Query::JOIN_INNER;
+    public /* readonly */ Expression $table;
+    public /* readonly */ Where $condition;
+    public readonly string $mode;
 
     public function __construct(
         mixed $table,
@@ -23,21 +26,6 @@ final class JoinStatement
         $this->table = ExpressionHelper::table($table);
         $this->condition = ExpressionHelper::where($condition);
         $this->mode = $mode;
-    }
-
-    public function getTable(): Expression
-    {
-        return $this->table;
-    }
-
-    public function getCondition(): Where
-    {
-        return $this->condition;
-    }
-
-    public function getJoinMode(): string
-    {
-        return $this->mode;
     }
 
     public function __clone()
