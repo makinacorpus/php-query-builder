@@ -86,9 +86,44 @@ class SelectFunctionalTest extends DoctrineTestCase
         self::expectNotToPerformAssertions();
     }
 
-    public function testSelectCount(): void
+    public function testSelectDistinct(): void
     {
-        self::markTestSkipped("Implement me.");
+        $select = new Select('foo');
+        $select->distinct();
+
+        $this->executeStatement($select);
+
+        self::expectNotToPerformAssertions();
+    }
+
+    public function testSelectCountStart(): void
+    {
+        $select = new Select('foo');
+        $select->count();
+
+        $this->executeStatement($select);
+
+        self::expectNotToPerformAssertions();
+    }
+
+    public function testSelectCountColumn(): void
+    {
+        $select = new Select('foo');
+        $select->count('name');
+
+        $this->executeStatement($select);
+
+        self::expectNotToPerformAssertions();
+    }
+
+    public function testSelectCountDistinct(): void
+    {
+        $select = new Select('foo');
+        $select->count('name', null, true);
+
+        $this->executeStatement($select);
+
+        self::expectNotToPerformAssertions();
     }
 
     public function testFrom(): void

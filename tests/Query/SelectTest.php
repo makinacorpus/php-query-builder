@@ -96,6 +96,50 @@ class SelectTest extends UnitTestCase
         );
     }
 
+    public function testSelectDistinct(): void
+    {
+        $query = new Select('some_table');
+        $query->distinct();
+
+        self::assertSameSql(
+            'select distinct * from "some_table"',
+            $query
+        );
+    }
+
+    public function testSelectCountStart(): void
+    {
+        $query = new Select('some_table');
+        $query->count();
+
+        self::assertSameSql(
+            'select "count"(*) from "some_table"',
+            $query
+        );
+    }
+
+    public function testSelectCountColumn(): void
+    {
+        $query = new Select('some_table');
+        $query->count('name');
+
+        self::assertSameSql(
+            'select "count"("name") from "some_table"',
+            $query
+        );
+    }
+
+    public function testSelectCountDistinct(): void
+    {
+        $query = new Select('some_table');
+        $query->count('name', null, true);
+
+        self::assertSameSql(
+            'select "count"(distinct "name") from "some_table"',
+            $query
+        );
+    }
+
     public function testWhereAnd(): void
     {
         $query = (new Select('a'))

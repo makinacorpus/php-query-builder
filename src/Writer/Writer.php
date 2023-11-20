@@ -1150,6 +1150,9 @@ class Writer
         $output = [];
         $output[] = $this->doFormatWith($context, $query->getAllWith());
         $output[] = "select";
+        if ($query->isDistinct()) {
+            $output[] = "distinct";
+        }
         $output[] = $this->doFormatSelect($context, $query->getAllColumns());
 
         $from = $query->getAllFrom();

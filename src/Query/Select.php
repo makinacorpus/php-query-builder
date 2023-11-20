@@ -28,6 +28,7 @@ class Select extends AbstractQuery implements TableExpression
     use WhereClauseTrait;
     use OrderByTrait;
 
+    private bool $distinct = false;
     /** @var SelectColumn[] */
     private array $columns = [];
     private bool $forUpdate = false;
@@ -56,6 +57,24 @@ class Select extends AbstractQuery implements TableExpression
         }
         $this->having = new Where();
         $this->where = new Where();
+    }
+
+    /**
+     * Is this SELECT DISTINCT.
+     */
+    public function isDistinct(): bool
+    {
+        return $this->distinct;
+    }
+
+    /**
+     * Mark SELECT DISTINCT ...
+     */
+    public function distinct(): static
+    {
+        $this->distinct = true;
+
+        return $this;
     }
 
     /**
@@ -174,7 +193,7 @@ class Select extends AbstractQuery implements TableExpression
      */
     public function columnAgg(string $function, mixed $expression, ?string $alias = null): static
     {
-        $this->createColumnAggregate($function, $expression, $alias);
+        $this->createColumnAgg($function, $expression, $alias);
 
         return $this;
     }
@@ -193,6 +212,20 @@ class Select extends AbstractQuery implements TableExpression
         $this->columns[] = new SelectColumn($ret, $alias);
 
         return $ret;
+    }
+
+    /**
+     * Add COUNT(*|<column>) to SELECT clause.
+     */
+    public function count(mixed $column = null, ?string $alias = null, bool $distinct = false): static
+    {
+        if ($distinct) {
+            $column = new Raw('distinct ?', [ExpressionHelper::column($column)]);
+        }
+
+        $this->columnAgg('count', $column ?? new Raw('*'), $alias);
+
+        return $this;
     }
 
     /**
