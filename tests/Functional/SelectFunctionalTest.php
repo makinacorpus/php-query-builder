@@ -11,6 +11,7 @@ use MakinaCorpus\QueryBuilder\Expression\ConstantTable;
 use MakinaCorpus\QueryBuilder\Expression\FunctionCall;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\Expression\Value;
+use MakinaCorpus\QueryBuilder\Query\Query;
 use MakinaCorpus\QueryBuilder\Query\Select;
 use MakinaCorpus\QueryBuilder\Tests\Bridge\Doctrine\DoctrineTestCase;
 
@@ -39,7 +40,8 @@ class SelectFunctionalTest extends DoctrineTestCase
             <<<SQL
             CREATE TABLE foo (
                 id int NOT NULL,
-                name text DEFAULT NULL
+                name text DEFAULT NULL,
+                date timestamp DEFAULT NULL
             )
             SQL
         );
@@ -217,6 +219,110 @@ class SelectFunctionalTest extends DoctrineTestCase
         $select->with('other', $table);
         // We need to CAST, otherwise PostgreSQL will accept it as a "text".
         $select->join('other', new Raw('? = foo.id', [new Cast(new ColumnName('other.a'), 'int')]));
+
+        $this->executeStatement($select);
+
+        self::expectNotToPerformAssertions();
+    }
+
+    public function testWithAggregateFilter(): void
+    {
+        $select = new Select('foo');
+
+        $select
+            ->createColumnAgg('max', 'date', 'max_date')
+            ->filterRaw('id < 10')
+        ;
+
+        $this->executeStatement($select);
+
+        self::expectNotToPerformAssertions();
+    }
+
+    public function testWithAggregateOverPartitionBy(): void
+    {
+        $select = new Select('foo');
+
+        $select
+            ->createColumnAgg('row_number', null, 'rownum')
+            ->over('name')
+        ;
+
+        $this->executeStatement($select);
+
+        self::expectNotToPerformAssertions();
+    }
+
+    public function testWithAggregateOverOrderBy(): void
+    {
+        $select = new Select('foo');
+
+        $select
+            ->createColumnAgg('row_number', null, 'rownum')
+            ->createOver()
+            ->orderBy('id', Query::ORDER_DESC)
+        ;
+
+        $this->executeStatement($select);
+
+        self::expectNotToPerformAssertions();
+    }
+
+    public function testWithAggregateOverPartitionByOrderBy(): void
+    {
+        $select = new Select('foo');
+
+        $select
+            ->createColumnAgg('row_number', null, 'rownum')
+            ->createOver()
+            ->partitionBy('name')
+            ->orderBy('id', Query::ORDER_DESC)
+        ;
+
+        $this->executeStatement($select);
+
+        self::expectNotToPerformAssertions();
+    }
+
+    public function testWithAggregateOverEmpty(): void
+    {
+        $select = new Select('foo');
+
+        $select
+            ->createColumnAgg('row_number', null, 'rownum')
+            ->over()
+        ;
+
+        $this->executeStatement($select);
+
+        self::expectNotToPerformAssertions();
+    }
+
+    public function testWithAggregateFilterOver(): void
+    {
+        $select = new Select('foo');
+
+        $select
+            ->createColumnAgg('max', 'date', 'max_date')
+            ->filterRaw('id < 10')
+            ->over('name', 'id')
+        ;
+
+        $this->executeStatement($select);
+
+        self::expectNotToPerformAssertions();
+    }
+
+    public function testWindowAfterFrom(): void
+    {
+        $select = new Select('foo');
+
+        $select
+            ->window('some_window', 'name', 'id')
+            ->createColumnAgg('max', 'date', 'max_date')
+            ->filterRaw('id < 10')
+            ->overWindow('some_window')
+        ;
 
         $this->executeStatement($select);
 

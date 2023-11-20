@@ -340,6 +340,27 @@ class Writer
     }
 
     /**
+     * Format WINDOW at the SELECT level.
+     *
+     * @param Window[] $windows
+     */
+    protected function doFormatWindows(WriterContext $context, array $windows): string
+    {
+        $output = '';
+        foreach ($windows as $window) {
+            \assert($window instanceof Window);
+
+            $output .= ($output ? ', ' : 'window ')
+                . $this->escaper->escapeIdentifier($window->getAlias())
+                . " as "
+                . $this->format($window, $context)
+            ;
+        }
+
+        return $output;
+    }
+
+    /**
      * Format the whole projection.
      *
      * @param array $return
@@ -1153,6 +1174,10 @@ class Writer
             $output[] = 'having ' . $this->format($having, $context);
         }
 
+        if ($windows = $query->getAllWindows()) {
+            $output[] = $this->doFormatWindows($context, $windows);
+        }
+
         $output[] = $this->doFormatOrderBy($context, $query->getAllOrderBy());
         $output[] = $this->doFormatRange($context, ...$query->getRange());
 
@@ -1300,9 +1325,70 @@ class Writer
         return $this->escaper->escapeLiteral($pattern);
     }
 
+    /**
+     * Does the target dialect allows aggregate function name escaping.
+     */
+    protected function shouldEscapeAggregateFunctionName(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Use the CASE WHEN THEN END trick for simulating FILTER.
+     *
+     * TL;DR; Any statement such as:
+     *    aggregate(expression) FILTER (WHERE condition)
+     * Can be replaced by:
+     *    aggregate(CASE WHEN condition THEN expression END)
+     *
+     * With the only exception of COUNT(*), then:
+     *    COUNT(*) FILTER (WHERE condition)
+     * Becomes:
+     *    COUNT(CASE WHEN condition THEN 1 END)
+     *
+     * @see https://modern-sql.com/feature/filter
+     */
+    protected function doFormatAggregateWithoutFilter(Aggregate $expression, WriterContext $context): string
+    {
+        if ($this->shouldEscapeAggregateFunctionName()) {
+            $output = $this->escaper->escapeIdentifier($expression->getFunctionName());
+        } else {
+            $output = $expression->getFunctionName();
+        }
+
+        $column = $expression->getColumn();
+        $filter = $expression->getFilter();
+
+        if ($filter && !$filter->isEmpty()) {
+            $output .= '(CASE WHEN '
+                . $this->format($filter, $context)
+                . ' THEN '
+                . $this->format($column, $context)
+                . ' END)'
+            ;
+        } else if ($column) {
+            $output .= '(' . $this->format($column, $context) . ')';
+        } else {
+            $output .= '()';
+        }
+
+        if ($over = $expression->getOverWindow()) {
+            $output .= ' over ' . $this->format($over, $context, !$over instanceof Window);
+        }
+
+        return $output;
+    }
+
+    /**
+     * Format aggregation function in SELECT AGGR(...) FILTER (...) OVER (...).
+     */
     protected function formatAggregate(Aggregate $expression, WriterContext $context): string
     {
-        $output .= $this->escaper->escapeIdentifier($expression->getFunctionName()) . '(';
+        if ($this->shouldEscapeAggregateFunctionName()) {
+            $output = $this->escaper->escapeIdentifier($expression->getFunctionName()) . '(';
+        } else {
+            $output = $expression->getFunctionName() . '(';
+        }
 
         if ($column = $expression->getColumn()) {
             $output .= $this->format($column, $context);
@@ -1315,7 +1401,11 @@ class Writer
         }
 
         if ($over = $expression->getOverWindow()) {
-            $output .= ' over ' . $this->format($over, $context, !$over instanceof Window);
+            if ($over instanceof Window) {
+                $output .= ' over ' . $this->format($over, $context, !$over instanceof Window);
+            } else {
+                $output .= ' over (' . $this->format($over, $context, !$over instanceof Window) . ')';
+            }
         }
 
         return $output;

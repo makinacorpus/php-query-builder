@@ -7,10 +7,12 @@ namespace MakinaCorpus\QueryBuilder\Platform\Writer;
 use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Converter\Converter;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
+use MakinaCorpus\QueryBuilder\Expression\Aggregate;
 use MakinaCorpus\QueryBuilder\Expression\Concat;
 use MakinaCorpus\QueryBuilder\Expression\ConstantTable;
 use MakinaCorpus\QueryBuilder\Expression\Random;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
+use MakinaCorpus\QueryBuilder\Expression\Window;
 use MakinaCorpus\QueryBuilder\Platform\Converter\MySQLConverter;
 use MakinaCorpus\QueryBuilder\Query\Delete;
 use MakinaCorpus\QueryBuilder\Query\Merge;
@@ -30,6 +32,24 @@ class MySQLWriter extends Writer
     protected function createConverter(): Converter
     {
         return new MySQLConverter();
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * MySQL aggregate function names seems to be keywords, not functions.
+     */
+    protected function shouldEscapeAggregateFunctionName(): bool
+    {
+        return false;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function formatAggregate(Aggregate $expression, WriterContext $context): string
+    {
+        return $this->doFormatAggregateWithoutFilter($expression, $context);
     }
 
     /**

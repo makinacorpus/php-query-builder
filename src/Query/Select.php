@@ -9,6 +9,7 @@ use MakinaCorpus\QueryBuilder\ExpressionHelper;
 use MakinaCorpus\QueryBuilder\TableExpression;
 use MakinaCorpus\QueryBuilder\Where;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
+use MakinaCorpus\QueryBuilder\Expression\Aggregate;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\Expression\Window;
 use MakinaCorpus\QueryBuilder\Query\Partial\FromClauseTrait;
@@ -169,6 +170,32 @@ class Select extends AbstractQuery implements TableExpression
     }
 
     /**
+     * Add column with aggregation function.
+     */
+    public function columnAgg(string $function, mixed $expression, ?string $alias = null): static
+    {
+        $this->createColumnAggregate($function, $expression, $alias);
+
+        return $this;
+    }
+
+    /**
+     * Create and  set a column with aggregation function.
+     */
+    public function createColumnAgg(string $function, mixed $expression, ?string $alias = null): Aggregate
+    {
+        if (null !== $expression) {
+            $expression = ExpressionHelper::column($expression);
+        }
+
+        $ret = new Aggregate($function, $expression);
+
+        $this->columns[] = new SelectColumn($ret, $alias);
+
+        return $ret;
+    }
+
+    /**
      * Set or replace multiple columns at once.
      *
      * @param string[] $columns
@@ -225,6 +252,16 @@ class Select extends AbstractQuery implements TableExpression
     }
 
     /**
+     * Get all WINDOW clauses.
+     *
+     * @return Window[]
+     */
+    public function getAllWindows(): array
+    {
+        return $this->windows;
+    }
+
+    /**
      * Create a window function, and register it at the FROM level.
      *
      * Eg.:
@@ -233,9 +270,17 @@ class Select extends AbstractQuery implements TableExpression
      *    FROM bar
      *    WINDOW window_alias AS (EXPR)
      */
-    public function window(string $alias, mixed $partitionBy = null): static
+    public function window(string $alias, mixed $partitionBy = null, mixed $orderBy = null, int $order = Query::ORDER_ASC, int $null = Query::NULL_IGNORE): static
     {
-        $this->windows[] = new Window(null, $partitionBy ? ExpressionHelper::column($partitionBy) : null, $alias);
+        $window = new Window(null, null, $alias);
+        if ($partitionBy) {
+            $window->partitionBy($partitionBy);
+        }
+        if ($orderBy) {
+            $window->orderBy($orderBy, $order, $null);
+        }
+
+        $this->windows[] = $window;
 
         return $this;
     }
@@ -250,9 +295,9 @@ class Select extends AbstractQuery implements TableExpression
      *    FROM bar
      *    WINDOW window_alias AS (EXPR)
      */
-    public function createWindow(string $alias, mixed $partitionBy = null): Window
+    public function createWindow(string $alias): Window
     {
-        return $this->windows[] = new Window(null, $partitionBy ? ExpressionHelper::column($partitionBy) : null, $alias);
+        return $this->windows[] = new Window(null, null, $alias);
     }
 
     /**
