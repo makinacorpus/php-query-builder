@@ -12,7 +12,6 @@ use MakinaCorpus\QueryBuilder\Expression\Concat;
 use MakinaCorpus\QueryBuilder\Expression\ConstantTable;
 use MakinaCorpus\QueryBuilder\Expression\Random;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
-use MakinaCorpus\QueryBuilder\Expression\Window;
 use MakinaCorpus\QueryBuilder\Platform\Converter\MySQLConverter;
 use MakinaCorpus\QueryBuilder\Query\Delete;
 use MakinaCorpus\QueryBuilder\Query\Merge;
@@ -50,6 +49,25 @@ class MySQLWriter extends Writer
     protected function formatAggregate(Aggregate $expression, WriterContext $context): string
     {
         return $this->doFormatAggregateWithoutFilter($expression, $context);
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * MySQL does not support OFFSET alone.
+     */
+    protected function doFormatRange(WriterContext $context, int $limit = 0, int $offset = 0): string
+    {
+        if ($limit) {
+            if (!$offset) {
+                return 'limit ' . $limit;
+            }
+            return 'limit ' . $limit . ' offset ' . $offset;
+        }
+        if ($offset) {
+            return 'limit 18446744073709551610 offset ' . $offset;
+        }
+        return '';
     }
 
     /**

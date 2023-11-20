@@ -41,7 +41,7 @@ class SelectFunctionalTest extends DoctrineTestCase
             CREATE TABLE foo (
                 id int NOT NULL,
                 name text DEFAULT NULL,
-                date timestamp DEFAULT NULL
+                date timestamp DEFAULT current_timestamp
             )
             SQL
         );
@@ -162,6 +162,7 @@ class SelectFunctionalTest extends DoctrineTestCase
 
     public function testSelectFromConstantTable(): void
     {
+        $this->skipIfDatabaseLessThan(AbstractBridge::SERVER_MYSQL, '8.0');
         $this->skipIfDatabaseLessThan(AbstractBridge::SERVER_MARIADB, '10.3', 'MariaDB supports VALUES statement since version 10.3.');
         $this->skipIfDatabase(AbstractBridge::SERVER_MARIADB, 'MariaDB does not support VALUES column aliasing.');
 
@@ -213,6 +214,7 @@ class SelectFunctionalTest extends DoctrineTestCase
 
     public function testJoinConstantTable(): void
     {
+        $this->skipIfDatabaseLessThan(AbstractBridge::SERVER_MYSQL, '8.0');
         $this->skipIfDatabaseLessThan(AbstractBridge::SERVER_MARIADB, '10.3', 'MariaDB supports VALUES statement since version 10.3.');
         $this->skipIfDatabase(AbstractBridge::SERVER_MARIADB, 'MariaDB does not support VALUES column aliasing.');
 
@@ -232,6 +234,8 @@ class SelectFunctionalTest extends DoctrineTestCase
 
     public function testWithJoin(): void
     {
+        $this->skipIfDatabaseLessThan(AbstractBridge::SERVER_MYSQL, '8.0');
+
         $nested = new Select('bar');
 
         $select = new Select('foo');
@@ -245,6 +249,8 @@ class SelectFunctionalTest extends DoctrineTestCase
 
     public function testWithConstantTableJoin(): void
     {
+        $this->skipIfDatabaseLessThan(AbstractBridge::SERVER_MYSQL, '8.0');
+
         $table = new ConstantTable();
         $table->columns(['a', 'b' , 'c']);
         $table->row(['foo', 1, new \DateTimeImmutable()]);
@@ -276,6 +282,8 @@ class SelectFunctionalTest extends DoctrineTestCase
 
     public function testWithAggregateOverPartitionBy(): void
     {
+        $this->skipIfDatabaseLessThan(AbstractBridge::SERVER_MYSQL, '8.0');
+
         $select = new Select('foo');
 
         $select
@@ -290,6 +298,8 @@ class SelectFunctionalTest extends DoctrineTestCase
 
     public function testWithAggregateOverOrderBy(): void
     {
+        $this->skipIfDatabaseLessThan(AbstractBridge::SERVER_MYSQL, '8.0');
+
         $select = new Select('foo');
 
         $select
@@ -305,6 +315,8 @@ class SelectFunctionalTest extends DoctrineTestCase
 
     public function testWithAggregateOverPartitionByOrderBy(): void
     {
+        $this->skipIfDatabaseLessThan(AbstractBridge::SERVER_MYSQL, '8.0');
+
         $select = new Select('foo');
 
         $select
@@ -321,6 +333,8 @@ class SelectFunctionalTest extends DoctrineTestCase
 
     public function testWithAggregateOverEmpty(): void
     {
+        $this->skipIfDatabaseLessThan(AbstractBridge::SERVER_MYSQL, '8.0');
+
         $select = new Select('foo');
 
         $select
@@ -335,6 +349,8 @@ class SelectFunctionalTest extends DoctrineTestCase
 
     public function testWithAggregateFilterOver(): void
     {
+        $this->skipIfDatabaseLessThan(AbstractBridge::SERVER_MYSQL, '8.0');
+
         $select = new Select('foo');
 
         $select
@@ -350,6 +366,8 @@ class SelectFunctionalTest extends DoctrineTestCase
 
     public function testWindowAfterFrom(): void
     {
+        $this->skipIfDatabaseLessThan(AbstractBridge::SERVER_MYSQL, '8.0');
+
         $select = new Select('foo');
 
         $select

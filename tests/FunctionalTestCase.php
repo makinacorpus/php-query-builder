@@ -100,7 +100,7 @@ abstract class FunctionalTestCase extends UnitTestCase
         $serverVersion = $this->normalizeVersion($version);
         $version = $this->normalizeVersion($version);
 
-        if (0 >= \version_compare($serverVersion, $version)) {
+        if (0 <= \version_compare($serverVersion, $version)) {
             self::markTestSkipped($message ?? \sprintf("Test disabled for database '%s' at version >= '%s'", $database, $version));
         }
     }
@@ -120,10 +120,10 @@ abstract class FunctionalTestCase extends UnitTestCase
             throw new \Exception(\sprintf("Database '%s', server version is null", $database));
         }
 
-        $serverVersion = $this->normalizeVersion($version);
+        $serverVersion = $this->normalizeVersion($serverVersion);
         $version = $this->normalizeVersion($version);
 
-        if (0 < \version_compare($serverVersion, $version)) {
+        if (0 > \version_compare($serverVersion, $version)) {
             self::markTestSkipped($message ?? \sprintf("Test disabled for database '%s' at version <= '%s'", $database, $version));
         }
     }

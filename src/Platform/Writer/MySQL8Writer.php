@@ -53,23 +53,4 @@ class MySQL8Writer extends MySQLWriter
         }
         return 'row ' . $this->formatRow($expression, $context);
     }
-
-    /**
-     * {@inheritdoc}
-     *
-     * MySQL does not support OFFSET alone.
-     */
-    protected function doFormatRange(WriterContext $context, int $limit = 0, int $offset = 0): string
-    {
-        if ($limit) {
-            if (!$offset) {
-                return 'limit ' . $limit;
-            }
-            return 'limit ' . $limit . ' offset ' . $offset;
-        }
-        if ($offset) {
-            return 'limit 18446744073709551610 offset ' . $offset;
-        }
-        return '';
-    }
 }
