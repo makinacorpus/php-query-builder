@@ -38,3 +38,13 @@ services:
             POSTGRES_PASSWORD: password
         ports:
             - 9005:5432
+    sqlsrv2019:
+        image: mcr.microsoft.com/mssql/server:2019-latest
+        restart: unless-stopped
+        environment:
+            ACCEPT_EULA: "y"
+            MSSQL_PID: Developer
+            MSSQL_SA_PASSWORD: P@ssword123
+            SA_PASSWORD: P@ssword123
+        ports:
+            - 9007:1433

@@ -63,3 +63,14 @@ DBAL_DRIVER=pdo_pgsql \
     DBAL_ROOT_USER="postgres" \
     DBAL_USER=postgres \
     vendor/bin/phpunit
+
+echo "Running tests with SQLServer 2019"
+DBAL_DRIVER=pdo_sqlsrv \
+    DBAL_DBNAME=test_db \
+    DBAL_HOST=127.0.0.1 \
+    DBAL_PASSWORD=P@ssword123 \
+    DBAL_PORT=9007 \
+    DBAL_ROOT_PASSWORD="P@ssword123" \
+    DBAL_ROOT_USER="sa" \
+    DBAL_USER=sa \
+    vendor/bin/phpunit

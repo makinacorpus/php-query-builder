@@ -21,6 +21,7 @@ use MakinaCorpus\QueryBuilder\Expression\ColumnName;
 use MakinaCorpus\QueryBuilder\Expression\Comparison;
 use MakinaCorpus\QueryBuilder\Expression\Concat;
 use MakinaCorpus\QueryBuilder\Expression\ConstantTable;
+use MakinaCorpus\QueryBuilder\Expression\CurrentTimestamp;
 use MakinaCorpus\QueryBuilder\Expression\FunctionCall;
 use MakinaCorpus\QueryBuilder\Expression\Identifier;
 use MakinaCorpus\QueryBuilder\Expression\IfThen;
@@ -45,9 +46,9 @@ use MakinaCorpus\QueryBuilder\Query\RawQuery;
 use MakinaCorpus\QueryBuilder\Query\Select;
 use MakinaCorpus\QueryBuilder\Query\Update;
 use MakinaCorpus\QueryBuilder\Query\Partial\JoinStatement;
+use MakinaCorpus\QueryBuilder\Query\Partial\OrderByStatement;
 use MakinaCorpus\QueryBuilder\Query\Partial\SelectColumn;
 use MakinaCorpus\QueryBuilder\Query\Partial\WithStatement;
-use MakinaCorpus\QueryBuilder\Query\Partial\OrderByStatement;
 
 /**
  * Standard SQL query formatter: this implementation conforms as much as it
@@ -154,6 +155,7 @@ class Writer
                     Concat::class => $this->formatConcat($expression, $context),
                     ConstantTable::class => $this->formatConstantTable($expression, $context),
                     Comparison::class => $this->formatComparison($expression, $context),
+                    CurrentTimestamp::class => $this->formatCurrentTimestamp($expression, $context),
                     Identifier::class => $this->formatIdentifier($expression, $context),
                     IfThen::class => $this->formatIfThen($expression, $context),
                     Not::class => $this->formatNot($expression, $context),
@@ -587,7 +589,7 @@ class Writer
      * @param int $offset
      *   0 means default offset.
      */
-    protected function doFormatRange(WriterContext $context, int $limit = 0, int $offset = 0): string
+    protected function doFormatRange(WriterContext $context, int $limit = 0, int $offset = 0, bool $hasOrder = true): string
     {
         if ($limit) {
             if (!$offset) {
@@ -672,6 +674,14 @@ class Writer
         }
 
         return $output;
+    }
+
+    /**
+     * CURRENT_TIMESTAMP, NOW(), GETDATE() depending upon the dialect.
+     */
+    protected function formatCurrentTimestamp(CurrentTimestamp $expression, WriterContext $context): string
+    {
+        return 'current_timestamp';
     }
 
     /**
@@ -1181,8 +1191,11 @@ class Writer
             $output[] = $this->doFormatWindows($context, $windows);
         }
 
-        $output[] = $this->doFormatOrderBy($context, $query->getAllOrderBy());
-        $output[] = $this->doFormatRange($context, ...$query->getRange());
+        if ($order = $query->getAllOrderBy()) {
+            $output[] = $this->doFormatOrderBy($context, $order);
+        }
+        list ($limit, $offset) = $query->getRange();
+        $output[] = $this->doFormatRange($context, $limit, $offset, (bool) $order);
 
         foreach ($query->getUnion() as $expression) {
             $output[] = "union " . $this->format($expression, $context);

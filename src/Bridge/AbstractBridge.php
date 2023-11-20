@@ -17,6 +17,8 @@ use MakinaCorpus\QueryBuilder\Platform\Writer\MariaDBWriter;
 use MakinaCorpus\QueryBuilder\Platform\Writer\MySQL8Writer;
 use MakinaCorpus\QueryBuilder\Platform\Writer\MySQLWriter;
 use MakinaCorpus\QueryBuilder\Platform\Writer\PostgreSQLWriter;
+use MakinaCorpus\QueryBuilder\Platform\Writer\SQLServerWriter;
+use MakinaCorpus\QueryBuilder\Platform\Writer\SQLiteWriter;
 use MakinaCorpus\QueryBuilder\Writer\Writer;
 
 abstract class AbstractBridge
@@ -25,6 +27,7 @@ abstract class AbstractBridge
     const SERVER_MYSQL = 'mysql';
     const SERVER_POSTGRESQL = 'postgresql';
     const SERVER_SQLITE = 'sqlite';
+    const SERVER_SQLSERVER = 'sqlsrv';
 
     private ?ConverterPluginRegistry $converterPluginRegistry = null;
     private ?Writer $writer = null;
@@ -109,6 +112,10 @@ abstract class AbstractBridge
 
         if (\str_contains($serverName, 'sqlite')) {
             return self::SERVER_SQLITE;
+        }
+
+        if (\str_contains($serverName, 'sqlsrv') || \str_contains($serverName, 'sqlserver')) {
+            return self::SERVER_SQLSERVER;
         }
 
         return $this->serverFlavor = $serverName;
@@ -214,6 +221,14 @@ abstract class AbstractBridge
 
         if (self::SERVER_MARIADB === $serverFlavor) {
             return new MariaDBWriter($escaper, $converter);
+        }
+
+        if (self::SERVER_SQLITE === $serverFlavor) {
+            return new SQLiteWriter($escaper, $converter);
+        }
+
+        if (self::SERVER_SQLSERVER === $serverFlavor) {
+            return new SQLServerWriter($escaper, $converter);
         }
 
         return new Writer($escaper, $converter);

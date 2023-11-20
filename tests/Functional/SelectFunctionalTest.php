@@ -8,7 +8,7 @@ use MakinaCorpus\QueryBuilder\Bridge\AbstractBridge;
 use MakinaCorpus\QueryBuilder\Expression\Cast;
 use MakinaCorpus\QueryBuilder\Expression\ColumnName;
 use MakinaCorpus\QueryBuilder\Expression\ConstantTable;
-use MakinaCorpus\QueryBuilder\Expression\FunctionCall;
+use MakinaCorpus\QueryBuilder\Expression\CurrentTimestamp;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\Expression\Value;
 use MakinaCorpus\QueryBuilder\Query\Query;
@@ -40,8 +40,8 @@ class SelectFunctionalTest extends DoctrineTestCase
             <<<SQL
             CREATE TABLE foo (
                 id int NOT NULL,
-                name text DEFAULT NULL,
-                date timestamp DEFAULT current_timestamp
+                name varchar DEFAULT NULL,
+                date timestamp
             )
             SQL
         );
@@ -50,7 +50,7 @@ class SelectFunctionalTest extends DoctrineTestCase
             <<<SQL
             CREATE TABLE bar (
                 foo_id int NOT NULL,
-                data json DEFAULT NULL
+                data varchar DEFAULT NULL
             )
             SQL
         );
@@ -79,7 +79,7 @@ class SelectFunctionalTest extends DoctrineTestCase
     public function testSelectFunction(): void
     {
         $select = new Select();
-        $select->column(new FunctionCall('now'));
+        $select->column(new CurrentTimestamp());
 
         $this->executeStatement($select);
 
@@ -249,6 +249,8 @@ class SelectFunctionalTest extends DoctrineTestCase
 
     public function testWithConstantTableJoin(): void
     {
+        // https://learn.microsoft.com/en-us/sql/t-sql/queries/table-value-constructor-transact-sql?view=sql-server-ver16
+        $this->skipIfDatabase(AbstractBridge::SERVER_SQLSERVER, 'SQL Server only accepts Table Value Constructor in SELECT, FROM and INSERT.');
         $this->skipIfDatabaseLessThan(AbstractBridge::SERVER_MYSQL, '8.0');
 
         $table = new ConstantTable();
@@ -266,7 +268,7 @@ class SelectFunctionalTest extends DoctrineTestCase
         self::expectNotToPerformAssertions();
     }
 
-    public function testWithAggregateFilter(): void
+    public function testAggregateFilter(): void
     {
         $select = new Select('foo');
 
@@ -280,14 +282,14 @@ class SelectFunctionalTest extends DoctrineTestCase
         self::expectNotToPerformAssertions();
     }
 
-    public function testWithAggregateOverPartitionBy(): void
+    public function testAggregateOverPartitionBy(): void
     {
         $this->skipIfDatabaseLessThan(AbstractBridge::SERVER_MYSQL, '8.0');
 
         $select = new Select('foo');
 
         $select
-            ->createColumnAgg('row_number', null, 'rownum')
+            ->createColumnAgg('max', 'date', 'max_date')
             ->over('name')
         ;
 
@@ -296,7 +298,7 @@ class SelectFunctionalTest extends DoctrineTestCase
         self::expectNotToPerformAssertions();
     }
 
-    public function testWithAggregateOverOrderBy(): void
+    public function testAggregateOverOrderBy(): void
     {
         $this->skipIfDatabaseLessThan(AbstractBridge::SERVER_MYSQL, '8.0');
 
@@ -313,7 +315,7 @@ class SelectFunctionalTest extends DoctrineTestCase
         self::expectNotToPerformAssertions();
     }
 
-    public function testWithAggregateOverPartitionByOrderBy(): void
+    public function testAggregateOverPartitionByOrderBy(): void
     {
         $this->skipIfDatabaseLessThan(AbstractBridge::SERVER_MYSQL, '8.0');
 
@@ -331,14 +333,14 @@ class SelectFunctionalTest extends DoctrineTestCase
         self::expectNotToPerformAssertions();
     }
 
-    public function testWithAggregateOverEmpty(): void
+    public function testAggregateOverEmpty(): void
     {
         $this->skipIfDatabaseLessThan(AbstractBridge::SERVER_MYSQL, '8.0');
 
         $select = new Select('foo');
 
         $select
-            ->createColumnAgg('row_number', null, 'rownum')
+            ->createColumnAgg('max', 'date', 'max_date')
             ->over()
         ;
 
@@ -347,7 +349,7 @@ class SelectFunctionalTest extends DoctrineTestCase
         self::expectNotToPerformAssertions();
     }
 
-    public function testWithAggregateFilterOver(): void
+    public function testAggregateFilterOver(): void
     {
         $this->skipIfDatabaseLessThan(AbstractBridge::SERVER_MYSQL, '8.0');
 
@@ -366,6 +368,7 @@ class SelectFunctionalTest extends DoctrineTestCase
 
     public function testWindowAfterFrom(): void
     {
+        $this->skipIfDatabase(AbstractBridge::SERVER_SQLSERVER);
         $this->skipIfDatabaseLessThan(AbstractBridge::SERVER_MYSQL, '8.0');
 
         $select = new Select('foo');

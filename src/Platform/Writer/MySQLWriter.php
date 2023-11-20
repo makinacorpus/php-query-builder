@@ -10,6 +10,7 @@ use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Expression\Aggregate;
 use MakinaCorpus\QueryBuilder\Expression\Concat;
 use MakinaCorpus\QueryBuilder\Expression\ConstantTable;
+use MakinaCorpus\QueryBuilder\Expression\CurrentTimestamp;
 use MakinaCorpus\QueryBuilder\Expression\Random;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\Platform\Converter\MySQLConverter;
@@ -46,6 +47,14 @@ class MySQLWriter extends Writer
     /**
      * {@inheritdoc}
      */
+    protected function formatCurrentTimestamp(CurrentTimestamp $expression, WriterContext $context): string
+    {
+        return 'now()';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     protected function formatAggregate(Aggregate $expression, WriterContext $context): string
     {
         return $this->doFormatAggregateWithoutFilter($expression, $context);
@@ -56,7 +65,7 @@ class MySQLWriter extends Writer
      *
      * MySQL does not support OFFSET alone.
      */
-    protected function doFormatRange(WriterContext $context, int $limit = 0, int $offset = 0): string
+    protected function doFormatRange(WriterContext $context, int $limit = 0, int $offset = 0, bool $hasOrder = true): string
     {
         if ($limit) {
             if (!$offset) {
