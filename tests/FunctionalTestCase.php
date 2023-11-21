@@ -157,8 +157,10 @@ abstract class FunctionalTestCase extends UnitTestCase
     {
         $params = $this->getConnectionParameters();
 
-        if ($params['dbname']) {
-            $this->initializeDatabase($params['dbname']);
+        if (!\str_contains($params['driver'],  'sqlite')) {
+            if ($params['dbname']) {
+                $this->initializeDatabase($params['dbname']);
+            }
         }
 
         return $this->doCreateBridge($params);

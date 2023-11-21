@@ -16,9 +16,10 @@ First of all, you need to chose your SQL dialect, this package provides
 a few implementations:
 
  - **MariaDB** >= 10.0,
- - **MySQL** <= 5.7 and >= 8.0,
- - **PostgreSQL** >= 9.5,
- - **SQLlite** (all versions).
+ - **MySQL** 5.7 and >= 8.0,
+ - **PostgreSQL** >= 10,
+ - **SQL Server** >= 2019 (previous versions from 2015 are untested but should work),
+ - **SQLite** >= 3.0 (previous versions are untested but should work).
 
 ### 2. Setup the query builder
 

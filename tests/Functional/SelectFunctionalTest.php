@@ -207,9 +207,10 @@ class SelectFunctionalTest extends DoctrineTestCase
 
     public function testSelectFromConstantTable(): void
     {
-        $this->skipIfDatabaseLessThan(AbstractBridge::SERVER_MYSQL, '8.0');
-        $this->skipIfDatabaseLessThan(AbstractBridge::SERVER_MARIADB, '10.3', 'MariaDB supports VALUES statement since version 10.3.');
         $this->skipIfDatabase(AbstractBridge::SERVER_MARIADB, 'MariaDB does not support VALUES column aliasing.');
+        $this->skipIfDatabase(AbstractBridge::SERVER_SQLITE, 'SQLite requires you to convert VALUES in SELECT to VALUES in an aliased CTE');
+        $this->skipIfDatabaseLessThan(AbstractBridge::SERVER_MARIADB, '10.3', 'MariaDB supports VALUES statement since version 10.3.');
+        $this->skipIfDatabaseLessThan(AbstractBridge::SERVER_MYSQL, '8.0');
 
         $table = new ConstantTable();
         $table->columns(['a', 'b' , 'c']);
@@ -259,9 +260,10 @@ class SelectFunctionalTest extends DoctrineTestCase
 
     public function testJoinConstantTable(): void
     {
-        $this->skipIfDatabaseLessThan(AbstractBridge::SERVER_MYSQL, '8.0');
-        $this->skipIfDatabaseLessThan(AbstractBridge::SERVER_MARIADB, '10.3', 'MariaDB supports VALUES statement since version 10.3.');
         $this->skipIfDatabase(AbstractBridge::SERVER_MARIADB, 'MariaDB does not support VALUES column aliasing.');
+        $this->skipIfDatabase(AbstractBridge::SERVER_SQLITE, 'SQLite requires you to convert VALUES in SELECT to VALUES in an aliased CTE');
+        $this->skipIfDatabaseLessThan(AbstractBridge::SERVER_MARIADB, '10.3', 'MariaDB supports VALUES statement since version 10.3.');
+        $this->skipIfDatabaseLessThan(AbstractBridge::SERVER_MYSQL, '8.0');
 
         $table = new ConstantTable();
         $table->columns(['a', 'b' , 'c']);

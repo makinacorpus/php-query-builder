@@ -26,16 +26,6 @@ interface Escaper
     public function escapeIdentifier(string $string): string;
 
     /**
-     * Escape identifier list (ie. table name, variable name, ...).
-     *
-     * @param string|string[] $strings
-     *
-     * @return string
-     *   Comma-separated list.
-     */
-    public function escapeIdentifierList(string|iterable $strings): string;
-
-    /**
      * Escape literal (string).
      */
     public function escapeLiteral(string $string): string;

@@ -18,9 +18,10 @@ use the PostgreSQL writer in order to support those properly.
 The following implementations are provided:
 
  - `MakinaCorpus\QueryBuilder\Platform\Writer\MySQL8Writer` for MySQL >= 8.0 and MariaDB >= 10.0,
- - `MakinaCorpus\QueryBuilder\Platform\Writer\MySQLWriter` for MySQL <= 5.7,
- - `MakinaCorpus\QueryBuilder\Platform\Writer\PostgreSQLWriter` for PostgreSQL >= 9.5,
- - `MakinaCorpus\QueryBuilder\Platform\Writer\SQLiteWriter` for SQLite any versions,
+ - `MakinaCorpus\QueryBuilder\Platform\Writer\MySQLWriter` for MySQL 5.7,
+ - `MakinaCorpus\QueryBuilder\Platform\Writer\PostgreSQLWriter` for PostgreSQL >= 10,
+ - `MakinaCorpus\QueryBuilder\Platform\Writer\SQLiteWriter` for SQLite >= 3.0 (previous versions are untested but should work).
+ - `MakinaCorpus\QueryBuilder\Platform\Writer\SQLServerWriter` for SQL Server >= 2019 (previous versions from 2015 are untested but should work),
  - `MakinaCorpus\QueryBuilder\Writer\Writer` for generated standard compliant SQL.
 
 :::tip

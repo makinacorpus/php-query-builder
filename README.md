@@ -3,8 +3,8 @@
 This is a driver-agnostic SQL query builder with advanced SQL language features.
 
 Per default, it generates (almost) SQL standard compliant queries, almost
-because some SQL features are implemented nowhere and we chose for some to
-use common dialect instead.
+because some SQL features are simply not implemented by any dialect we support
+case in which we implement a custom variant.
 
 It is based upon a fluent API, which makes basic SELECT, DELETE, INSERT,
 UPDATE and MERGE queries easy to write, even if you don't really now SQL.
@@ -37,10 +37,18 @@ composer require makinacorpus/query-builder
 First of all, you need to chose your SQL dialect, this package provides
 a few implementations:
 
- - MariaDB >= 10.0,
- - MySQL <= 5.7 and MySQL >= 8.0,
- - PostgreSQL >= 9.5,
- - SQLlite.
+ - **MariaDB** >= 10.0,
+ - **MySQL** 5.7 and >= 8.0,
+ - **PostgreSQL** >= 10,
+ - **SQL Server** >= 2019 (previous versions from 2015 are untested but should work),
+ - **SQLite** >= 3.0 (previous versions are untested but should work).
+
+Please note that for all supported RDBMS, you can still attempt to use the
+query builder for unsupported version, it should work in most cases.
+
+Planned implementations for:
+
+ - Oracle.
 
 ### 2. Setup the query builder
 

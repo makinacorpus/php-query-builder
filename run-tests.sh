@@ -74,3 +74,9 @@ DBAL_DRIVER=pdo_sqlsrv \
     DBAL_ROOT_USER="sa" \
     DBAL_USER=sa \
     vendor/bin/phpunit
+
+echo "Running tests with SQLite"
+DBAL_DRIVER=pdo_sqlite \
+    DBAL_DBNAME=test_db \
+    DBAL_HOST=127.0.0.1 \
+    vendor/bin/phpunit

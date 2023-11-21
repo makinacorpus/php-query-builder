@@ -28,6 +28,10 @@ abstract class DoctrineTestCase extends FunctionalTestCase
      */
     protected function doCreateBridge(array $params): AbstractBridge
     {
+        if (\str_contains($params['driver'], 'sqlite')) {
+            $params['memory'] = true;
+        }
+
         return new DoctrineQueryBuilder(
             DriverManager::getConnection(
                 $params,

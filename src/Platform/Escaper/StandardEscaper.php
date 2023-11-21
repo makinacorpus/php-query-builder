@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Platform\Escaper;
 
-use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Escaper\Escaper;
 
 /**
@@ -35,24 +34,6 @@ class StandardEscaper implements Escaper
     {
         // See https://www.postgresql.org/docs/10/sql-syntax-lexical.html#SQL-SYNTAX-IDENTIFIERS
         return '"' . \str_replace('"', '""', $string) . '"';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    final public function escapeIdentifierList($strings): string
-    {
-        if (!$strings) {
-            throw new QueryBuilderError("Cannot not format an empty identifier list.");
-        }
-        if (\is_iterable($strings)) {
-            $values = [];
-            foreach ($strings as $string) {
-                $values[] = $this->escapeIdentifier($string);
-            }
-            return \implode(', ', $values);
-        }
-        return $this->escapeIdentifier($strings);
     }
 
     /**
