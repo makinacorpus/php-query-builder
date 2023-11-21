@@ -349,7 +349,7 @@ class MySQLWriter extends Writer
     }
 
     /**
-     * Format a function call.
+     * {@inheritdoc}
      */
     protected function formatConcat(Concat $expression, WriterContext $context): string
     {
@@ -365,9 +365,7 @@ class MySQLWriter extends Writer
     }
 
     /**
-     * Format a function call.
-     *
-     * This is non standard SQL, and returns the PostgreSQL variant.
+     * {@inheritdoc}
      */
     protected function formatRandom(Random $expression, WriterContext $context): string
     {

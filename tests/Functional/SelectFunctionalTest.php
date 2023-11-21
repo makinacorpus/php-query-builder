@@ -9,6 +9,8 @@ use MakinaCorpus\QueryBuilder\Expression\Cast;
 use MakinaCorpus\QueryBuilder\Expression\ColumnName;
 use MakinaCorpus\QueryBuilder\Expression\ConstantTable;
 use MakinaCorpus\QueryBuilder\Expression\CurrentTimestamp;
+use MakinaCorpus\QueryBuilder\Expression\Random;
+use MakinaCorpus\QueryBuilder\Expression\RandomInt;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\Expression\Value;
 use MakinaCorpus\QueryBuilder\Query\Query;
@@ -105,6 +107,26 @@ class SelectFunctionalTest extends DoctrineTestCase
     {
         $select = new Select();
         $select->columnRaw('1');
+
+        $this->executeStatement($select);
+
+        self::expectNotToPerformAssertions();
+    }
+
+    public function testSelectRandom(): void
+    {
+        $select = new Select();
+        $select->column(new Random());
+
+        $this->executeStatement($select);
+
+        self::expectNotToPerformAssertions();
+    }
+
+    public function testSelectRandomInt(): void
+    {
+        $select = new Select();
+        $select->column(new RandomInt(3, 10));
 
         $this->executeStatement($select);
 

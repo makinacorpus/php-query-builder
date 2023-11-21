@@ -7,6 +7,7 @@ namespace MakinaCorpus\QueryBuilder\Platform\Writer;
 use MakinaCorpus\QueryBuilder\Expression\Aggregate;
 use MakinaCorpus\QueryBuilder\Expression\Concat;
 use MakinaCorpus\QueryBuilder\Expression\CurrentTimestamp;
+use MakinaCorpus\QueryBuilder\Expression\Random;
 use MakinaCorpus\QueryBuilder\Expression\TableName;
 use MakinaCorpus\QueryBuilder\Writer\Writer;
 use MakinaCorpus\QueryBuilder\Writer\WriterContext;
@@ -34,6 +35,14 @@ class SQLServerWriter extends Writer
     protected function formatCurrentTimetamp(CurrentTimestamp $expression, WriterContext $context): string
     {
         return 'getdate()';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function formatRandom(Random $expression, WriterContext $context): string
+    {
+        return 'rand()';
     }
 
     /**

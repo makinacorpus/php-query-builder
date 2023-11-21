@@ -38,25 +38,26 @@ Layer ou driver implementation. It will take care of proper identifier and other
 symbols escaping, as well as replacing userland provided values to placeholders
 for query methods.
 
-Default escaper will provide escaping for identifiers and string literals in
-an standard compliant SQL way. It is suitable for most RDBMS except MySQL and
-derivatatives such as MariaDB.
+Default escaper will provide escaping for identifiers in an standard compliant
+SQL way. It is suitable for most RDBMS except MySQL and derivatatives such as
+MariaDB.
 
 Default implementation is `MakinaCorpus\QueryBuilder\Platform\Escaper\StandardEscaper`.
 
 ### Configuring the default escaper
 
 While your write your SQL queries, you can, and probably will, provide userland
-arbitrary values, such as:
+arbitrary identifiers, such as table names, column names, ... As show below:
 
 ```php
-$queryBuilder
-    ->select('some_table')
-    ->where('some_column', "This is a value")
+$queryBuilder->select('some_table')->column('some_column');
 ```
 
-Those values will not be written in the output SQL, but extracted into a
-`MakinaCorpus\QueryBuilder\ArgumentBag` instance by the writer.
+Those needs escaping, in order to prevent SQL injection or unintential syntax
+errors, which could be due to either reserved keyword or control character
+usage in objects names.
+
+### Escaper and value placeholder
 
 Whenever values are found they will be replaced in the SQL code using a
 placeholder. The placeholder value itself may vary depending upon the driver

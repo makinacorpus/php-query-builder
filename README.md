@@ -22,6 +22,48 @@ transparently, a few bridges are provided:
  - `PDO` bridge and query builder,
  - Symfony bundle is available in the [makinacorpus/query-builder-bundle](https://github.com/makinacorpus/query-builder-bundle) package
 
+# Incomplete SQL feature list
+
+ - **Common Table Expressions**:
+    - `WITH "foo" AS (SELECT ...)`
+ - **VALUES / Constant table expression**:
+    - `WITH "foo" ("col1", "col2") AS (SELECT VALUES ...)`
+    - `SELECT VALUES ... AS ("col1", "col2") `
+    - `JOIN (VALUES ...) AS "foo"`, ...
+ - **Aggregate function filter**:
+    - Standard SQL: `SELECT SUM(foo) FILTER (WHERE <condition>)`
+    - Emulation for non supporting RDBMS: `SELECT SUM(CASE WHEN <condition> THEN foo END)`
+ - **Window functions**:
+    - `SELECT SUM(foo) OVER (PARTITION BY... ORDER BY...)`
+    - `SELECT SUM(foo) OVER (bar) FROM baz WINDOW bar AS (PARTITION BY... ORDER BY...)`
+ - **RETURNING/OUTPUT**:
+    - PostgreSQL: `UPDATE foo SET ... RETURNING foo, bar, baz`
+    - SQL Server: `UPDATE foo SET ... OUTPUT DELETED.col1, INSERTED.col1`
+ - **Complex WHERE condition builder**
+ - **CASE WHEN ... THEN ... END**
+ - **IF THEN emulated using CASE ... WHEN**
+ - **ARRAY expression**:
+    - `ARRAY[? ,? ?]`
+ - **ROW expressions**:
+    - Standard SQL: `ROW('foo', 2, ...)`
+    - PostgreSQL composite types: `ROW('foo', 2, ...)::some_composite_type`
+ - **Mixing complex data structures**:
+    - `CAST(ROW('foo', CAST(ARRAY[1,2,3] AS bigint[])) AS some_composite_type)`
+ - **CAST expressions**:
+    - Standard SQL: `CAST(expression AS type)`
+    - PostgreSQL: `expression::type`
+ - **LIKE / SIMILAR TO**
+    - `foo LIKE '%somevalue%'`
+    - `foo SIMILAR TO '%somevalue%'`
+ - **Update FROM JOIN**
+ - **INSERT INTO ... VALUES ...**
+ - **INSERT INTO ... SELECT ...**
+ - **Arbitrary RAW SQL from user everywhere**
+   - The builder doesn't support some X or Y advanced feature or specific
+     dialect, then write your own SQL.
+ - **Identifier escaping everywgere**
+ - **User value conversion to SQL**
+
 # Getting started
 
 ## Standalone setup
