@@ -84,7 +84,7 @@ class PostgreSQLWriter extends Writer
 
         $return = $query->getAllReturn();
         if ($return) {
-            $output[] = 'returning ' . $this->doFormatReturning($context, $return);
+            $output[] = $this->doFormatReturning($context, $return, $table);
         }
 
         return \implode("\n", $output);

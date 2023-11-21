@@ -175,19 +175,6 @@ final class ExpressionHelper
     }
 
     /**
-     * Alias of normalizeColumnExpression() which allows '*'.
-     *
-    public static function output(mixed $expression): Expression
-    {
-        if ('*' === $expression) {
-            return new Raw('*');
-        }
-
-        return self::column($expression);
-    }
-     */
-
-    /**
      * Normalize input to be a column identifier or an expression that returns
      * a value that can be used as a column.
      */

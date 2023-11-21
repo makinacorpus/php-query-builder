@@ -8,6 +8,7 @@ use Doctrine\DBAL\Schema\Column;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\ExpressionHelper;
+use MakinaCorpus\QueryBuilder\Expression\ColumnAll;
 
 /**
  * Represents the RETURNING part of any query.
@@ -48,11 +49,11 @@ trait ReturningQueryTrait
      */
     public function returning(mixed $expression = null, ?string $alias = null): static
     {
-        if (!$expression) {
+        if (!$expression || '*' === $expression) {
             if ($alias) {
                 throw new QueryBuilderError("RETURNING * cannot be aliased.");
             }
-            $expression = new Raw('*');
+            $expression = new ColumnAll();
         }
 
         $this->return[] = new SelectColumn(ExpressionHelper::column($expression), $alias);

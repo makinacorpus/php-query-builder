@@ -36,24 +36,69 @@ class SelectFunctionalTest extends DoctrineTestCase
             );
         } catch (\Throwable) {}
 
-        $this->getBridge()->executeStatement(
-            <<<SQL
-            CREATE TABLE foo (
-                id int NOT NULL,
-                name varchar DEFAULT NULL,
-                date timestamp
-            )
-            SQL
-        );
+        switch ($this->getBridge()->getServerFlavor()) {
 
-        $this->getBridge()->executeStatement(
-            <<<SQL
-            CREATE TABLE bar (
-                foo_id int NOT NULL,
-                data varchar DEFAULT NULL
-            )
-            SQL
-        );
+            case AbstractBridge::SERVER_MARIADB:
+            case AbstractBridge::SERVER_MYSQL:
+                $this->getBridge()->executeStatement(
+                    <<<SQL
+                    CREATE TABLE foo (
+                        id int NOT NULL,
+                        name text DEFAULT NULL,
+                        date datetime DEFAULT now()
+                    )
+                    SQL
+                );
+                $this->getBridge()->executeStatement(
+                    <<<SQL
+                    CREATE TABLE bar (
+                        foo_id int NOT NULL,
+                        data text DEFAULT NULL
+                    )
+                    SQL
+                );
+                break;
+
+            case AbstractBridge::SERVER_SQLSERVER:
+                $this->getBridge()->executeStatement(
+                    <<<SQL
+                    CREATE TABLE foo (
+                        id int NOT NULL,
+                        name nvarchar(500) DEFAULT NULL,
+                        date datetime2(6) DEFAULT current_timestamp
+                    )
+                    SQL
+                );
+                $this->getBridge()->executeStatement(
+                    <<<SQL
+                    CREATE TABLE bar (
+                        foo_id int NOT NULL,
+                        data nvarchar(500) DEFAULT NULL
+                    )
+                    SQL
+                );
+                break;
+
+            default:
+                $this->getBridge()->executeStatement(
+                    <<<SQL
+                    CREATE TABLE foo (
+                        id int NOT NULL,
+                        name text DEFAULT NULL,
+                        date timestamp DEFAULT current_timestamp
+                    )
+                    SQL
+                );
+                $this->getBridge()->executeStatement(
+                    <<<SQL
+                    CREATE TABLE bar (
+                        foo_id int NOT NULL,
+                        data text DEFAULT NULL
+                    )
+                    SQL
+                );
+                break;
+        }
     }
 
     public function testSelectInt(): void

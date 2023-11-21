@@ -17,6 +17,7 @@ use MakinaCorpus\QueryBuilder\Expression\ArrayValue;
 use MakinaCorpus\QueryBuilder\Expression\Between;
 use MakinaCorpus\QueryBuilder\Expression\CaseWhen;
 use MakinaCorpus\QueryBuilder\Expression\Cast;
+use MakinaCorpus\QueryBuilder\Expression\ColumnAll;
 use MakinaCorpus\QueryBuilder\Expression\ColumnName;
 use MakinaCorpus\QueryBuilder\Expression\Comparison;
 use MakinaCorpus\QueryBuilder\Expression\Concat;
@@ -151,6 +152,7 @@ class Writer
                     Between::class => $this->formatBetween($expression, $context),
                     CaseWhen::class => $this->formatCaseWhen($expression, $context),
                     Cast::class => $this->formatCast($expression, $context),
+                    ColumnAll::class => $this->formatColumnAll($expression, $context),
                     ColumnName::class => $this->formatIdentifier($expression, $context),
                     Concat::class => $this->formatConcat($expression, $context),
                     ConstantTable::class => $this->formatConstantTable($expression, $context),
@@ -294,17 +296,46 @@ class Writer
 
     /**
      * Format projection for a single select column or statement.
+     *
+     * @param null|string $escapedTableName
+     *   If given, all expressions that are identified as referencing a column
+     *   name without a table name will be prefixed with this raw table name
+     *   string.
+     *   Warning, this will not recurse into more complex expression, mostly
+     *   for performance purpose.
      */
-    protected function doFormatSelectItem(WriterContext $context, SelectColumn $column): string
+    protected function doFormatSelectItem(WriterContext $context, SelectColumn $column, ?string $escapedTableName = null): string
     {
         $expression = $column->getExpression();
-        $output = $this->format($expression, $context, true);
+        $computed = null;
 
-        // Using a ROW() requires the ROW keyword in order to avoid
-        // SQL language ambiguities. All other cases are dealt with
-        // the format() method enforcing parenthesis.
-        if ($expression instanceof Row) {
-            $output = 'row' . $output;
+        // @todo Add a query option to disable this behaviour.
+        // In case we have a forced escaped table name to prefix column names
+        // with, then proceed to some alteration of the user given input.
+        // This will fix the following things:
+        //    - * -> <escaped_table_name>.*
+        //    - <column_name> -> <escaped_table_name>.<column_name>
+        if ($escapedTableName) {
+            if ($expression instanceof ColumnAll) {
+                if (!$expression->getNamespace()) {
+                    $computed = $escapedTableName . '.*';
+                }
+            } if ($expression instanceof Identifier) {
+                if (!$expression->getNamespace()) {
+                    $computed = $escapedTableName . '.' . $this->escaper->escapeIdentifier($expression->getName());
+                }
+            }
+        }
+
+        if (!$computed) {
+            $computed = $this->format($expression, $context, true);
+
+            // Using a ROW() requires the ROW keyword in order to avoid
+            // SQL language ambiguities. All other cases are dealt with
+            // the format() method enforcing parenthesis.
+            if ($expression instanceof Row) {
+                $computed = 'row' . $computed;
+            }
         }
 
         // We cannot alias columns with a numeric identifier;
@@ -313,20 +344,24 @@ class Writer
         $alias = $column->getAlias();
         if ($alias && !\is_numeric($alias)) {
             $alias = $this->escaper->escapeIdentifier($alias);
-            if ($alias !== $output) {
-                return $output . ' as ' . $alias;
+            if ($alias !== $computed) {
+                return $computed . ' as ' . $alias;
             }
         }
 
-        return $output;
+        return $computed;
     }
 
     /**
      * Format SELECT columns.
      *
      * @param SelectColumn[] $columns
+     * @param null|string $escapedTableName
+     *   If set, dictate this method to automatically add the given table name
+     *   on all items that lacks it. It will server for the SQL Server OUTPUT
+     *   clause that require that you give a table for each returned item.
      */
-    protected function doFormatSelect(WriterContext $context, array $columns): string
+    protected function doFormatSelect(WriterContext $context, array $columns, ?string $escapedTableName = null): string
     {
         if (!$columns) {
             return '*';
@@ -335,7 +370,7 @@ class Writer
         return \implode(
             ",\n",
             \array_map(
-                fn ($column) => $this->doFormatSelectItem($context, $column),
+                fn ($column) => $this->doFormatSelectItem($context, $column, $escapedTableName),
                 $columns,
             )
         );
@@ -370,9 +405,9 @@ class Writer
      *     - 0: string or Statement: column name or SQL statement
      *     - 1: column alias, can be empty or null for no aliasing
      */
-    protected function doFormatReturning(WriterContext $context, array $return): string
+    protected function doFormatReturning(WriterContext $context, array $return, ?string $escapedTableName = null): string
     {
-        return $this->doFormatSelect($context, $return);
+        return 'returning ' . $this->doFormatSelect($context, $return);
     }
 
     /**
@@ -926,6 +961,34 @@ class Writer
     }
 
     /**
+     * For RETURNING/OUTPUT statements in DELETE/UPDATE/INSERT/MERGE queries
+     * identify the NEW version of the mutated row.
+     *
+     * Default implementation simply returns the table alias, because we were
+     * writing this for PostgreSQL at the time, and PostgreSQL doesn't
+     * discriminate OLD or NEW row and simply return the new version for all
+     * queries but DELETE.
+     */
+    protected function doFormatOutputNewRowIdentifier(TableName $table): string
+    {
+        return $this->escaper->escapeIdentifier($table->getAlias() ?? $table->getName());
+    }
+
+    /**
+     * For RETURNING/OUTPUT statements in DELETE/UPDATE/INSERT/MERGE queries
+     * identify the OLD version of the mutated row.
+     *
+     * Default implementation simply returns the table alias, because we were
+     * writing this for PostgreSQL at the time, and PostgreSQL doesn't
+     * discriminate OLD or NEW row and simply return the new version for all
+     * queries but DELETE.
+     */
+    protected function doFormatOutputOldRowIdentifier(TableName $table): string
+    {
+        return $this->escaper->escapeIdentifier($table->getAlias() ?? $table->getName());
+    }
+
+    /**
      * Format given merge query.
      */
     protected function formatMerge(Merge $query, WriterContext $context): string
@@ -991,7 +1054,7 @@ class Writer
         // RETURNING
         $return = $query->getAllReturn();
         if ($return) {
-            $output[] = 'returning ' . $this->doFormatReturning($context, $return);
+            $output[] = $this->doFormatReturning($context, $return, $this->doFormatOutputNewRowIdentifier($table));
         }
 
         return \implode("\n", $output);
@@ -1035,7 +1098,7 @@ class Writer
 
         $return = $query->getAllReturn();
         if ($return) {
-            $output[] = 'returning ' . $this->doFormatReturning($context, $return);
+            $output[] = $this->doFormatReturning($context, $return, $this->doFormatOutputNewRowIdentifier($table));
         }
 
         return \implode("\n", $output);
@@ -1078,7 +1141,7 @@ class Writer
 
         $return = $query->getAllReturn();
         if ($return) {
-            $output[] = 'returning ' . $this->doFormatReturning($context, $return);
+            $output[] = $this->doFormatReturning($context, $return, $this->doFormatOutputNewRowIdentifier($table));
         }
 
         return \implode("\n", \array_filter($output));
@@ -1146,7 +1209,7 @@ class Writer
 
         $return = $query->getAllReturn();
         if ($return) {
-            $output[] = "returning " . $this->doFormatReturning($context, $return);
+            $output[] = $this->doFormatReturning($context, $return, $this->doFormatOutputNewRowIdentifier($table));
         }
 
         return \implode("\n", \array_filter($output));
@@ -1222,6 +1285,17 @@ class Writer
     protected function formatRawQuery(RawQuery $query, WriterContext $context)
     {
         return $this->parseExpression($query, $context);
+    }
+
+    /**
+     * Format column all expression.
+     */
+    protected function formatColumnAll(ColumnAll $expression, WriterContext $context): string
+    {
+        if ($namespace = $expression->getNamespace()) {
+            return $this->escaper->escapeIdentifier($namespace) . '.*';
+        }
+        return '*';
     }
 
     /**

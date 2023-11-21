@@ -10,6 +10,7 @@ use MakinaCorpus\QueryBuilder\TableExpression;
 use MakinaCorpus\QueryBuilder\Where;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Expression\Aggregate;
+use MakinaCorpus\QueryBuilder\Expression\ColumnAll;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\Expression\Window;
 use MakinaCorpus\QueryBuilder\Query\Partial\FromClauseTrait;
@@ -173,7 +174,13 @@ class Select extends AbstractQuery implements TableExpression
      */
     public function column(mixed $expression, ?string $alias = null): static
     {
-        $this->columns[] = new SelectColumn(ExpressionHelper::column($expression), $alias);
+        if (null === $expression || '*' === $expression) {
+            $column = new ColumnAll();
+        } else {
+            $column = ExpressionHelper::column($expression);
+        }
+
+        $this->columns[] = new SelectColumn($column, $alias);
 
         return $this;
     }
@@ -183,7 +190,13 @@ class Select extends AbstractQuery implements TableExpression
      */
     public function columnRaw(mixed $expression, ?string $alias = null, mixed $arguments = null): static
     {
-        $this->columns[] = new SelectColumn(ExpressionHelper::raw($expression, $arguments), $alias);
+        if (null === $expression || '*' === $expression) {
+            $column = new ColumnAll();
+        } else {
+            $column = ExpressionHelper::raw($expression, $arguments);
+        }
+
+        $this->columns[] = new SelectColumn($column, $alias);
 
         return $this;
     }
@@ -219,11 +232,17 @@ class Select extends AbstractQuery implements TableExpression
      */
     public function count(mixed $column = null, ?string $alias = null, bool $distinct = false): static
     {
-        if ($distinct) {
-            $column = new Raw('distinct ?', [ExpressionHelper::column($column)]);
+        if (null === $column || '*' === $column) {
+            $column = new ColumnAll();
+        } else {
+            $column = ExpressionHelper::column($column);
         }
 
-        $this->columnAgg('count', $column ?? new Raw('*'), $alias);
+        if ($distinct) {
+            $column = new Raw('distinct ?', [$column]);
+        }
+
+        $this->columnAgg('count', $column, $alias);
 
         return $this;
     }

@@ -85,6 +85,16 @@ abstract class FunctionalTestCase extends UnitTestCase
     }
 
     /**
+     * Skip for given database.
+     */
+    protected function skipIfDatabaseNot(string $database, ?string $message = null): void
+    {
+        if ($this->getBridge()->getServerFlavor() !== $database) {
+            self::markTestSkipped(\sprintf("Test disabled for database '%s'", $database));
+        }
+    }
+
+    /**
      * Skip for given database, and greater than version.
      */
     protected function skipIfDatabaseGreaterThan(string $database, string $version, ?string $message = null): void
