@@ -14,6 +14,7 @@ use MakinaCorpus\QueryBuilder\Expression\ConstantTable;
 use MakinaCorpus\QueryBuilder\Expression\FunctionCall;
 use MakinaCorpus\QueryBuilder\Expression\Identifier;
 use MakinaCorpus\QueryBuilder\Expression\IfThen;
+use MakinaCorpus\QueryBuilder\Expression\Modulo;
 use MakinaCorpus\QueryBuilder\Expression\Not;
 use MakinaCorpus\QueryBuilder\Expression\NullValue;
 use MakinaCorpus\QueryBuilder\Expression\Random;
@@ -161,6 +162,14 @@ class ExpressionFactory
     public static function null(): NullValue
     {
         return new NullValue();
+    }
+
+    /**
+     * Create a modulo arithmetic expression.
+     */
+    public static function mod(mixed $left, mixed $right): Modulo
+    {
+        return new Modulo(ExpressionHelper::value($left), ExpressionHelper::value($right));
     }
 
     /**

@@ -10,7 +10,6 @@ use MakinaCorpus\QueryBuilder\Expression\ArrayValue;
 use MakinaCorpus\QueryBuilder\Expression\CaseWhen;
 use MakinaCorpus\QueryBuilder\Query\Query;
 use MakinaCorpus\QueryBuilder\Query\RawQuery;
-use MakinaCorpus\QueryBuilder\Tests\UnitTestCase;
 
 class ExpressionFactoryTest extends UnitTestCase
 {

@@ -27,6 +27,7 @@ use MakinaCorpus\QueryBuilder\Expression\FunctionCall;
 use MakinaCorpus\QueryBuilder\Expression\Identifier;
 use MakinaCorpus\QueryBuilder\Expression\IfThen;
 use MakinaCorpus\QueryBuilder\Expression\LikePattern;
+use MakinaCorpus\QueryBuilder\Expression\Modulo;
 use MakinaCorpus\QueryBuilder\Expression\Not;
 use MakinaCorpus\QueryBuilder\Expression\NullValue;
 use MakinaCorpus\QueryBuilder\Expression\Random;
@@ -160,6 +161,7 @@ class Writer
                     CurrentTimestamp::class => $this->formatCurrentTimestamp($expression, $context),
                     Identifier::class => $this->formatIdentifier($expression, $context),
                     IfThen::class => $this->formatIfThen($expression, $context),
+                    Modulo::class => $this->formatModulo($expression, $context),
                     Not::class => $this->formatNot($expression, $context),
                     NullValue::class => $this->formatNullValue($expression, $context),
                     Raw::class => $this->formatRaw($expression, $context),
@@ -823,6 +825,14 @@ class Writer
     }
 
     /**
+     * Format modulo expression.
+     */
+    protected function formatModulo(Modulo $expression, WriterContext $context): string
+    {
+        return $this->format(new Cast($expression->getLeft(), 'int'), $context) . ' % ' . $this->format($expression->getRight(), $context);
+    }
+
+    /**
      * Format where instance.
      */
     protected function formatWhere(Where $expression, WriterContext $context): string
@@ -1450,11 +1460,11 @@ class Writer
         $filter = $expression->getFilter();
 
         if ($filter && !$filter->isEmpty()) {
-            $output .= '(CASE WHEN '
+            $output .= '(case when '
                 . $this->format($filter, $context)
-                . ' THEN '
+                . ' then '
                 . $this->format($column, $context)
-                . ' END)'
+                . ' end)'
             ;
         } else if ($column) {
             $output .= '(' . $this->format($column, $context) . ')';
