@@ -10,6 +10,7 @@ use MakinaCorpus\QueryBuilder\Expression\Concat;
 use MakinaCorpus\QueryBuilder\Expression\CurrentTimestamp;
 use MakinaCorpus\QueryBuilder\Expression\Lpad;
 use MakinaCorpus\QueryBuilder\Expression\Random;
+use MakinaCorpus\QueryBuilder\Expression\StringHash;
 use MakinaCorpus\QueryBuilder\Expression\TableName;
 use MakinaCorpus\QueryBuilder\Writer\Writer;
 use MakinaCorpus\QueryBuilder\Writer\WriterContext;
@@ -101,6 +102,18 @@ class SQLServerWriter extends Writer
         }
 
         return 'CONCAT(' . $output . ')';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function formatStringHash(StringHash $expression, WriterContext $context): string
+    {
+        $algo = $expression->getAlgo();
+        $escapedAlgo = $this->escaper->escapeLiteral($algo);
+        $value = new Cast($expression->getValue(), 'nvarchar');
+
+        return 'lower(convert(nvarchar(32), hashbytes(' . $escapedAlgo  . ', ' . $this->format($value, $context) . '), 2))';
     }
 
     /**

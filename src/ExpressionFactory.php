@@ -23,6 +23,7 @@ use MakinaCorpus\QueryBuilder\Expression\RandomInt;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\Expression\Row;
 use MakinaCorpus\QueryBuilder\Expression\Rpad;
+use MakinaCorpus\QueryBuilder\Expression\StringHash;
 use MakinaCorpus\QueryBuilder\Expression\TableName;
 use MakinaCorpus\QueryBuilder\Expression\Value;
 
@@ -105,6 +106,32 @@ class ExpressionFactory
     public static function rpad(mixed $value, mixed $size, mixed $fill = null): Rpad
     {
         return new Rpad($value, $size, $fill);
+    }
+
+    /**
+     * Create an string hash expression.
+     *
+     * Warning: not much SQL dialect will have a generic string hash function.
+     */
+    public static function hash(mixed $value, string $algo): Rpad
+    {
+        return new StringHash($value, $algo);
+    }
+
+    /**
+     * Create an MD5() hash expression.
+     */
+    public static function md5(mixed $value): Rpad
+    {
+        return new StringHash($value, 'md5');
+    }
+
+    /**
+     * Create an SHA1() hash expression.
+     */
+    public static function sha1(mixed $value): Rpad
+    {
+        return new StringHash($value, 'sha1');
     }
 
     /**

@@ -8,11 +8,13 @@ use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Converter\Converter;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Expression\Aggregate;
+use MakinaCorpus\QueryBuilder\Expression\Cast;
 use MakinaCorpus\QueryBuilder\Expression\Concat;
 use MakinaCorpus\QueryBuilder\Expression\ConstantTable;
 use MakinaCorpus\QueryBuilder\Expression\CurrentTimestamp;
 use MakinaCorpus\QueryBuilder\Expression\Random;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
+use MakinaCorpus\QueryBuilder\Expression\StringHash;
 use MakinaCorpus\QueryBuilder\Platform\Converter\MySQLConverter;
 use MakinaCorpus\QueryBuilder\Query\Delete;
 use MakinaCorpus\QueryBuilder\Query\Merge;
@@ -58,6 +60,22 @@ class MySQLWriter extends Writer
     protected function formatAggregate(Aggregate $expression, WriterContext $context): string
     {
         return $this->doFormatAggregateWithoutFilter($expression, $context);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function formatStringHash(StringHash $expression, WriterContext $context): string
+    {
+        $algo = $expression->getAlgo();
+        $value = new Cast($expression->getValue(), 'text');
+
+        return match (\strtolower($algo)) {
+            'md5' => 'md5(' . $this->format($value, $context) . ')',
+            'sha1' => 'sha1(' . $this->format($value, $context) . ')',
+            'sha2' => 'sha2(' . $this->format($value, $context) . ')',
+            default => throw new QueryBuilderError("Unsupported arbitrary user given algorithm for MySQL."),
+        };
     }
 
     /**

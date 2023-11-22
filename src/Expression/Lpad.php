@@ -103,4 +103,11 @@ class Lpad implements Expression
     {
         return $this->size;
     }
+
+    public function __clone(): void
+    {
+        $this->value = clone $this->value;
+        $this->size = clone $this->size;
+        $this->fill = clone $this->fill;
+    }
 }

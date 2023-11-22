@@ -37,6 +37,7 @@ use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\Expression\Row;
 use MakinaCorpus\QueryBuilder\Expression\Rpad;
 use MakinaCorpus\QueryBuilder\Expression\SimilarToPattern;
+use MakinaCorpus\QueryBuilder\Expression\StringHash;
 use MakinaCorpus\QueryBuilder\Expression\TableName;
 use MakinaCorpus\QueryBuilder\Expression\Value;
 use MakinaCorpus\QueryBuilder\Expression\Window;
@@ -190,6 +191,7 @@ class Writer
                     Row::class => $this->formatRow($expression, $context),
                     Rpad::class => $this->formatRpad($expression, $context),
                     SimilarToPattern::class => $this->formatSimilarToPattern($expression, $context),
+                    StringHash::class => $this->formatStringHash($expression, $context),
                     TableName:: class => $this->formatIdentifier($expression, $context),
                     Value::class => $this->formatValue($expression, $context),
                     Where::class => $this->formatWhere($expression, $context),
@@ -731,6 +733,27 @@ class Writer
         }
 
         return $output;
+    }
+
+    /**
+     * Format string hash.
+     *
+     * @see https://modern-sql.com/caniuse/MD5-algorithm
+     *   There is no generic HASH() function, we have to implement this on
+     *   a per-backend basis. For unit tests, we implement the PostgreSQL
+     *   variant here.
+     * @see https://www.postgresql.org/docs/current/pgcrypto.html
+     */
+    protected function formatStringHash(StringHash $expression, WriterContext $context): string
+    {
+        $algo = $expression->getAlgo();
+        $escapedAlgo = $this->escaper->escapeLiteral($algo);
+        $value = new Cast($expression->getValue(), 'text');
+
+        return match (\strtolower($algo)) {
+            'md5' => 'md5(' . $this->format($value, $context) . ')',
+            default => 'digest(' . $this->format($value, $context) . ', ' . $escapedAlgo . ')',
+        };
     }
 
     /**
