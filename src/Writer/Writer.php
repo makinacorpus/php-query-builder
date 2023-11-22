@@ -35,6 +35,7 @@ use MakinaCorpus\QueryBuilder\Expression\Random;
 use MakinaCorpus\QueryBuilder\Expression\RandomInt;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\Expression\Row;
+use MakinaCorpus\QueryBuilder\Expression\Rpad;
 use MakinaCorpus\QueryBuilder\Expression\SimilarToPattern;
 use MakinaCorpus\QueryBuilder\Expression\TableName;
 use MakinaCorpus\QueryBuilder\Expression\Value;
@@ -172,21 +173,22 @@ class Writer
                     Cast::class => $this->formatCast($expression, $context),
                     ColumnAll::class => $this->formatColumnAll($expression, $context),
                     ColumnName::class => $this->formatIdentifier($expression, $context),
+                    Comparison::class => $this->formatComparison($expression, $context),
                     Concat::class => $this->formatConcat($expression, $context),
                     ConstantTable::class => $this->formatConstantTable($expression, $context),
-                    Comparison::class => $this->formatComparison($expression, $context),
                     CurrentTimestamp::class => $this->formatCurrentTimestamp($expression, $context),
                     Identifier::class => $this->formatIdentifier($expression, $context),
                     IfThen::class => $this->formatIfThen($expression, $context),
+                    LikePattern::class => $this->formatLikePattern($expression, $context),
                     Lpad::class => $this->formatLpad($expression, $context),
                     Modulo::class => $this->formatModulo($expression, $context),
                     Not::class => $this->formatNot($expression, $context),
                     NullValue::class => $this->formatNullValue($expression, $context),
-                    Raw::class => $this->formatRaw($expression, $context),
-                    Row::class => $this->formatRow($expression, $context),
                     Random::class => $this->formatRandom($expression, $context),
                     RandomInt::class => $this->formatRandomInt($expression, $context),
-                    LikePattern::class => $this->formatLikePattern($expression, $context),
+                    Raw::class => $this->formatRaw($expression, $context),
+                    Row::class => $this->formatRow($expression, $context),
+                    Rpad::class => $this->formatRpad($expression, $context),
                     SimilarToPattern::class => $this->formatSimilarToPattern($expression, $context),
                     TableName:: class => $this->formatIdentifier($expression, $context),
                     Value::class => $this->formatValue($expression, $context),
@@ -842,10 +844,7 @@ class Writer
         return $this->format($column, $context) . ' between ' . $this->format($from, $context) . ' and ' . $this->format($to, $context);
     }
 
-    /**
-     * Format left pad expression.
-     */
-    protected function formatLpad(Lpad $expression, WriterContext $context): string
+    protected function doGetPadArguments(Lpad $expression): array
     {
         $value = $expression->getValue();
         if (!$this->isTypeText($value->returnType())) {
@@ -862,7 +861,27 @@ class Writer
             $fill = new Cast($fill, 'text');
         }
 
+        return [$value, $size, $fill];
+    }
+
+    /**
+     * Format left pad expression.
+     */
+    protected function formatLpad(Lpad $expression, WriterContext $context): string
+    {
+        list ($value, $size, $fill) = $this->doGetPadArguments($expression);
+
         return 'lpad(' . $this->format($value, $context) . ', ' . $this->format($size, $context) . ', ' . $this->format($fill, $context) . ')';
+    }
+
+    /**
+     * Format right pad expression.
+     */
+    protected function formatRpad(Lpad $expression, WriterContext $context): string
+    {
+        list ($value, $size, $fill) = $this->doGetPadArguments($expression);
+
+        return 'rpad(' . $this->format($value, $context) . ', ' . $this->format($size, $context) . ', ' . $this->format($fill, $context) . ')';
     }
 
     /**

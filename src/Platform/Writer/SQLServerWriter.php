@@ -62,20 +62,7 @@ class SQLServerWriter extends Writer
      */
     protected function formatLpad(Lpad $expression, WriterContext $context): string
     {
-        $value = $expression->getValue();
-        if (!$this->isTypeText($value->returnType())) {
-            $value = new Cast($value, 'text');
-        }
-
-        $size = $expression->getSize();
-        if (!$this->isTypeNumeric($size->returnType())) {
-            $size = new Cast($size, 'int');
-        }
-
-        $fill = $expression->getFill();
-        if (!$this->isTypeText($fill->returnType())) {
-            $fill = new Cast($fill, 'text');
-        }
+        list ($value, $size, $fill) = $this->doGetPadArguments($expression);
 
         // @todo Replicate the fill string in a completly insane arbitrary
         //   value, knowing that maximum size is 8000 per the standard.
@@ -83,6 +70,21 @@ class SQLServerWriter extends Writer
         // @see https://learn.microsoft.com/fr-fr/sql/t-sql/functions/replicate-transact-sql?view=sql-server-ver16
         // @see https://learn.microsoft.com/fr-fr/sql/t-sql/functions/right-transact-sql?view=sql-server-ver16
         return 'right(replicate(' . $this->format($fill, $context) . ', 100) + ' . $this->format($value, $context) . ', ' . $this->format($size, $context) . ')';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function formatRpad(Lpad $expression, WriterContext $context): string
+    {
+        list ($value, $size, $fill) = $this->doGetPadArguments($expression);
+
+        // @todo Replicate the fill string in a completly insane arbitrary
+        //   value, knowing that maximum size is 8000 per the standard.
+        //   I have no better way right now.
+        // @see https://learn.microsoft.com/fr-fr/sql/t-sql/functions/replicate-transact-sql?view=sql-server-ver16
+        // @see https://learn.microsoft.com/fr-fr/sql/t-sql/functions/right-transact-sql?view=sql-server-ver16
+        return 'left(' . $this->format($value, $context) . ' + replicate(' . $this->format($fill, $context) . ', 100)' . ', ' . $this->format($size, $context) . ')';
     }
 
     /**

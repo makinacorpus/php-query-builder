@@ -22,6 +22,7 @@ use MakinaCorpus\QueryBuilder\Expression\Random;
 use MakinaCorpus\QueryBuilder\Expression\RandomInt;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\Expression\Row;
+use MakinaCorpus\QueryBuilder\Expression\Rpad;
 use MakinaCorpus\QueryBuilder\Expression\TableName;
 use MakinaCorpus\QueryBuilder\Expression\Value;
 
@@ -96,6 +97,14 @@ class ExpressionFactory
     public static function lpad(mixed $value, mixed $size, mixed $fill = null): Lpad
     {
         return new Lpad($value, $size, $fill);
+    }
+
+    /**
+     * Create an RPAD(text, int, text) expression.
+     */
+    public static function rpad(mixed $value, mixed $size, mixed $fill = null): Rpad
+    {
+        return new Rpad($value, $size, $fill);
     }
 
     /**

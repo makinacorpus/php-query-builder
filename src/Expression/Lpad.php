@@ -14,7 +14,9 @@ class Lpad implements Expression
 {
     private Expression $value;
     private Expression $fill;
+    private ?string $fillString = null;
     private Expression $size;
+    private ?int $sizeInt = null;
 
     /**
      * @param mixed $value
@@ -29,10 +31,19 @@ class Lpad implements Expression
         mixed $size,
         mixed $fill = null,
     ) {
-        // @todo Should move type detection to another centralized component.
         $this->value = \is_string($value) ? new Value($value, 'text') : ExpressionHelper::value($value);
-        $this->size = \is_int($size) ? new Value($size, 'int') : ExpressionHelper::value($size);
-        $this->fill = \is_string($fill) ? new Value($fill, 'text') : ($fill ? ExpressionHelper::value($fill) : new Value(' ',  'text'));
+        if (\is_int($size)) {
+            $this->size = new Value($size, 'int');
+            $this->sizeInt = $size;
+        } else {
+            $this->size = ExpressionHelper::value($size);
+        }
+        if (\is_string($fill)) {
+            $this->fill = new Value($fill, 'text');
+            $this->fillString = $fill;
+        } else {
+            $this->fill = $fill ? ExpressionHelper::value($fill) : new Value(' ',  'text');
+        }
     }
 
     /**
@@ -60,11 +71,29 @@ class Lpad implements Expression
     }
 
     /**
+     * Get integer value of size if known from the start in order to generate
+     * a more efficient variant.
+     */
+    public function getFillString(): ?string
+    {
+        return $this->fillString;
+    }
+
+    /**
      * Get value type if specified.
      */
     public function getFill(): Expression
     {
         return $this->fill;
+    }
+
+    /**
+     * Get integer value of size if known from the start in order to generate
+     * a more efficient variant.
+     */
+    public function getSizeInt(): ?int
+    {
+        return $this->sizeInt;
     }
 
     /**

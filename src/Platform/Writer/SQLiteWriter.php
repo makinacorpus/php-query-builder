@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Platform\Writer;
 
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
+use MakinaCorpus\QueryBuilder\Expression\Cast;
+use MakinaCorpus\QueryBuilder\Expression\Lpad;
 use MakinaCorpus\QueryBuilder\Expression\Random;
 use MakinaCorpus\QueryBuilder\Expression\RandomInt;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
@@ -48,6 +50,56 @@ class SQLiteWriter extends Writer
                 [$max, $min, $min]
             ),
             $context,
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function formatLpad(Lpad $expression, WriterContext $context): string
+    {
+        list ($value, $size, $fill) = $this->doGetPadArguments($expression);
+
+        // @see https://stackoverflow.com/questions/6576343/how-to-emulate-lpad-rpad-with-sqlite
+        return $this->formatRaw(
+            new Raw(
+                <<<SQL
+                substr(
+                    replace(
+                        hex(zeroblob(?)),
+                        '00',
+                        ?
+                    ), 1, ? - length(?)
+                ) || ?
+                SQL,
+                [$size, $fill, $size, $value, $value],
+            ),
+            $context
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function formatRpad(Lpad $expression, WriterContext $context): string
+    {
+        list ($value, $size, $fill) = $this->doGetPadArguments($expression);
+
+        // @see https://stackoverflow.com/questions/6576343/how-to-emulate-lpad-rpad-with-sqlite
+        return $this->formatRaw(
+            new Raw(
+                <<<SQL
+                ? || substr(
+                    replace(
+                        hex(zeroblob(?)),
+                        '00',
+                        ?
+                    ), 1, ? - length(?)
+                )
+                SQL,
+                [$value, $size, $fill, $size, $value],
+            ),
+            $context
         );
     }
 
