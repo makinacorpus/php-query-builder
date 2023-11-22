@@ -23,6 +23,14 @@ class Namespaced implements Expression
         return true;
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function returnType(): ?string
+    {
+        return 'text';
+    }
+
     public function getNamespace(): ?string
     {
         return $this->namespace;

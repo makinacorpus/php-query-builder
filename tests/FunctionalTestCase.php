@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Tests;
 
+use Doctrine\DBAL\Result;
 use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Bridge\AbstractBridge;
+use MakinaCorpus\QueryBuilder\Bridge\Doctrine\DoctrineQueryBuilder;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
 
@@ -57,6 +59,39 @@ abstract class FunctionalTestCase extends UnitTestCase
     {
         try {
             return $this->getBridge()->executeStatement($query, $arguments);
+        } catch (\Throwable $e) {
+            throw new QueryBuilderError(
+                \sprintf(
+                    <<<TXT
+                    Error when executing query, error is: %s
+                    Query was:
+                    %s
+                    TXT,
+                    $e->getMessage(),
+                    $this->getBridge()->getWriter()->prepare(\is_string($query) ? new Raw($query, $arguments) : $query)->toString()
+                ),
+                $e->getCode(),
+                $e
+            );
+        }
+    }
+
+    /**
+     * Pass a raw string or query and execute statement over the bridge.
+     *
+     * This doesn't return any result; but may return affected row count.
+     *
+     * This is a proxy function to $this->getBridge()->executeStatement();
+     */
+    protected function executeDoctrineQuery(string|Expression $query, ?array $arguments = null): Result
+    {
+        $bridge = $this->getBridge();
+        if (!$bridge instanceof DoctrineQueryBuilder) {
+            throw new \LogicException("This method can only be called with a doctrine bridge.");
+        }
+
+        try {
+            return $bridge->executeQuery($query, $arguments);
         } catch (\Throwable $e) {
             throw new QueryBuilderError(
                 \sprintf(

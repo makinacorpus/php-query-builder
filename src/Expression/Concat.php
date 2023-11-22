@@ -34,6 +34,14 @@ class Concat implements Expression
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function returnType(): ?string
+    {
+        return 'text';
+    }
+
+    /**
      * @return Expression[]
      */
     public function getArguments(): array

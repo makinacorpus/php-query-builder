@@ -37,6 +37,14 @@ class Raw implements Expression
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function returnType(): ?string
+    {
+        return null;
+    }
+
+    /**
      * Get raw SQL string.
      */
     public function getString(): string

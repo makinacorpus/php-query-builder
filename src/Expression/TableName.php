@@ -34,6 +34,14 @@ class TableName extends Identifier implements TableExpression, WithAlias
     /**
      * {@inheritdoc}
      */
+    public function returnType(): ?string
+    {
+        return 'text';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function cloneWithAlias(?string $alias): static
     {
         $ret = clone $this;

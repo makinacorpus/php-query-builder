@@ -29,4 +29,9 @@ interface Expression
      * Will this expression return any value.
      */
     public function returns(): bool;
+
+    /**
+     * Return type if known.
+     */
+    public function returnType(): ?string;
 }

@@ -32,6 +32,14 @@ class FunctionCall implements Expression
         return true;
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function returnType(): ?string
+    {
+        return null;
+    }
+
     public function getName(): string
     {
         return $this->name;

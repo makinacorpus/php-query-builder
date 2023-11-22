@@ -65,6 +65,14 @@ class Row implements Expression
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function returnType(): ?string
+    {
+        return null;
+    }
+
+    /**
      * Get column count.
      */
     public function getColumnCount(): int

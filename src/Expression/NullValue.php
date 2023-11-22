@@ -18,4 +18,12 @@ class NullValue implements Expression
     {
         return true;
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function returnType(): ?string
+    {
+        return 'null';
+    }
 }

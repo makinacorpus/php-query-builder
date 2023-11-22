@@ -21,6 +21,22 @@ class CaseWhen implements Expression
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function returns(): bool
+    {
+        return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function returnType(): ?string
+    {
+        return null;
+    }
+
+    /**
      * Add a single WHEN .. THEN statement.
      */
     public function add(mixed $when, mixed $then): static
@@ -28,14 +44,6 @@ class CaseWhen implements Expression
         $this->cases[] = new IfThen($when, $then);
 
         return $this;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function returns(): bool
-    {
-        return true;
     }
 
     /** @return IfThen[] */

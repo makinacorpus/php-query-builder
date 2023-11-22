@@ -8,7 +8,7 @@ use MakinaCorpus\QueryBuilder\Expression\Aggregate;
 use MakinaCorpus\QueryBuilder\Expression\Cast;
 use MakinaCorpus\QueryBuilder\Expression\Concat;
 use MakinaCorpus\QueryBuilder\Expression\CurrentTimestamp;
-use MakinaCorpus\QueryBuilder\Expression\Modulo;
+use MakinaCorpus\QueryBuilder\Expression\Lpad;
 use MakinaCorpus\QueryBuilder\Expression\Random;
 use MakinaCorpus\QueryBuilder\Expression\TableName;
 use MakinaCorpus\QueryBuilder\Writer\Writer;
@@ -55,6 +55,34 @@ class SQLServerWriter extends Writer
     protected function formatAggregate(Aggregate $expression, WriterContext $context): string
     {
         return $this->doFormatAggregateWithoutFilter($expression, $context);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function formatLpad(Lpad $expression, WriterContext $context): string
+    {
+        $value = $expression->getValue();
+        if (!$this->isTypeText($value->returnType())) {
+            $value = new Cast($value, 'text');
+        }
+
+        $size = $expression->getSize();
+        if (!$this->isTypeNumeric($size->returnType())) {
+            $size = new Cast($size, 'int');
+        }
+
+        $fill = $expression->getFill();
+        if (!$this->isTypeText($fill->returnType())) {
+            $fill = new Cast($fill, 'text');
+        }
+
+        // @todo Replicate the fill string in a completly insane arbitrary
+        //   value, knowing that maximum size is 8000 per the standard.
+        //   I have no better way right now.
+        // @see https://learn.microsoft.com/fr-fr/sql/t-sql/functions/replicate-transact-sql?view=sql-server-ver16
+        // @see https://learn.microsoft.com/fr-fr/sql/t-sql/functions/right-transact-sql?view=sql-server-ver16
+        return 'right(replicate(' . $this->format($fill, $context) . ', 100) + ' . $this->format($value, $context) . ', ' . $this->format($size, $context) . ')';
     }
 
     /**

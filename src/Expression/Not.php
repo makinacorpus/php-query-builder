@@ -23,6 +23,14 @@ class Not implements Expression
         return true;
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function returnType(): ?string
+    {
+        return 'bool';
+    }
+
     public function getExpression(): Expression
     {
         return $this->expression;

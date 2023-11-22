@@ -210,6 +210,34 @@ npm ci
 npm run docs:dev
 ```
 
+# Known issues or deviations
+
+ - MariaDB: Does not support `VALUES` aliasing, using it will lead to server
+   error.
+
+ - MariaDB: Does not supports using `VALUES` in `WITH` and `JOIN` clauses,
+   using it will lead to server error.
+
+ - MariaDB / MySQL: Does not support `RETURNING` or `OUTPUT` clause.
+
+ - PostgreSQL: a lot if not all arithmetic or text operators and functions
+   we support exist for many types, we arbitrarily add many `CAST()`
+   expressions otherwise the server cannot guess placeholder values types.
+
+ - SQLite: `RANDOM()` will return an integer between int min and int max
+   instead of a float between 0 and 1.
+
+ - SQL Server: `OUTPUT` clause supports returning row values before or after
+   mutation was done, we only support returning row values after mutation.
+
+ - SQL Server: does not support pagination without any `ORDER BY` clause,
+   hence `ORDER BY 1` is always added in queries with limit or offset.
+
+ - SQL Server: `LPAD()` expression is simulated using
+   `RIGHT(REPLICATE(fill, 100) + value, size)`  which means that over 100
+   characters long, this won't work. If fill string contains more than one
+   character, placement might change.
+
 # Run tests
 
 Most unit tests will work gracefuly by running directly PHPUnit:

@@ -49,6 +49,14 @@ class LikePattern implements Expression
         return true;
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function returnType(): ?string
+    {
+        return 'text';
+    }
+
     public function hasValue(): bool
     {
         return null !== $this->value;

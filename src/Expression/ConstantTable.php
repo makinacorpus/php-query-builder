@@ -53,6 +53,14 @@ class ConstantTable implements TableExpression
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function returnType(): ?string
+    {
+        return null;
+    }
+
+    /**
      * Add arbitrary row.
      *
      * @param mixed $values

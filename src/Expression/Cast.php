@@ -35,9 +35,20 @@ class Cast implements Expression
         $this->expression = $expression;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function returns(): bool
     {
-        return $this->expression->returns();
+        return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function returnType(): ?string
+    {
+        return $this->castToType;
     }
 
     public function getExpression(): Expression

@@ -18,4 +18,12 @@ class CurrentTimestamp implements Expression
     {
         return true;
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function returnType(): ?string
+    {
+        return 'timestamp';
+    }
 }

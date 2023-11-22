@@ -46,6 +46,14 @@ class Aggregate implements Expression
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function returnType(): ?string
+    {
+        return null;
+    }
+
+    /**
      * Get aggregate function name.
      */
     public function getFunctionName(): string

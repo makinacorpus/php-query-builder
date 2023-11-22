@@ -29,6 +29,14 @@ class RandomInt implements Expression
         return true;
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function returnType(): ?string
+    {
+        return 'int';
+    }
+
     public function getMin(): int
     {
         return $this->min;

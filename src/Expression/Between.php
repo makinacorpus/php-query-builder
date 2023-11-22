@@ -17,9 +17,20 @@ class Between implements Expression
         private Expression $to
     ) {}
 
+    /**
+     * {@inheritdoc}
+     */
     public function returns(): bool
     {
         return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function returnType(): ?string
+    {
+        return 'bool';
     }
 
     public function getColumn(): Expression

@@ -5,28 +5,29 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Tests\Expression;
 
 use MakinaCorpus\QueryBuilder\Expression\Concat;
+use MakinaCorpus\QueryBuilder\Expression\Lpad;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\Tests\UnitTestCase;
 
-class ConcatTest extends UnitTestCase
+class LpadTest extends UnitTestCase
 {
     public function testReturns(): void
     {
-        $expression = new Concat('foo');
+        $expression = new Concat('lpad', 12);
 
         self::assertTrue($expression->returns());
     }
 
     public function testReturnType(): void
     {
-        $expression = new Concat('foo');
+        $expression = new Lpad('foo', 12);
 
         self::assertSame('text', $expression->returnType());
     }
 
     public function testClone(): void
     {
-        $expression = new Concat('foo', '12', new Raw('bar()'));
+        $expression = new Lpad('foo', 12);
         $clone = clone $expression;
 
         self::assertEquals($expression, $clone);
@@ -34,11 +35,23 @@ class ConcatTest extends UnitTestCase
 
     public function testBasic(): void
     {
-        $expression = new Concat('some_func', '12', new Raw('bar()'));
+        $expression = new Lpad('foo', 12);
 
         self::assertSameSql(
             <<<SQL
-            #1 || #2 || bar()
+            lpad(#1, #2, #3)
+            SQL,
+            $expression
+        );
+    }
+
+    public function testCastIfNotTypes(): void
+    {
+        $expression = new Lpad(new Raw("'foo'"), new Raw("12"), new Raw("' '"));
+
+        self::assertSameSql(
+            <<<SQL
+            lpad(cast('foo' as text), cast(12 as int), cast(' ' as text))
             SQL,
             $expression
         );

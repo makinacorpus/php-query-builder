@@ -34,6 +34,14 @@ class IfThen implements Expression
         return true;
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function returnType(): ?string
+    {
+        return null;
+    }
+
     public function getCondition(): Expression
     {
         return $this->condition;

@@ -44,6 +44,14 @@ class ArrayValue implements Expression
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function returnType(): ?string
+    {
+        return $this->valueType ? ($this->valueType . '[]') : 'array';
+    }
+
+    /**
      * Get value type if specified.
      */
     public function getValueType(): ?string

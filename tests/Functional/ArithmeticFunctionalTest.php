@@ -16,8 +16,9 @@ class ArithmeticFunctionalTest extends DoctrineTestCase
         $select = new Select();
         $select->columnRaw(new Modulo(new Value(10), new Value(7)));
 
-        $this->executeStatement($select);
-
-        self::expectNotToPerformAssertions();
+        self::assertSame(
+            3,
+            (int) $this->executeDoctrineQuery($select)->fetchOne(),
+        );
     }
 }

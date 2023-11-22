@@ -27,6 +27,7 @@ use MakinaCorpus\QueryBuilder\Expression\FunctionCall;
 use MakinaCorpus\QueryBuilder\Expression\Identifier;
 use MakinaCorpus\QueryBuilder\Expression\IfThen;
 use MakinaCorpus\QueryBuilder\Expression\LikePattern;
+use MakinaCorpus\QueryBuilder\Expression\Lpad;
 use MakinaCorpus\QueryBuilder\Expression\Modulo;
 use MakinaCorpus\QueryBuilder\Expression\Not;
 use MakinaCorpus\QueryBuilder\Expression\NullValue;
@@ -123,7 +124,23 @@ class Writer
     }
 
     /**
-     * {@inheritdoc}
+     * Is text type.
+     */
+    protected function isTypeNumeric(?string $type): bool
+    {
+        return null !== $type && ('numeric' === $type || \str_contains($type, 'int') || \str_contains($type, 'float'));
+    }
+
+    /**
+     * Is text type.
+     */
+    protected function isTypeText(?string $type): bool
+    {
+        return null !== $type && ('text' === $type || 'string' === $type || \str_contains($type, 'varchar'));
+    }
+
+    /**
+     * Do format expression.
      */
     protected function format(Expression $expression, WriterContext $context, bool $enforceParenthesis = false): string
     {
@@ -161,6 +178,7 @@ class Writer
                     CurrentTimestamp::class => $this->formatCurrentTimestamp($expression, $context),
                     Identifier::class => $this->formatIdentifier($expression, $context),
                     IfThen::class => $this->formatIfThen($expression, $context),
+                    Lpad::class => $this->formatLpad($expression, $context),
                     Modulo::class => $this->formatModulo($expression, $context),
                     Not::class => $this->formatNot($expression, $context),
                     NullValue::class => $this->formatNullValue($expression, $context),
@@ -822,6 +840,29 @@ class Writer
         $to = $expression->getTo();
 
         return $this->format($column, $context) . ' between ' . $this->format($from, $context) . ' and ' . $this->format($to, $context);
+    }
+
+    /**
+     * Format left pad expression.
+     */
+    protected function formatLpad(Lpad $expression, WriterContext $context): string
+    {
+        $value = $expression->getValue();
+        if (!$this->isTypeText($value->returnType())) {
+            $value = new Cast($value, 'text');
+        }
+
+        $size = $expression->getSize();
+        if (!$this->isTypeNumeric($size->returnType())) {
+            $size = new Cast($size, 'int');
+        }
+
+        $fill = $expression->getFill();
+        if (!$this->isTypeText($fill->returnType())) {
+            $fill = new Cast($fill, 'text');
+        }
+
+        return 'lpad(' . $this->format($value, $context) . ', ' . $this->format($size, $context) . ', ' . $this->format($fill, $context) . ')';
     }
 
     /**

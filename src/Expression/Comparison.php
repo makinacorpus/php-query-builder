@@ -44,6 +44,14 @@ class Comparison implements Expression
         return true;
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function returnType(): ?string
+    {
+        return 'bool';
+    }
+
     public function getLeft(): ?Expression
     {
         return $this->left;

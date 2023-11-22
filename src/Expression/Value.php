@@ -19,7 +19,11 @@ class Value implements Expression
     public function __construct(
         private mixed $value,
         private ?string $type = null
-    ) {}
+    ) {
+        if (null === $value && !$type) {
+            $this->type = 'null';
+        }
+    }
 
     /**
      * {@inheritdoc}
@@ -27,6 +31,14 @@ class Value implements Expression
     public function returns(): bool
     {
         return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function returnType(): ?string
+    {
+        return $this->type;
     }
 
     /**

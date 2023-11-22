@@ -29,6 +29,14 @@ abstract class AbstractQuery implements Query
     /**
      * {@inheritdoc}
      */
+    public function returnType(): ?string
+    {
+        return null;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function expression(): ExpressionFactory
     {
         return $this->expressionFactory ??= new ExpressionFactory();

@@ -52,6 +52,14 @@ class Window implements Expression
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function returnType(): ?string
+    {
+        return null;
+    }
+
+    /**
      * Get alias.
      */
     public function getAlias(): ?string

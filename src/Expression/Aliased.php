@@ -27,6 +27,14 @@ final class Aliased implements Expression, WithAlias
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function returnType(): ?string
+    {
+        return $this->expression->returnType();
+    }
+
+    /**
      * Get decorated expression.
      */
     public function getExpression(): Expression

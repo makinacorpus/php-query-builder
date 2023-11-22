@@ -14,6 +14,7 @@ use MakinaCorpus\QueryBuilder\Expression\ConstantTable;
 use MakinaCorpus\QueryBuilder\Expression\FunctionCall;
 use MakinaCorpus\QueryBuilder\Expression\Identifier;
 use MakinaCorpus\QueryBuilder\Expression\IfThen;
+use MakinaCorpus\QueryBuilder\Expression\Lpad;
 use MakinaCorpus\QueryBuilder\Expression\Modulo;
 use MakinaCorpus\QueryBuilder\Expression\Not;
 use MakinaCorpus\QueryBuilder\Expression\NullValue;
@@ -90,7 +91,15 @@ class ExpressionFactory
     }
 
     /**
-     * Create an `expr || expr || expr` concatenation expression.
+     * Create an LPAD(text, int, text) expression.
+     */
+    public static function lpad(mixed $value, mixed $size, mixed $fill = null): Lpad
+    {
+        return new Lpad($value, $size, $fill);
+    }
+
+    /**
+     * Create an `text || text || text` concatenation expression.
      *
      * Some dialects don't use the  `||` operator, this will be converted to
      * the `CONCAT(expr, expr, expr)` function call.

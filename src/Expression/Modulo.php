@@ -28,11 +28,19 @@ class Modulo implements Expression
         return true;
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function returnType(): ?string
+    {
+        // % operator can be used for various other types.
+        return $this->left->returnType() ?? 'int';
+    }
+
     public function getLeft(): ?Expression
     {
         return $this->left;
     }
-
 
     public function getRight(): ?Expression
     {

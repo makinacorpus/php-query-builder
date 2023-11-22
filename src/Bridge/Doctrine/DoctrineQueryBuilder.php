@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Bridge\Doctrine;
 
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Result;
 use Doctrine\DBAL\Driver\ServerInfoAwareConnection;
 use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Bridge\AbstractBridge;
@@ -17,7 +18,9 @@ use MakinaCorpus\QueryBuilder\Bridge\Doctrine\Query\DoctrineRawQuery;
 use MakinaCorpus\QueryBuilder\Bridge\Doctrine\Query\DoctrineSelect;
 use MakinaCorpus\QueryBuilder\Bridge\Doctrine\Query\DoctrineUpdate;
 use MakinaCorpus\QueryBuilder\Converter\Converter;
+use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Escaper\Escaper;
+use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\Writer\Writer;
 
 class DoctrineQueryBuilder extends AbstractBridge
@@ -95,6 +98,28 @@ class DoctrineQueryBuilder extends AbstractBridge
     protected function doExecuteStatement(string $expression, array $arguments = []): ?int
     {
         return (int) $this->connection->executeStatement($expression, $arguments);
+    }
+
+    /**
+     * Execute query and return result.
+     */
+    public function executeQuery(string|Expression $expression = null, mixed $arguments = null): Result
+    {
+        if (\is_string($expression)) {
+            $expression = new Raw($expression, $arguments);
+        } else if ($arguments) {
+            throw new QueryBuilderError("Cannot pass \$arguments if \$query is not a string.");
+        }
+
+        $prepared = $this->getWriter()->prepare($expression);
+
+        return $this
+            ->connection
+            ->executeQuery(
+                $prepared->toString(),
+                $prepared->getArguments()->getAll(),
+            )
+        ;
     }
 
     /**

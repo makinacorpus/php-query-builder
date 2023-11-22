@@ -42,6 +42,14 @@ class Where implements Expression
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function returnType(): ?string
+    {
+        return 'bool';
+    }
+
+    /**
      * Is it empty.
      */
     public function isEmpty(): bool
