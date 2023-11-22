@@ -40,7 +40,7 @@ class DoctrineQueryBuilder extends AbstractBridge
 
         $userServerVersion = $params['serverVersion'] ?? $params['primary']['serverVersion'] ?? null;
 
-        if ($userServerVersion && \preg_match('[a-z]+', $userServerVersion)) {
+        if ($userServerVersion && \preg_match('/[a-z]+/', $userServerVersion)) {
             return $userServerVersion;
         }
 

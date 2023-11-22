@@ -182,11 +182,15 @@ abstract class AbstractBridge
      */
     protected function createConverter(ConverterPluginRegistry $converterPluginRegistry): Converter
     {
-        return match ($this->getServerFlavor()) {
-            self::SERVER_MARIADB => new MySQLConverter($converterPluginRegistry),
-            self::SERVER_MYSQL => new MySQLConverter($converterPluginRegistry),
-            default => new Converter($converterPluginRegistry),
+        $ret = match ($this->getServerFlavor()) {
+            self::SERVER_MARIADB => new MySQLConverter(),
+            self::SERVER_MYSQL => new MySQLConverter(),
+            default => new Converter(),
         };
+
+        $ret->setConverterPluginRegistry($converterPluginRegistry);
+
+        return $ret;
     }
 
     /**

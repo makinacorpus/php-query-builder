@@ -42,9 +42,6 @@ class StringHash implements Expression
         return $this->algo;
     }
 
-    /**
-     * @return Expression[]
-     */
     public function getValue(): Expression
     {
         return $this->value;

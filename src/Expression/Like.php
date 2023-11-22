@@ -25,6 +25,6 @@ class Like extends Comparison
 
     public function isCaseSensitive(): bool
     {
-        return $this->caseInsensitive;
+        return $this->caseSensitive;
     }
 }

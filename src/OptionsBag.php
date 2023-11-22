@@ -23,7 +23,7 @@ final class OptionsBag
      */
     public function getAll(?array $overrides = null): array
     {
-        return $overrides ? \array_merge($this->options, $overrides) :  $this->options;
+        return $overrides ? \array_merge($this->data, $overrides) :  $this->data;
     }
 
     /**
@@ -32,9 +32,9 @@ final class OptionsBag
     public function set(string $name, mixed $value): static
     {
         if (null === $value) {
-            unset($this->options[$name]);
+            unset($this->data[$name]);
         } else {
-            $this->options[$name] = $value;
+            $this->data[$name] = $value;
         }
         return $this;
     }

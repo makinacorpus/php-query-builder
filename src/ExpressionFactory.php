@@ -113,7 +113,7 @@ class ExpressionFactory
      *
      * Warning: not much SQL dialect will have a generic string hash function.
      */
-    public static function hash(mixed $value, string $algo): Rpad
+    public static function hash(mixed $value, string $algo): StringHash
     {
         return new StringHash($value, $algo);
     }
@@ -121,7 +121,7 @@ class ExpressionFactory
     /**
      * Create an MD5() hash expression.
      */
-    public static function md5(mixed $value): Rpad
+    public static function md5(mixed $value): StringHash
     {
         return new StringHash($value, 'md5');
     }
@@ -129,7 +129,7 @@ class ExpressionFactory
     /**
      * Create an SHA1() hash expression.
      */
-    public static function sha1(mixed $value): Rpad
+    public static function sha1(mixed $value): StringHash
     {
         return new StringHash($value, 'sha1');
     }
