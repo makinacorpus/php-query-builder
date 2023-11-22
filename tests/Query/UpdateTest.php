@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Tests\Query;
 
 use MakinaCorpus\QueryBuilder\Expression\Raw;
+use MakinaCorpus\QueryBuilder\Query\Select;
 use MakinaCorpus\QueryBuilder\Query\Update;
 use MakinaCorpus\QueryBuilder\Tests\UnitTestCase;
 
@@ -56,6 +57,30 @@ class UpdateTest extends UnitTestCase
 
         self::expectExceptionMessageMatches('/without table prefix/');
         $query->set('bar.foo', 1);
+    }
+
+    public function testJoinNested(): void
+    {
+        $query = new Update('bar');
+        $query->set('foo', 1);
+        $query->join(new Select('foo'), 'a = b', 'foo_2');
+        $query->join("fizz", 'buzz');
+
+        self::assertSameSql(
+            <<<SQL
+            update "bar"
+            set
+                "foo" = #1
+            from (
+                select * from "foo"
+            ) as "foo_2"
+            inner join "fizz"
+                on (buzz)
+            where
+                ((a = b))
+            SQL,
+            $query
+        );
     }
 
     public function testMultipleJoin(): void

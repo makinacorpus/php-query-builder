@@ -214,6 +214,20 @@ class SelectFunctionalTest extends DoctrineTestCase
         self::expectNotToPerformAssertions();
     }
 
+    public function testFromFromSelect(): void
+    {
+        $select = new Select('foo');
+        $select->from(
+            new Select('bar'),
+            'bar',
+        );
+        $select->whereRaw('bar.id = foo.id');
+
+        $this->executeStatement($select);
+
+        self::expectNotToPerformAssertions();
+    }
+
     public function testFromSelectWhere(): void
     {
         $nested = new Select('bar');

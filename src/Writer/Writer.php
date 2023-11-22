@@ -230,13 +230,12 @@ class Writer
      */
     protected function expressionRequiresParenthesis(Expression $expression): bool
     {
-        return match (\get_class($expression)) {
-            ConstantTable::class => true,
-            RawQuery::class => true,
-            Select::class => true,
-            Where::class => true,
-            default => false,
-        };
+        return
+            $expression instanceof ConstantTable ||
+            $expression instanceof RawQuery ||
+            $expression instanceof Select ||
+            $expression instanceof Where
+        ;
     }
 
     /**

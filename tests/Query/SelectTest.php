@@ -759,6 +759,53 @@ class SelectTest extends UnitTestCase
         );
     }
 
+    public function testFromSelect(): void
+    {
+        $query = new Select('foo');
+        $query->from(
+            new Select('bar'),
+            'bar',
+        );
+        $query->whereRaw('bar.id = foo.id');
+
+        self::assertSameSql(
+            <<<SQL
+            select *
+            from "foo", (
+                select *
+                from "bar"
+            ) as "bar"
+            where
+                bar.id = foo.id
+            SQL,
+            $query
+        );
+    }
+
+    public function testJoinSelect(): void
+    {
+        $query = new Select('foo');
+        $query->join(
+            new Select('bar'),
+            'bar.id = foo.id',
+            'bar',
+        );
+
+        self::assertSameSql(
+            <<<SQL
+            select *
+            from "foo"
+            inner join (
+                select *
+                from "bar"
+            ) as "bar" on (
+                bar.id = foo.id
+            )
+            SQL,
+            $query
+        );
+    }
+
     public function testExpressionAsJoin(): void
     {
         $expression = new ConstantTable();
