@@ -21,7 +21,7 @@ class RpadTest extends UnitTestCase
     {
         $expression = new Rpad('foo', 12);
 
-        self::assertSame('text', $expression->returnType());
+        self::assertSame('varchar', $expression->returnType());
     }
 
     public function testClone(): void
@@ -50,7 +50,7 @@ class RpadTest extends UnitTestCase
 
         self::assertSameSql(
             <<<SQL
-            rpad(cast('foo' as text), cast(12 as int), cast(' ' as text))
+            rpad(cast('foo' as varchar), cast(12 as int), cast(' ' as varchar))
             SQL,
             $expression
         );

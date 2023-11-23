@@ -36,7 +36,7 @@ class TableName extends Identifier implements TableExpression, WithAlias
      */
     public function returnType(): ?string
     {
-        return 'text';
+        return null;
     }
 
     /**

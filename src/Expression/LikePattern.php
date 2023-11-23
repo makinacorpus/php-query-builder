@@ -54,7 +54,7 @@ class LikePattern implements Expression
      */
     public function returnType(): ?string
     {
-        return 'text';
+        return 'varchar';
     }
 
     public function hasValue(): bool

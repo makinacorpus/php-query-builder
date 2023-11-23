@@ -21,7 +21,7 @@ class ConcatTest extends UnitTestCase
     {
         $expression = new Concat('foo');
 
-        self::assertSame('text', $expression->returnType());
+        self::assertSame('varchar', $expression->returnType());
     }
 
     public function testClone(): void

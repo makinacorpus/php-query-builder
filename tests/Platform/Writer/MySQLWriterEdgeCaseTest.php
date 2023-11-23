@@ -49,7 +49,7 @@ class MySQLWriterEdgeCaseTest extends UnitTestCase
             <<<SQL
             cast(foo() as char)
             SQL,
-            new Cast(new Raw('foo()'), 'text'),
+            new Cast(new Raw('foo()'), 'varchar'),
         );
     }
 

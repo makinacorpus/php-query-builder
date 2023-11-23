@@ -93,7 +93,7 @@ class ExpressionFactory
     }
 
     /**
-     * Create an LPAD(text, int, text) expression.
+     * Create an LPAD(text, int, varchar) expression.
      */
     public static function lpad(mixed $value, mixed $size, mixed $fill = null): Lpad
     {
@@ -101,7 +101,7 @@ class ExpressionFactory
     }
 
     /**
-     * Create an RPAD(text, int, text) expression.
+     * Create an RPAD(text, int, varchar) expression.
      */
     public static function rpad(mixed $value, mixed $size, mixed $fill = null): Rpad
     {

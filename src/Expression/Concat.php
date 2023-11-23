@@ -38,7 +38,7 @@ class Concat implements Expression
      */
     public function returnType(): ?string
     {
-        return 'text';
+        return 'varchar';
     }
 
     /**

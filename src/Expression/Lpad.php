@@ -31,7 +31,7 @@ class Lpad implements Expression
         mixed $size,
         mixed $fill = null,
     ) {
-        $this->value = \is_string($value) ? new Value($value, 'text') : ExpressionHelper::value($value);
+        $this->value = \is_string($value) ? new Value($value, 'varchar') : ExpressionHelper::value($value);
         if (\is_int($size)) {
             $this->size = new Value($size, 'int');
             $this->sizeInt = $size;
@@ -39,10 +39,10 @@ class Lpad implements Expression
             $this->size = ExpressionHelper::value($size);
         }
         if (\is_string($fill)) {
-            $this->fill = new Value($fill, 'text');
+            $this->fill = new Value($fill, 'varchar');
             $this->fillString = $fill;
         } else {
-            $this->fill = $fill ? ExpressionHelper::value($fill) : new Value(' ',  'text');
+            $this->fill = $fill ? ExpressionHelper::value($fill) : new Value(' ',  'varchar');
         }
     }
 
@@ -59,7 +59,7 @@ class Lpad implements Expression
      */
     public function returnType(): ?string
     {
-        return 'text';
+        return 'varchar';
     }
 
     /**

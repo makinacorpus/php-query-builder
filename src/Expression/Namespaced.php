@@ -28,7 +28,7 @@ class Namespaced implements Expression
      */
     public function returnType(): ?string
     {
-        return 'text';
+        return null;
     }
 
     public function getNamespace(): ?string

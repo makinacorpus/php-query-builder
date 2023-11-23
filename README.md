@@ -233,11 +233,6 @@ npm run docs:dev
  - SQL Server: does not support pagination without any `ORDER BY` clause,
    hence `ORDER BY 1` is always added in queries with limit or offset.
 
- - SQL Server: added `CAST(? AS text)` which will work for all other RDBMS
-   are replaced by `CAST(? AS varchar)` in generated SQL, because `text`
-   type does not allow `int`, `float` and some other types explicit
-   conversion.
-
  - SQL Server: `LPAD()` and `RPAD()` expression is simulated using
    `RIGHT(REPLICATE(fill, 100) + value, size)`  which means that over 100
    characters long, this won't work. If fill string contains more than one

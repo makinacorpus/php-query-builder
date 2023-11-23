@@ -20,7 +20,7 @@ class StringHashTest extends UnitTestCase
     {
         $expression = new StringHash('foo', 'md5');
 
-        self::assertSame('text', $expression->returnType());
+        self::assertSame('varchar', $expression->returnType());
     }
 
     public function testClone(): void

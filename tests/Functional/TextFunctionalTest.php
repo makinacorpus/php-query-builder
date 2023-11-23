@@ -66,10 +66,6 @@ class TextFunctionalTest extends DoctrineTestCase
         );
     }
 
-    /**
-     * SQL Server doesn't allow CAST(int|float AS text) but wants the varchar
-     * type instead, this test is for this.
-     */
     public function testLpadWithFloatInput(): void
     {
         $select = new Select();

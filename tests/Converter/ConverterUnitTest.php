@@ -79,7 +79,7 @@ class ConverterUnitTest extends UnitTestCase
     {
         self::assertSame(
             'weee',
-            (new Converter())->toSql('weee', 'text'),
+            (new Converter())->toSql('weee', 'varchar'),
         );
     }
 
@@ -95,7 +95,7 @@ class ConverterUnitTest extends UnitTestCase
 
         self::assertSame(
             'weee',
-            (new Converter())->toSql($object, 'text'),
+            (new Converter())->toSql($object, 'varchar'),
         );
     }
 

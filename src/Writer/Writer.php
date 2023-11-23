@@ -153,7 +153,7 @@ class Writer
         if ($this->isTypeText($expression->returnType())) {
             return $expression;
         }
-        return new Cast($expression, 'text');
+        return new Cast($expression, 'varchar');
     }
 
     /**

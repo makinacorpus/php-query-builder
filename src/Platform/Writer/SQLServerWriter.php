@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Platform\Writer;
 
-use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Expression\Aggregate;
 use MakinaCorpus\QueryBuilder\Expression\Cast;
 use MakinaCorpus\QueryBuilder\Expression\Concat;
@@ -31,18 +30,6 @@ class SQLServerWriter extends Writer
     protected function shouldEscapeAggregateFunctionName(): bool
     {
         return false;
-    }
- 
-    /**
-     * {@inheritdoc}
-     */
-    protected function toText(Expression $expression, WriterContext $context): Expression
-    {
-        // @todo Allow option to disable this on a per-query basis.
-        if ($this->isTypeText($expression->returnType())) {
-            return $expression;
-        }
-        return new Cast($expression, 'nvarchar');
     }
 
     /**

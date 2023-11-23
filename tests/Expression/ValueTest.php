@@ -11,14 +11,14 @@ class ValueTest extends UnitTestCase
 {
     public function testReturns(): void
     {
-        $expression = new Value('bla', 'text');
+        $expression = new Value('bla', 'varchar');
 
         self::assertTrue($expression->returns());
     }
 
     public function testClone(): void
     {
-        $expression = new Value('bla', 'text');
+        $expression = new Value('bla', 'varchar');
         $clone = clone $expression;
 
         self::assertEquals($expression, $clone);
@@ -26,11 +26,11 @@ class ValueTest extends UnitTestCase
 
     public function testArbitrary(): void
     {
-        $expression = new Value('bla', 'text');
+        $expression = new Value('bla', 'varchar');
 
         self::assertTrue($expression->returns());
         self::assertSame('bla', $expression->getValue());
-        self::assertSame('text', $expression->getType());
+        self::assertSame('varchar', $expression->getType());
 
         self::assertSameSql(
             <<<SQL
