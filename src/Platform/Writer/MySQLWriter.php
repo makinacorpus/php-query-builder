@@ -68,7 +68,7 @@ class MySQLWriter extends Writer
     protected function formatStringHash(StringHash $expression, WriterContext $context): string
     {
         $algo = $expression->getAlgo();
-        $value = new Cast($expression->getValue(), 'text');
+        $value = $this->toText($expression->getValue(), $context);
 
         return match (\strtolower($algo)) {
             'md5' => 'md5(' . $this->format($value, $context) . ')',

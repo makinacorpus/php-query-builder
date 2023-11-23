@@ -142,6 +142,36 @@ class Writer
     }
 
     /**
+     * In numerous cases, this API will add explicit CAST() calls in order to
+     * bypass some wrong type guess due to parameters usage when querying.
+     *
+     * This function does this for text values.
+     */
+    protected function toText(Expression $expression, WriterContext $context): Expression
+    {
+        // @todo Allow option to disable this on a per-query basis.
+        if ($this->isTypeText($expression->returnType())) {
+            return $expression;
+        }
+        return new Cast($expression, 'text');
+    }
+
+    /**
+     * In numerous cases, this API will add explicit CAST() calls in order to
+     * bypass some wrong type guess due to parameters usage when querying.
+     *
+     * This function does this for numeric values.
+     */
+    protected function toInt(Expression $expression, WriterContext $context): Expression
+    {
+        // @todo Allow option to disable this on a per-query basis.
+        if ($this->isTypeNumeric($expression->returnType())) {
+            return $expression;
+        }
+        return new Cast($expression, 'int');
+    }
+
+    /**
      * Do format expression.
      */
     protected function format(Expression $expression, WriterContext $context, bool $enforceParenthesis = false): string
@@ -747,7 +777,7 @@ class Writer
     {
         $algo = $expression->getAlgo();
         $escapedAlgo = $this->escaper->escapeLiteral($algo);
-        $value = new Cast($expression->getValue(), 'text');
+        $value = $this->toText($expression->getValue(), $context);
 
         return match (\strtolower($algo)) {
             'md5' => 'md5(' . $this->format($value, $context) . ')',
@@ -866,24 +896,13 @@ class Writer
         return $this->format($column, $context) . ' between ' . $this->format($from, $context) . ' and ' . $this->format($to, $context);
     }
 
-    protected function doGetPadArguments(Lpad $expression): array
+    protected function doGetPadArguments(Lpad $expression, WriterContext $context): array
     {
-        $value = $expression->getValue();
-        if (!$this->isTypeText($value->returnType())) {
-            $value = new Cast($value, 'text');
-        }
-
-        $size = $expression->getSize();
-        if (!$this->isTypeNumeric($size->returnType())) {
-            $size = new Cast($size, 'int');
-        }
-
-        $fill = $expression->getFill();
-        if (!$this->isTypeText($fill->returnType())) {
-            $fill = new Cast($fill, 'text');
-        }
-
-        return [$value, $size, $fill];
+        return [
+            $this->toText($expression->getValue(), $context),
+            $this->toInt($expression->getSize(), $context),
+            $this->toText($expression->getFill(), $context),
+        ];
     }
 
     /**
@@ -891,7 +910,7 @@ class Writer
      */
     protected function formatLpad(Lpad $expression, WriterContext $context): string
     {
-        list ($value, $size, $fill) = $this->doGetPadArguments($expression);
+        list ($value, $size, $fill) = $this->doGetPadArguments($expression, $context);
 
         return 'lpad(' . $this->format($value, $context) . ', ' . $this->format($size, $context) . ', ' . $this->format($fill, $context) . ')';
     }
@@ -901,7 +920,7 @@ class Writer
      */
     protected function formatRpad(Lpad $expression, WriterContext $context): string
     {
-        list ($value, $size, $fill) = $this->doGetPadArguments($expression);
+        list ($value, $size, $fill) = $this->doGetPadArguments($expression, $context);
 
         return 'rpad(' . $this->format($value, $context) . ', ' . $this->format($size, $context) . ', ' . $this->format($fill, $context) . ')';
     }
@@ -911,7 +930,7 @@ class Writer
      */
     protected function formatModulo(Modulo $expression, WriterContext $context): string
     {
-        return $this->format(new Cast($expression->getLeft(), 'int'), $context) . ' % ' . $this->format($expression->getRight(), $context);
+        return $this->format($this->toInt($expression->getLeft(), $context), $context) . ' % ' . $this->format($expression->getRight(), $context);
     }
 
     /**

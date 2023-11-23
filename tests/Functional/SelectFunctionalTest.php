@@ -221,7 +221,7 @@ class SelectFunctionalTest extends DoctrineTestCase
             new Select('bar'),
             'bar',
         );
-        $select->whereRaw('bar.id = foo.id');
+        $select->whereRaw('bar.foo_id = foo.id');
 
         $this->executeStatement($select);
 

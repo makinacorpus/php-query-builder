@@ -9,6 +9,7 @@ use MakinaCorpus\QueryBuilder\Expression\Concat;
 use MakinaCorpus\QueryBuilder\Expression\Lpad;
 use MakinaCorpus\QueryBuilder\Expression\Rpad;
 use MakinaCorpus\QueryBuilder\Expression\StringHash;
+use MakinaCorpus\QueryBuilder\Expression\Value;
 use MakinaCorpus\QueryBuilder\Query\Select;
 use MakinaCorpus\QueryBuilder\Tests\Bridge\Doctrine\DoctrineTestCase;
 
@@ -61,6 +62,21 @@ class TextFunctionalTest extends DoctrineTestCase
 
         self::assertSame(
             'ababfoo',
+            $this->executeDoctrineQuery($select)->fetchOne(),
+        );
+    }
+
+    /**
+     * SQL Server doesn't allow CAST(int|float AS text) but wants the varchar
+     * type instead, this test is for this.
+     */
+    public function testLpadWithFloatInput(): void
+    {
+        $select = new Select();
+        $select->columnRaw(new Lpad(new Value(10, 'int'), 5, 'a'));
+
+        self::assertSame(
+            'aaa10',
             $this->executeDoctrineQuery($select)->fetchOne(),
         );
     }

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Platform\Writer;
 
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
-use MakinaCorpus\QueryBuilder\Expression\Cast;
 use MakinaCorpus\QueryBuilder\Expression\Lpad;
 use MakinaCorpus\QueryBuilder\Expression\Random;
 use MakinaCorpus\QueryBuilder\Expression\RandomInt;
@@ -58,7 +57,7 @@ class SQLiteWriter extends Writer
      */
     protected function formatLpad(Lpad $expression, WriterContext $context): string
     {
-        list ($value, $size, $fill) = $this->doGetPadArguments($expression);
+        list ($value, $size, $fill) = $this->doGetPadArguments($expression, $context);
 
         // @see https://stackoverflow.com/questions/6576343/how-to-emulate-lpad-rpad-with-sqlite
         return $this->formatRaw(
@@ -83,7 +82,7 @@ class SQLiteWriter extends Writer
      */
     protected function formatRpad(Lpad $expression, WriterContext $context): string
     {
-        list ($value, $size, $fill) = $this->doGetPadArguments($expression);
+        list ($value, $size, $fill) = $this->doGetPadArguments($expression, $context);
 
         // @see https://stackoverflow.com/questions/6576343/how-to-emulate-lpad-rpad-with-sqlite
         return $this->formatRaw(
