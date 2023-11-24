@@ -168,9 +168,12 @@ class Writer
      *
      * This function does this for text values.
      */
-    protected function toText(Expression $expression, WriterContext $context): Expression
+    protected function toText(Expression $expression, WriterContext $context, bool $forceCastIfValue = false): Expression
     {
         // @todo Allow option to disable this on a per-query basis.
+        if ($forceCastIfValue && $expression instanceof Value) {
+            return new Cast($expression, 'varchar');
+        }
         if ($this->isTypeText($this->guessTypeOf($expression))) {
             return $expression;
         }
@@ -183,9 +186,12 @@ class Writer
      *
      * This function does this for numeric values.
      */
-    protected function toInt(Expression $expression, WriterContext $context): Expression
+    protected function toInt(Expression $expression, WriterContext $context, bool $forceCastIfValue = false): Expression
     {
         // @todo Allow option to disable this on a per-query basis.
+        if ($forceCastIfValue && $expression instanceof Value) {
+            return new Cast($expression, 'int');
+        }
         if ($this->isTypeNumeric($this->guessTypeOf($expression))) {
             return $expression;
         }
@@ -951,7 +957,11 @@ class Writer
      */
     protected function formatModulo(Modulo $expression, WriterContext $context): string
     {
-        return $this->format($this->toInt($expression->getLeft(), $context), $context) . ' % ' . $this->format($expression->getRight(), $context);
+        // Here we force CAST(? AS int) because parametrized value type will
+        // be unknown to the server when preparing the SQL query, which will
+        // raise error because modulo operator might exist for more than one
+        // type.
+        return $this->format($this->toInt($expression->getLeft(), $context, true), $context) . ' % ' . $this->format($expression->getRight(), $context);
     }
 
     /**
