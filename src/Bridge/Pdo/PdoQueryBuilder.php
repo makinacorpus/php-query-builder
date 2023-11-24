@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Bridge\Pdo;
 
 use MakinaCorpus\QueryBuilder\Expression;
+use MakinaCorpus\QueryBuilder\Platform;
 use MakinaCorpus\QueryBuilder\Bridge\AbstractBridge;
 use MakinaCorpus\QueryBuilder\Bridge\Pdo\Escaper\PdoEscaper;
 use MakinaCorpus\QueryBuilder\Bridge\Pdo\Escaper\PdoMySQLEscaper;
@@ -52,7 +53,7 @@ class PdoQueryBuilder extends AbstractBridge
         $matches = [];
 
         // PostgreSQL Example: 16.0 (Debian 16.0-1.pgdg120+1)
-        if (self::SERVER_POSTGRESQL === $serverFlavor) {
+        if (Platform::POSTGRESQL === $serverFlavor) {
             if (\preg_match('@^(\d+\.\d+(\.\d+))@i', $rawVersion, $matches)) {
                 return $matches[1];
             }
@@ -77,8 +78,8 @@ class PdoQueryBuilder extends AbstractBridge
     protected function createEscaper(): Escaper
     {
         return match ($this->getServerFlavor()) {
-            self::SERVER_MARIADB => new PdoMySQLEscaper($this->connection),
-            self::SERVER_MYSQL => new PdoMySQLEscaper($this->connection),
+            Platform::MARIADB => new PdoMySQLEscaper($this->connection),
+            Platform::MYSQL => new PdoMySQLEscaper($this->connection),
             default => new PdoEscaper($this->connection),
         };
     }

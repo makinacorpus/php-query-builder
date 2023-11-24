@@ -8,6 +8,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Result;
 use Doctrine\DBAL\Driver\ServerInfoAwareConnection;
 use MakinaCorpus\QueryBuilder\Expression;
+use MakinaCorpus\QueryBuilder\Platform;
 use MakinaCorpus\QueryBuilder\Bridge\AbstractBridge;
 use MakinaCorpus\QueryBuilder\Bridge\Doctrine\Escaper\DoctrineEscaper;
 use MakinaCorpus\QueryBuilder\Bridge\Doctrine\Escaper\DoctrineMySQLEscaper;
@@ -76,8 +77,8 @@ class DoctrineQueryBuilder extends AbstractBridge
     protected function createEscaper(): Escaper
     {
         return match ($this->getServerFlavor()) {
-            self::SERVER_MARIADB => new DoctrineMySQLEscaper($this->connection),
-            self::SERVER_MYSQL => new DoctrineMySQLEscaper($this->connection),
+            Platform::MARIADB => new DoctrineMySQLEscaper($this->connection),
+            Platform::MYSQL => new DoctrineMySQLEscaper($this->connection),
             default => new DoctrineEscaper($this->connection),
         };
     }

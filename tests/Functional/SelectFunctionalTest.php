@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Tests\Functional;
 
-use MakinaCorpus\QueryBuilder\Bridge\AbstractBridge;
+use MakinaCorpus\QueryBuilder\Platform;
 use MakinaCorpus\QueryBuilder\Expression\Cast;
 use MakinaCorpus\QueryBuilder\Expression\ColumnName;
 use MakinaCorpus\QueryBuilder\Expression\ConstantTable;
@@ -40,8 +40,8 @@ class SelectFunctionalTest extends DoctrineTestCase
 
         switch ($this->getBridge()->getServerFlavor()) {
 
-            case AbstractBridge::SERVER_MARIADB:
-            case AbstractBridge::SERVER_MYSQL:
+            case Platform::MARIADB:
+            case Platform::MYSQL:
                 $this->getBridge()->executeStatement(
                     <<<SQL
                     CREATE TABLE foo (
@@ -61,7 +61,7 @@ class SelectFunctionalTest extends DoctrineTestCase
                 );
                 break;
 
-            case AbstractBridge::SERVER_SQLSERVER:
+            case Platform::SQLSERVER:
                 $this->getBridge()->executeStatement(
                     <<<SQL
                     CREATE TABLE foo (
@@ -243,10 +243,10 @@ class SelectFunctionalTest extends DoctrineTestCase
 
     public function testSelectFromConstantTable(): void
     {
-        $this->skipIfDatabase(AbstractBridge::SERVER_MARIADB, 'MariaDB does not support VALUES column aliasing.');
-        $this->skipIfDatabase(AbstractBridge::SERVER_SQLITE, 'SQLite requires you to convert VALUES in SELECT to VALUES in an aliased CTE');
-        $this->skipIfDatabaseLessThan(AbstractBridge::SERVER_MARIADB, '10.3', 'MariaDB supports VALUES statement since version 10.3.');
-        $this->skipIfDatabaseLessThan(AbstractBridge::SERVER_MYSQL, '8.0');
+        $this->skipIfDatabase(Platform::MARIADB, 'MariaDB does not support VALUES column aliasing.');
+        $this->skipIfDatabase(Platform::SQLITE, 'SQLite requires you to convert VALUES in SELECT to VALUES in an aliased CTE');
+        $this->skipIfDatabaseLessThan(Platform::MARIADB, '10.3', 'MariaDB supports VALUES statement since version 10.3.');
+        $this->skipIfDatabaseLessThan(Platform::MYSQL, '8.0');
 
         $table = new ConstantTable();
         $table->columns(['a', 'b' , 'c']);
@@ -296,10 +296,10 @@ class SelectFunctionalTest extends DoctrineTestCase
 
     public function testJoinConstantTable(): void
     {
-        $this->skipIfDatabase(AbstractBridge::SERVER_MARIADB, 'MariaDB does not support VALUES column aliasing.');
-        $this->skipIfDatabase(AbstractBridge::SERVER_SQLITE, 'SQLite requires you to convert VALUES in SELECT to VALUES in an aliased CTE');
-        $this->skipIfDatabaseLessThan(AbstractBridge::SERVER_MARIADB, '10.3', 'MariaDB supports VALUES statement since version 10.3.');
-        $this->skipIfDatabaseLessThan(AbstractBridge::SERVER_MYSQL, '8.0');
+        $this->skipIfDatabase(Platform::MARIADB, 'MariaDB does not support VALUES column aliasing.');
+        $this->skipIfDatabase(Platform::SQLITE, 'SQLite requires you to convert VALUES in SELECT to VALUES in an aliased CTE');
+        $this->skipIfDatabaseLessThan(Platform::MARIADB, '10.3', 'MariaDB supports VALUES statement since version 10.3.');
+        $this->skipIfDatabaseLessThan(Platform::MYSQL, '8.0');
 
         $table = new ConstantTable();
         $table->columns(['a', 'b' , 'c']);
@@ -317,7 +317,7 @@ class SelectFunctionalTest extends DoctrineTestCase
 
     public function testWithJoin(): void
     {
-        $this->skipIfDatabaseLessThan(AbstractBridge::SERVER_MYSQL, '8.0');
+        $this->skipIfDatabaseLessThan(Platform::MYSQL, '8.0');
 
         $nested = new Select('bar');
 
@@ -333,8 +333,8 @@ class SelectFunctionalTest extends DoctrineTestCase
     public function testWithConstantTableJoin(): void
     {
         // https://learn.microsoft.com/en-us/sql/t-sql/queries/table-value-constructor-transact-sql?view=sql-server-ver16
-        $this->skipIfDatabase(AbstractBridge::SERVER_SQLSERVER, 'SQL Server only accepts Table Value Constructor in SELECT, FROM and INSERT.');
-        $this->skipIfDatabaseLessThan(AbstractBridge::SERVER_MYSQL, '8.0');
+        $this->skipIfDatabase(Platform::SQLSERVER, 'SQL Server only accepts Table Value Constructor in SELECT, FROM and INSERT.');
+        $this->skipIfDatabaseLessThan(Platform::MYSQL, '8.0');
 
         $table = new ConstantTable();
         $table->columns(['a', 'b' , 'c']);
@@ -367,7 +367,7 @@ class SelectFunctionalTest extends DoctrineTestCase
 
     public function testAggregateOverPartitionBy(): void
     {
-        $this->skipIfDatabaseLessThan(AbstractBridge::SERVER_MYSQL, '8.0');
+        $this->skipIfDatabaseLessThan(Platform::MYSQL, '8.0');
 
         $select = new Select('foo');
 
@@ -383,7 +383,7 @@ class SelectFunctionalTest extends DoctrineTestCase
 
     public function testAggregateOverOrderBy(): void
     {
-        $this->skipIfDatabaseLessThan(AbstractBridge::SERVER_MYSQL, '8.0');
+        $this->skipIfDatabaseLessThan(Platform::MYSQL, '8.0');
 
         $select = new Select('foo');
 
@@ -400,7 +400,7 @@ class SelectFunctionalTest extends DoctrineTestCase
 
     public function testAggregateOverPartitionByOrderBy(): void
     {
-        $this->skipIfDatabaseLessThan(AbstractBridge::SERVER_MYSQL, '8.0');
+        $this->skipIfDatabaseLessThan(Platform::MYSQL, '8.0');
 
         $select = new Select('foo');
 
@@ -418,7 +418,7 @@ class SelectFunctionalTest extends DoctrineTestCase
 
     public function testAggregateOverEmpty(): void
     {
-        $this->skipIfDatabaseLessThan(AbstractBridge::SERVER_MYSQL, '8.0');
+        $this->skipIfDatabaseLessThan(Platform::MYSQL, '8.0');
 
         $select = new Select('foo');
 
@@ -434,7 +434,7 @@ class SelectFunctionalTest extends DoctrineTestCase
 
     public function testAggregateFilterOver(): void
     {
-        $this->skipIfDatabaseLessThan(AbstractBridge::SERVER_MYSQL, '8.0');
+        $this->skipIfDatabaseLessThan(Platform::MYSQL, '8.0');
 
         $select = new Select('foo');
 
@@ -451,8 +451,8 @@ class SelectFunctionalTest extends DoctrineTestCase
 
     public function testWindowAfterFrom(): void
     {
-        $this->skipIfDatabase(AbstractBridge::SERVER_SQLSERVER);
-        $this->skipIfDatabaseLessThan(AbstractBridge::SERVER_MYSQL, '8.0');
+        $this->skipIfDatabase(Platform::SQLSERVER);
+        $this->skipIfDatabaseLessThan(Platform::MYSQL, '8.0');
 
         $select = new Select('foo');
 

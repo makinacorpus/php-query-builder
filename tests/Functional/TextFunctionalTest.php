@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Tests\Functional;
 
-use MakinaCorpus\QueryBuilder\Bridge\AbstractBridge;
+use MakinaCorpus\QueryBuilder\Platform;
 use MakinaCorpus\QueryBuilder\Expression\Concat;
 use MakinaCorpus\QueryBuilder\Expression\Lpad;
 use MakinaCorpus\QueryBuilder\Expression\Rpad;
@@ -28,8 +28,8 @@ class TextFunctionalTest extends DoctrineTestCase
 
     public function testMd5(): void
     {
-        $this->skipIfDatabase(AbstractBridge::SERVER_SQLITE, 'SQLite does not have any hash function.');
-        $this->skipIfDatabase(AbstractBridge::SERVER_SQLSERVER, 'SQL Server actually returns a hash, but not the right one ?!');
+        $this->skipIfDatabase(Platform::SQLITE, 'SQLite does not have any hash function.');
+        $this->skipIfDatabase(Platform::SQLSERVER, 'SQL Server actually returns a hash, but not the right one ?!');
 
         $select = new Select();
         $select->columnRaw(new StringHash('foo', 'md5'));
@@ -42,9 +42,9 @@ class TextFunctionalTest extends DoctrineTestCase
 
     public function testSha1(): void
     {
-        $this->skipIfDatabase(AbstractBridge::SERVER_POSTGRESQL, 'pgcrypto extension must be enabled.');
-        $this->skipIfDatabase(AbstractBridge::SERVER_SQLITE, 'SQLite does not have any hash function.');
-        $this->skipIfDatabase(AbstractBridge::SERVER_SQLSERVER, 'SQL Server actually returns a hash, but not the right one ?!');
+        $this->skipIfDatabase(Platform::POSTGRESQL, 'pgcrypto extension must be enabled.');
+        $this->skipIfDatabase(Platform::SQLITE, 'SQLite does not have any hash function.');
+        $this->skipIfDatabase(Platform::SQLSERVER, 'SQL Server actually returns a hash, but not the right one ?!');
 
         $select = new Select();
         $select->columnRaw(new StringHash('foo', 'sha1'));

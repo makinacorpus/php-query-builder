@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Bridge;
 
 use MakinaCorpus\QueryBuilder\Expression;
+use MakinaCorpus\QueryBuilder\Platform;
 use MakinaCorpus\QueryBuilder\Converter\Converter;
 use MakinaCorpus\QueryBuilder\Converter\ConverterPluginRegistry;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
@@ -23,11 +24,35 @@ use MakinaCorpus\QueryBuilder\Writer\Writer;
 
 abstract class AbstractBridge
 {
-    const SERVER_MARIADB = 'mariadb';
-    const SERVER_MYSQL = 'mysql';
-    const SERVER_POSTGRESQL = 'postgresql';
-    const SERVER_SQLITE = 'sqlite';
-    const SERVER_SQLSERVER = 'sqlsrv';
+    /**
+     * @deprecated
+     * @see \MakinaCorpus\QueryBuilder\Platform
+     */
+    const SERVER_MARIADB = Platform::MARIADB;
+
+    /**
+     * @deprecated
+     * @see \MakinaCorpus\QueryBuilder\Platform
+     */
+    const SERVER_MYSQL = Platform::MYSQL;
+
+    /**
+     * @deprecated
+     * @see \MakinaCorpus\QueryBuilder\Platform
+     */
+    const SERVER_POSTGRESQL = Platform::POSTGRESQL;
+
+    /**
+     * @deprecated
+     * @see \MakinaCorpus\QueryBuilder\Platform
+     */
+    const SERVER_SQLITE = Platform::SQLITE;
+
+    /**
+     * @deprecated
+     * @see \MakinaCorpus\QueryBuilder\Platform
+     */
+    const SERVER_SQLSERVER = Platform::SQLSERVER;
 
     private ?ConverterPluginRegistry $converterPluginRegistry = null;
     private ?Writer $writer = null;
@@ -99,23 +124,23 @@ abstract class AbstractBridge
         $serverName = \strtolower($this->getServerName());
 
         if (\str_contains($serverName, 'pg') || \str_contains($serverName, 'postgres')) {
-            return self::SERVER_POSTGRESQL;
+            return Platform::POSTGRESQL;
         }
 
         if (\str_contains($serverName, 'maria')) {
-            return self::SERVER_MARIADB;
+            return Platform::MARIADB;
         }
 
         if (\str_contains($serverName, 'my')) {
-            return self::SERVER_MYSQL;
+            return Platform::MYSQL;
         }
 
         if (\str_contains($serverName, 'sqlite')) {
-            return self::SERVER_SQLITE;
+            return Platform::SQLITE;
         }
 
         if (\str_contains($serverName, 'sqlsrv') || \str_contains($serverName, 'sqlserver')) {
-            return self::SERVER_SQLSERVER;
+            return Platform::SQLSERVER;
         }
 
         return $this->serverFlavor = $serverName;
@@ -140,6 +165,36 @@ abstract class AbstractBridge
         }
 
         return $this->serverVersion = $serverVersion;
+    }
+
+    /**
+     * Version is less than given.
+     */
+    public function isVersionLessThan(string $version): bool
+    {
+        if (!$serverVersion = $this->getServerVersion()) {
+            throw new \Exception(\sprintf("Database '%s', server version is null", $this->getServerFlavor()));
+        }
+
+        return 0 > \version_compare(
+            Platform::versionNormalize($serverVersion),
+            Platform::versionNormalize($version),
+        );
+    }
+
+    /**
+     * Version is greater or equal than given.
+     */
+    public function isVersionGreaterOrEqualThan(string $version): bool
+    {
+        if (!$serverVersion = $this->getServerVersion()) {
+            throw new \Exception(\sprintf("Database '%s', server version is null", $this->getServerFlavor()));
+        }
+
+        return 0 <= \version_compare(
+            Platform::versionNormalize($serverVersion),
+            Platform::versionNormalize($version),
+        );
     }
 
     /**
@@ -183,8 +238,8 @@ abstract class AbstractBridge
     protected function createConverter(ConverterPluginRegistry $converterPluginRegistry): Converter
     {
         $ret = match ($this->getServerFlavor()) {
-            self::SERVER_MARIADB => new MySQLConverter(),
-            self::SERVER_MYSQL => new MySQLConverter(),
+            Platform::MARIADB => new MySQLConverter(),
+            Platform::MYSQL => new MySQLConverter(),
             default => new Converter(),
         };
 
@@ -199,8 +254,8 @@ abstract class AbstractBridge
     protected function createEscaper(): Escaper
     {
         return match ($this->getServerFlavor()) {
-            self::SERVER_MARIADB => new MySQLEscaper(),
-            self::SERVER_MYSQL => new MySQLEscaper(),
+            Platform::MARIADB => new MySQLEscaper(),
+            Platform::MYSQL => new MySQLEscaper(),
             default => new StandardEscaper(),
         };
     }
@@ -212,26 +267,26 @@ abstract class AbstractBridge
     {
         $serverFlavor = $this->getServerFlavor();
 
-        if (self::SERVER_POSTGRESQL === $serverFlavor) {
+        if (Platform::POSTGRESQL === $serverFlavor) {
             return new PostgreSQLWriter($escaper, $converter);
         }
 
-        if (self::SERVER_MYSQL === $serverFlavor) {
+        if (Platform::MYSQL === $serverFlavor) {
             if (($serverVersion = $this->getServerVersion()) && 0 < \version_compare('8.0', $serverVersion)) {
                 return new MySQLWriter($escaper, $converter);
             }
             return new MySQL8Writer($escaper, $converter);
         }
 
-        if (self::SERVER_MARIADB === $serverFlavor) {
+        if (Platform::MARIADB === $serverFlavor) {
             return new MariaDBWriter($escaper, $converter);
         }
 
-        if (self::SERVER_SQLITE === $serverFlavor) {
+        if (Platform::SQLITE === $serverFlavor) {
             return new SQLiteWriter($escaper, $converter);
         }
 
-        if (self::SERVER_SQLSERVER === $serverFlavor) {
+        if (Platform::SQLSERVER === $serverFlavor) {
             return new SQLServerWriter($escaper, $converter);
         }
 
