@@ -89,7 +89,7 @@ class Converter
         }
 
         if (null === $type) {
-            $type = $this->toSqlGuessType($value);
+            $type = $this->guessInputType($value);
         }
 
         if (\str_ends_with($type, '[]')) {
@@ -141,7 +141,7 @@ class Converter
     /**
      * Proceed to naive PHP type conversion.
      */
-    protected function toSqlGuessType(mixed $value): string
+    public function guessInputType(mixed $value): string
     {
         if (\is_object($value)) {
             foreach ($this->registry->getTypeGuessers() as $plugin) {

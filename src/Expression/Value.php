@@ -42,6 +42,19 @@ class Value implements Expression
     }
 
     /**
+     * @internal
+     *   For writer usage, in certain circumstances, we are lead to attempt
+     *   value type guess prior to format SQL code, case in which we will set
+     *   the type here for caching purpose.
+     */
+    public function setType(?string $type): static
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+
+    /**
      * Get value.
      */
     public function getValue(): mixed

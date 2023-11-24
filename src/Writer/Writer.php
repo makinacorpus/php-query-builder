@@ -142,6 +142,27 @@ class Writer
     }
 
     /**
+     * Guess type of expression.
+     */
+    protected function guessTypeOf(Expression $expression): ?string
+    {
+        if ($type = $expression->returnType()) {
+            return $type;
+        }
+
+        if ($expression instanceof Value) {
+            if ($type = $this->converter->guessInputType($expression->getValue())) {
+                // Cache guessed type to avoid doing it twice when converting
+                // values later at query time.
+                $expression->setType($type);
+            }
+            return $type;
+        }
+
+        return null;
+    }
+
+    /**
      * In numerous cases, this API will add explicit CAST() calls in order to
      * bypass some wrong type guess due to parameters usage when querying.
      *
@@ -150,7 +171,7 @@ class Writer
     protected function toText(Expression $expression, WriterContext $context): Expression
     {
         // @todo Allow option to disable this on a per-query basis.
-        if ($this->isTypeText($expression->returnType())) {
+        if ($this->isTypeText($this->guessTypeOf($expression))) {
             return $expression;
         }
         return new Cast($expression, 'varchar');
@@ -165,7 +186,7 @@ class Writer
     protected function toInt(Expression $expression, WriterContext $context): Expression
     {
         // @todo Allow option to disable this on a per-query basis.
-        if ($this->isTypeNumeric($expression->returnType())) {
+        if ($this->isTypeNumeric($this->guessTypeOf($expression))) {
             return $expression;
         }
         return new Cast($expression, 'int');
