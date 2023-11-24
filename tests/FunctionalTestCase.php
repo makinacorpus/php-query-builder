@@ -6,15 +6,15 @@ namespace MakinaCorpus\QueryBuilder\Tests;
 
 use Doctrine\DBAL\Result;
 use MakinaCorpus\QueryBuilder\Expression;
-use MakinaCorpus\QueryBuilder\Bridge\AbstractBridge;
+use MakinaCorpus\QueryBuilder\Bridge\Bridge;
 use MakinaCorpus\QueryBuilder\Bridge\Doctrine\DoctrineQueryBuilder;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
 
 abstract class FunctionalTestCase extends UnitTestCase
 {
-    private ?AbstractBridge $connection = null;
-    private ?AbstractBridge $privConnection = null;
+    private ?Bridge $connection = null;
+    private ?Bridge $privConnection = null;
 
     /** @after */
     final protected function closeConnection(): void
@@ -30,7 +30,7 @@ abstract class FunctionalTestCase extends UnitTestCase
     /**
      * Create query builder.
      */
-    final protected function getBridge(): AbstractBridge
+    final protected function getBridge(): Bridge
     {
         return $this->connection ??= $this->createBridge();
     }
@@ -38,7 +38,7 @@ abstract class FunctionalTestCase extends UnitTestCase
     /**
      * Create priviledged query builder.
      */
-    final protected function getPriviledgedBridge(): AbstractBridge
+    final protected function getPriviledgedBridge(): Bridge
     {
         return $this->privConnection ??= $this->createPriviledgeBridge();
     }
@@ -46,7 +46,7 @@ abstract class FunctionalTestCase extends UnitTestCase
     /**
      * Really create query builder connection.
      */
-    abstract protected function doCreateBridge(array $params): AbstractBridge;
+    abstract protected function doCreateBridge(array $params): Bridge;
 
     /**
      * Pass a raw string or query and execute statement over the bridge.
@@ -156,7 +156,7 @@ abstract class FunctionalTestCase extends UnitTestCase
     /**
      * Create connection.
      */
-    private function createBridge(): AbstractBridge
+    private function createBridge(): Bridge
     {
         $params = $this->getConnectionParameters();
 
@@ -189,7 +189,7 @@ abstract class FunctionalTestCase extends UnitTestCase
     /**
      * Create priviledged query builder.
      */
-    private function createPriviledgeBridge(): AbstractBridge
+    private function createPriviledgeBridge(): Bridge
     {
         return $this->doCreateBridge($this->getPriviledgedConnectionParameters());
     }

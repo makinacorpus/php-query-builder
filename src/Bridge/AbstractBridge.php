@@ -22,38 +22,8 @@ use MakinaCorpus\QueryBuilder\Platform\Writer\SQLServerWriter;
 use MakinaCorpus\QueryBuilder\Platform\Writer\SQLiteWriter;
 use MakinaCorpus\QueryBuilder\Writer\Writer;
 
-abstract class AbstractBridge
+abstract class AbstractBridge implements Bridge
 {
-    /**
-     * @deprecated
-     * @see \MakinaCorpus\QueryBuilder\Platform
-     */
-    const SERVER_MARIADB = Platform::MARIADB;
-
-    /**
-     * @deprecated
-     * @see \MakinaCorpus\QueryBuilder\Platform
-     */
-    const SERVER_MYSQL = Platform::MYSQL;
-
-    /**
-     * @deprecated
-     * @see \MakinaCorpus\QueryBuilder\Platform
-     */
-    const SERVER_POSTGRESQL = Platform::POSTGRESQL;
-
-    /**
-     * @deprecated
-     * @see \MakinaCorpus\QueryBuilder\Platform
-     */
-    const SERVER_SQLITE = Platform::SQLITE;
-
-    /**
-     * @deprecated
-     * @see \MakinaCorpus\QueryBuilder\Platform
-     */
-    const SERVER_SQLSERVER = Platform::SQLSERVER;
-
     private ?ConverterPluginRegistry $converterPluginRegistry = null;
     private ?Writer $writer = null;
     private ?string $serverName = null;
@@ -94,7 +64,7 @@ abstract class AbstractBridge
     }
 
     /**
-     * Get server name.
+     * {@inheritdoc}
      */
     public function getServerName(): ?string
     {
@@ -115,6 +85,9 @@ abstract class AbstractBridge
         return null;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getServerFlavor(): ?string
     {
         if (null !== $this->serverFlavor) {
@@ -147,7 +120,7 @@ abstract class AbstractBridge
     }
 
     /**
-     * Get server version.
+     * {@inheritdoc}
      */
     public function getServerVersion(): ?string
     {
@@ -168,7 +141,7 @@ abstract class AbstractBridge
     }
 
     /**
-     * Version is less than given.
+     * {@inheritdoc}
      */
     public function isVersionLessThan(string $version): bool
     {
@@ -183,7 +156,7 @@ abstract class AbstractBridge
     }
 
     /**
-     * Version is greater or equal than given.
+     * {@inheritdoc}
      */
     public function isVersionGreaterOrEqualThan(string $version): bool
     {
@@ -206,10 +179,7 @@ abstract class AbstractBridge
     protected abstract function doExecuteStatement(string $expression, array $arguments = []): ?int;
 
     /**
-     * Execute query and return affected row count if possible.
-     *
-     * @return null|int
-     *   Affected row count if applyable and driver supports it.
+     * {@inheritdoc}
      */
     public function executeStatement(string|Expression $expression = null, mixed $arguments = null): ?int
     {

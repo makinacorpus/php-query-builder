@@ -9,7 +9,7 @@ use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Driver\AbstractSQLiteDriver\Middleware\EnableForeignKeys;
 use Doctrine\DBAL\Driver\OCI8\Middleware\InitializeSession;
 use Doctrine\DBAL\Schema\DefaultSchemaManagerFactory;
-use MakinaCorpus\QueryBuilder\Bridge\AbstractBridge;
+use MakinaCorpus\QueryBuilder\Bridge\Bridge;
 use MakinaCorpus\QueryBuilder\Bridge\Doctrine\DoctrineQueryBuilder;
 use MakinaCorpus\QueryBuilder\Tests\FunctionalTestCase;
 
@@ -26,7 +26,7 @@ abstract class DoctrineTestCase extends FunctionalTestCase
     /**
      * {@inheritdoc}
      */
-    protected function doCreateBridge(array $params): AbstractBridge
+    protected function doCreateBridge(array $params): Bridge
     {
         if (\str_contains($params['driver'], 'sqlite')) {
             $params['memory'] = true;

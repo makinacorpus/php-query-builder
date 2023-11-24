@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Tests\Bridge\Pdo;
 
-use MakinaCorpus\QueryBuilder\Bridge\AbstractBridge;
+use MakinaCorpus\QueryBuilder\Bridge\Bridge;
 use MakinaCorpus\QueryBuilder\Bridge\Pdo\PdoQueryBuilder;
 use MakinaCorpus\QueryBuilder\Tests\FunctionalTestCase;
 
@@ -21,7 +21,7 @@ abstract class PdoTestCase extends FunctionalTestCase
     /**
      * {@inheritdoc}
      */
-    protected function doCreateBridge(array $params): AbstractBridge
+    protected function doCreateBridge(array $params): Bridge
     {
         return new PdoQueryBuilder(
             match ($params['driver']) {
