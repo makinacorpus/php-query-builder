@@ -107,6 +107,7 @@ composer require makinacorpus/query-builder doctrine/dbal:^3.7
 Setting it up is easier than standalone setup:
 
 ```php
+use Doctrine\DBAL\DriverManager;
 use MakinaCorpus\QueryBuilder\Bridge\Doctrine\DoctrineQueryBuilder;
 
 // Create or fetch your doctrine/dbal connection.
@@ -139,7 +140,9 @@ $result = $queryBuilder
 ```
 
 :::tip
-`$result` is an instance of `Doctrine\DBAL\Result`.
+`$result` is an instance of `MakinaCorpus\QueryBuilder\Result\Result`.
+
+See [result documentation](../query/result) for more information.
 :::
 
 :::tip
@@ -191,7 +194,9 @@ $result = $queryBuilder
 ```
 
 :::tip
-`$result` is an instance of `\PDOStatement`.
+`$result` is an instance of `MakinaCorpus\QueryBuilder\Result\Result`.
+
+See [result documentation](../query/result) for more information.
 :::
 
 :::tip

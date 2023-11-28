@@ -107,6 +107,11 @@ export default defineConfig({
             items: []
           },
           {
+            text: 'Result',
+            link: '/query/result',
+            items: []
+          },
+          {
             text: 'Data types',
             link: '/query/datatype',
             items: []
