@@ -1,5 +1,7 @@
 # Query Builder
 
+[![Coding standards](https://github.com/makinacorpus/php-query-builder/actions/workflows/coding-standards.yml/badge.svg)](https://github.com/makinacorpus/php-query-builder/actions/workflows/coding-standards.yml) [![Static Analysis](https://github.com/makinacorpus/php-query-builder/actions/workflows/static-analysis.yml/badge.svg)](https://github.com/makinacorpus/php-query-builder/actions/workflows/static-analysis.yml)  [![Documentation Status](https://readthedocs.org/projects/query-builder/badge/?version=stable)](https://query-builder.readthedocs.io/en/stable/?badge=stable)
+
 This is a driver-agnostic SQL query builder with advanced SQL language features.
 
 Per default, it generates (almost) SQL standard compliant queries, almost
