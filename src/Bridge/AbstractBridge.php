@@ -75,9 +75,10 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
             return $this->serverName;
         }
 
+        $this->serverName = $this->lookupServerName();
         $this->serverNameLookedUp = true;
 
-        return $this->serverName = $this->lookupServerName();
+        return $this->serverName;
     }
 
     /**
@@ -97,7 +98,13 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
             return $this->serverFlavor;
         }
 
-        $serverName = \strtolower($this->getServerName());
+        $serverName = $this->getServerName();
+
+        if (null === $serverName) {
+            return null;
+        }
+
+        $serverName = \strtolower($serverName);
 
         if (\str_contains($serverName, 'pg') || \str_contains($serverName, 'postgres')) {
             return Platform::POSTGRESQL;

@@ -82,9 +82,11 @@ interface DbalResult
     public function fetchAllAssociativeIndexed(int|string $keyColumn = 0): array;
 
     /**
+     * Fetch first column
+     *
      * @return array<int,mixed>
      */
-    public function fetchFirstColumn(): array;
+    public function fetchFirstColumn(int|string $valueColumn = 0): array;
 
     /**
      * @return \Traversable<int,array<int,mixed>>
