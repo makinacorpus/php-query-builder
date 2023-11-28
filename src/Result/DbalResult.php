@@ -94,12 +94,12 @@ interface DbalResult
     public function iterateNumeric(): \Traversable;
 
     /**
-     * @return Traversable<int,array<string,mixed>>
+     * @return \Traversable<int,array<string,mixed>>
      */
     public function iterateAssociative(): \Traversable;
 
     /**
-     * @return Traversable<int,array<string,mixed>>
+     * @return \Traversable<int,array<string,mixed>>
      */
     public function iterateKeyValue(int|string $keyColumn = 0, int|string $valueColumn = 1): \Traversable;
 
@@ -108,12 +108,12 @@ interface DbalResult
      * first column and the values being an associative array representing the
      * rest of the columns and their values.
      *
-     * @return Traversable<string,array<string,mixed>>
+     * @return \Traversable<string,array<string,mixed>>
      */
     public function iterateAssociativeIndexed(int|string $keyColumn = 0): \Traversable;
 
     /**
-     * @return Traversable<int,mixed>
+     * @return \Traversable<int,mixed>
      */
     public function iterateColumn(int|string $valueColumn = 0): \Traversable;
 
