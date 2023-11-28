@@ -8,16 +8,21 @@ use MakinaCorpus\QueryBuilder\Platform;
 use MakinaCorpus\QueryBuilder\Bridge\AbstractBridge;
 use MakinaCorpus\QueryBuilder\Bridge\Pdo\Escaper\PdoEscaper;
 use MakinaCorpus\QueryBuilder\Bridge\Pdo\Escaper\PdoMySQLEscaper;
+use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Escaper\Escaper;
-use MakinaCorpus\QueryBuilder\Result\Result;
 use MakinaCorpus\QueryBuilder\Result\IterableResult;
+use MakinaCorpus\QueryBuilder\Result\Result;
 
 class PdoQueryBuilder extends AbstractBridge
 {
+    private ?\PDO $connection = null;
+
     public function __construct(
-        private \PDO $connection
+        \PDO $connection
     ) {
         parent::__construct();
+
+        $this->connection = $connection;
     }
 
     /**
@@ -25,6 +30,8 @@ class PdoQueryBuilder extends AbstractBridge
      */
     protected function lookupServerName(): ?string
     {
+        $this->dieIfClosed();
+
         $rawServerName = \strtolower($this->connection->getAttribute(\PDO::ATTR_DRIVER_NAME));
 
         if (\str_contains($rawServerName, 'mysql')) {
@@ -44,6 +51,8 @@ class PdoQueryBuilder extends AbstractBridge
      */
     protected function lookupServerVersion(): ?string
     {
+        $this->dieIfClosed();
+
         $rawVersion = $this->connection->getAttribute(\PDO::ATTR_SERVER_VERSION);
         $serverFlavor = $this->getServerFlavor();
 
@@ -74,6 +83,8 @@ class PdoQueryBuilder extends AbstractBridge
      */
     protected function createEscaper(): Escaper
     {
+        $this->dieIfClosed();
+
         return match ($this->getServerFlavor()) {
             Platform::MARIADB => new PdoMySQLEscaper($this->connection),
             Platform::MYSQL => new PdoMySQLEscaper($this->connection),
@@ -86,6 +97,8 @@ class PdoQueryBuilder extends AbstractBridge
      */
     protected function doExecuteQuery(string $expression, array $arguments = []): Result
     {
+        $this->dieIfClosed();
+
         $statement = $this->connection->prepare($expression);
         $statement->execute($arguments);
 
@@ -101,10 +114,30 @@ class PdoQueryBuilder extends AbstractBridge
      */
     protected function doExecuteStatement(string $expression, array $arguments = []): ?int
     {
+        $this->dieIfClosed();
+
         $statement = $this->connection->prepare($expression);
         $statement->execute($arguments);
 
         return $statement->rowCount();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function close(): void
+    {
+        $this->connection = null;
+    }
+
+    /**
+     * Die if closed.
+     */
+    protected function dieIfClosed(): void
+    {
+        if (null === $this->connection) {
+            throw new QueryBuilderError("Connection was closed.");
+        }
     }
 
     /**
@@ -114,6 +147,8 @@ class PdoQueryBuilder extends AbstractBridge
      */
     public function getConnection(): \PDO
     {
+        $this->dieIfClosed();
+
         return $this->connection;
     }
 }

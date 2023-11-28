@@ -12,17 +12,20 @@ use MakinaCorpus\QueryBuilder\Result\Result;
 
 abstract class FunctionalTestCase extends UnitTestCase
 {
+    private static $foo = 0;
     private ?Bridge $connection = null;
     private ?Bridge $privConnection = null;
 
     /** @after */
     final protected function closeConnection(): void
     {
-        if ($this->connection) {
-            unset($this->connection);
+        if (null !== $this->connection) {
+            $this->connection->close();
+            $this->connection = null;
         }
-        if ($this->privConnection) {
-            unset($this->privConnection);
+        if (null !== $this->privConnection) {
+            $this->privConnection->close();
+            $this->privConnection = null;
         }
     }
 

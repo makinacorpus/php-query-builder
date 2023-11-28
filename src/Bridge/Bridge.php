@@ -39,4 +39,9 @@ interface Bridge extends QueryExecutor, QueryBuilder
      * Get SQL writer instance.
      */
     public function getWriter(): Writer;
+
+    /**
+     * Free everything.
+     */
+    public function close(): void;
 }
