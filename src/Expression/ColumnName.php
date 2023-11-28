@@ -15,7 +15,7 @@ class ColumnName extends Identifier
         bool $noAutomaticNamespace = false,
     ) {
         if (!$noAutomaticNamespace && null === $namespace && \str_contains($name, '.')) {
-            list ($namespace, $name) = \explode('.', $name);
+            list($namespace, $name) = \explode('.', $name);
         }
         parent::__construct($name, $namespace);
     }

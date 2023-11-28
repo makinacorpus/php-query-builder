@@ -1251,7 +1251,7 @@ class SelectTest extends UnitTestCase
                 count(n.nid) desc
             limit 7 offset 42
             EOT;
-                    $countReference = <<<EOT
+        $countReference = <<<EOT
             select count(*) as "count"
             from "task" as "t"
             left outer join "task_note" as "n"
@@ -1318,7 +1318,7 @@ class SelectTest extends UnitTestCase
                 count(n.nid) desc
             limit 7 offset 42
             EOT;
-                    $countReference = <<<EOT
+        $countReference = <<<EOT
             select count(*) as "count"
             from "task" as "t"
             left outer join "task_note" as "n"
@@ -1387,7 +1387,7 @@ class SelectTest extends UnitTestCase
                 count(task_note.nid) desc
             limit 7 offset 42
             EOT;
-                    $countReference = <<<EOT
+        $countReference = <<<EOT
             select count(*) as "count"
             from "task"
             left outer join "task_note"

@@ -85,8 +85,7 @@ class ConverterUnitTest extends UnitTestCase
 
     public function testToSqlTextStringable(): void
     {
-        $object = new class ()
-        {
+        $object = new class () {
             public function __toString(): string
             {
                 return "weee";

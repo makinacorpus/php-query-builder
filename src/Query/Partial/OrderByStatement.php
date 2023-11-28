@@ -12,7 +12,7 @@ use MakinaCorpus\QueryBuilder\ExpressionHelper;
  */
 final class OrderByStatement
 {
-    public /* readonly */ Expression $column;
+    /* readonly */ public Expression $column;
 
     public function __construct(
         mixed $column,

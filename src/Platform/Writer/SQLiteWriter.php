@@ -57,7 +57,7 @@ class SQLiteWriter extends Writer
      */
     protected function formatLpad(Lpad $expression, WriterContext $context): string
     {
-        list ($value, $size, $fill) = $this->doGetPadArguments($expression, $context);
+        list($value, $size, $fill) = $this->doGetPadArguments($expression, $context);
 
         // @see https://stackoverflow.com/questions/6576343/how-to-emulate-lpad-rpad-with-sqlite
         return $this->formatRaw(
@@ -82,7 +82,7 @@ class SQLiteWriter extends Writer
      */
     protected function formatRpad(Lpad $expression, WriterContext $context): string
     {
-        list ($value, $size, $fill) = $this->doGetPadArguments($expression, $context);
+        list($value, $size, $fill) = $this->doGetPadArguments($expression, $context);
 
         // @see https://stackoverflow.com/questions/6576343/how-to-emulate-lpad-rpad-with-sqlite
         return $this->formatRaw(

@@ -63,7 +63,7 @@ class SQLServerWriter extends Writer
      */
     protected function formatLpad(Lpad $expression, WriterContext $context): string
     {
-        list ($value, $size, $fill) = $this->doGetPadArguments($expression, $context);
+        list($value, $size, $fill) = $this->doGetPadArguments($expression, $context);
 
         // @todo Replicate the fill string in a completly insane arbitrary
         //   value, knowing that maximum size is 8000 per the standard.
@@ -78,7 +78,7 @@ class SQLServerWriter extends Writer
      */
     protected function formatRpad(Lpad $expression, WriterContext $context): string
     {
-        list ($value, $size, $fill) = $this->doGetPadArguments($expression, $context);
+        list($value, $size, $fill) = $this->doGetPadArguments($expression, $context);
 
         // @todo Replicate the fill string in a completly insane arbitrary
         //   value, knowing that maximum size is 8000 per the standard.

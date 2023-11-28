@@ -16,7 +16,7 @@ abstract class AbstractResult implements Result, \IteratorAggregate
     private ?int $rowCount = null;
     private ?int $columnCount = null;
     private ?array $columnNames = null;
-    private ?array $columnTypes = []; 
+    private ?array $columnTypes = [];
     private mixed $hydrator = null;
     private bool $hydratorUsesArray = false;
     private bool $iterationFreed = false;
@@ -32,22 +32,22 @@ abstract class AbstractResult implements Result, \IteratorAggregate
     /**
      * Get row count from driver.
      */
-    protected abstract function doRowCount(): int;
+    abstract protected function doRowCount(): int;
 
     /**
      * Get column count from driver.
      */
-    protected abstract function doColumnCount(): int;
+    abstract protected function doColumnCount(): int;
 
     /**
      * Free result.
      */
-    protected abstract function doFree(): void;
+    abstract protected function doFree(): void;
 
     /**
      * Fetch next item as an associative array.
      */
-    protected abstract function doFetchNext(): null|array;
+    abstract protected function doFetchNext(): null|array;
 
     /**
      * {@inheritdoc}

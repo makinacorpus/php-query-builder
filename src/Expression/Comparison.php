@@ -11,19 +11,19 @@ use MakinaCorpus\QueryBuilder\Expression;
  */
 class Comparison implements Expression
 {
-    const EQUAL = '=';
-    const EXISTS = 'exists';
-    const GREATER = '>';
-    const GREATER_OR_EQUAL = '>=';
-    const IN = 'in';
-    const IS_NULL = 'is null';
-    const LESS = '<';
-    const LESS_OR_EQUAL = '<=';
-    const NOT_BETWEEN = 'not between';
-    const NOT_EQUAL = '<>';
-    const NOT_EXISTS = 'not exists';
-    const NOT_IN = 'not in';
-    const NOT_IS_NULL = 'is not null';
+    public const EQUAL = '=';
+    public const EXISTS = 'exists';
+    public const GREATER = '>';
+    public const GREATER_OR_EQUAL = '>=';
+    public const IN = 'in';
+    public const IS_NULL = 'is null';
+    public const LESS = '<';
+    public const LESS_OR_EQUAL = '<=';
+    public const NOT_BETWEEN = 'not between';
+    public const NOT_EQUAL = '<>';
+    public const NOT_EXISTS = 'not exists';
+    public const NOT_IN = 'not in';
+    public const NOT_IS_NULL = 'is not null';
 
     private ?Expression $left;
     private ?Expression $right;

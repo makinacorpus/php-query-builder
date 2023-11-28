@@ -14,8 +14,8 @@ use MakinaCorpus\QueryBuilder\Query\Query;
  */
 final class JoinStatement
 {
-    public /* readonly */ Expression $table;
-    public /* readonly */ Where $condition;
+    /* readonly */ public Expression $table;
+    /* readonly */ public Where $condition;
     public readonly string $mode;
 
     public function __construct(

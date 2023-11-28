@@ -249,7 +249,7 @@ class Writer
                     Rpad::class => $this->formatRpad($expression, $context),
                     SimilarToPattern::class => $this->formatSimilarToPattern($expression, $context),
                     StringHash::class => $this->formatStringHash($expression, $context),
-                    TableName:: class => $this->formatIdentifier($expression, $context),
+                    TableName::class => $this->formatIdentifier($expression, $context),
                     Value::class => $this->formatValue($expression, $context),
                     Where::class => $this->formatWhere($expression, $context),
                     Window::class => $this->formatWindow($expression, $context),
@@ -937,7 +937,7 @@ class Writer
      */
     protected function formatLpad(Lpad $expression, WriterContext $context): string
     {
-        list ($value, $size, $fill) = $this->doGetPadArguments($expression, $context);
+        list($value, $size, $fill) = $this->doGetPadArguments($expression, $context);
 
         return 'lpad(' . $this->format($value, $context) . ', ' . $this->format($size, $context) . ', ' . $this->format($fill, $context) . ')';
     }
@@ -947,7 +947,7 @@ class Writer
      */
     protected function formatRpad(Lpad $expression, WriterContext $context): string
     {
-        list ($value, $size, $fill) = $this->doGetPadArguments($expression, $context);
+        list($value, $size, $fill) = $this->doGetPadArguments($expression, $context);
 
         return 'rpad(' . $this->format($value, $context) . ', ' . $this->format($size, $context) . ', ' . $this->format($fill, $context) . ')';
     }
@@ -1399,7 +1399,7 @@ class Writer
         if ($order = $query->getAllOrderBy()) {
             $output[] = $this->doFormatOrderBy($context, $order);
         }
-        list ($limit, $offset) = $query->getRange();
+        list($limit, $offset) = $query->getRange();
         $output[] = $this->doFormatRange($context, $limit, $offset, (bool) $order);
 
         foreach ($query->getUnion() as $expression) {

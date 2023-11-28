@@ -14,7 +14,7 @@ class IntervalInputConverter implements InputConverter, InputTypeGuesser
     /**
      * Format interval as an ISO8601 string.
      */
-    public static function intervalToIso8601(\DateInterval $interval) : string
+    public static function intervalToIso8601(\DateInterval $interval): string
     {
         // All credits to https://stackoverflow.com/a/33787489
         $string = $interval->format("P%yY%mM%dDT%hH%iM%sS");

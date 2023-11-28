@@ -1,4 +1,5 @@
 /.buildpath
+/.php-cs-fixer.cache
 /.phpunit.cache/
 /.project
 /.settings/

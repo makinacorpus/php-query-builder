@@ -34,7 +34,7 @@ class PostgreSQLWriter extends Writer
      *
      * {@inheritdoc}
      */
-    protected function formatMerge(Merge $query, WriterContext $context) : string
+    protected function formatMerge(Merge $query, WriterContext $context): string
     {
         $output = [];
 

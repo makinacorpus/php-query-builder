@@ -100,7 +100,7 @@ class MySQLWriter extends Writer
     /**
      * {@inheritdoc}
      */
-    protected function doFormatInsertNoValuesStatement(WriterContext $context) : string
+    protected function doFormatInsertNoValuesStatement(WriterContext $context): string
     {
         return "() VALUES ()";
     }
@@ -127,7 +127,7 @@ class MySQLWriter extends Writer
      *
      * {@inheritdoc}
      */
-    protected function formatMerge(Merge $query, WriterContext $context) : string
+    protected function formatMerge(Merge $query, WriterContext $context): string
     {
         $output = [];
 
@@ -190,7 +190,7 @@ class MySQLWriter extends Writer
     /**
      * {@inheritdoc}
      */
-    protected function formatDelete(Delete $query, WriterContext $context) : string
+    protected function formatDelete(Delete $query, WriterContext $context): string
     {
         $output = [];
 
@@ -238,7 +238,7 @@ class MySQLWriter extends Writer
     /**
      * {@inheritdoc}
      */
-    protected function formatUpdate(Update $query, WriterContext $context) : string
+    protected function formatUpdate(Update $query, WriterContext $context): string
     {
         $output = [];
 

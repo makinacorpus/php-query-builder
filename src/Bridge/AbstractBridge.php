@@ -183,7 +183,7 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
     /**
      * Alias of QueryBuilder::raw() which executes the query.
      */
-    protected abstract function doExecuteQuery(string $expression, array $arguments = []): Result;
+    abstract protected function doExecuteQuery(string $expression, array $arguments = []): Result;
 
     /**
      * {@inheritdoc}
@@ -207,7 +207,7 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
      * @return null|int
      *   Affected row count if applyable and driver supports it.
      */
-    protected abstract function doExecuteStatement(string $expression, array $arguments = []): ?int;
+    abstract protected function doExecuteStatement(string $expression, array $arguments = []): ?int;
 
     /**
      * {@inheritdoc}

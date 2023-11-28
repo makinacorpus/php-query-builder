@@ -33,15 +33,15 @@ use MakinaCorpus\QueryBuilder\Error\UnexpectedInputValueTypeError;
  */
 class DateInputConverter implements InputConverter, InputTypeGuesser
 {
-    const FORMAT_DATE = 'Y-m-d';
-    const FORMAT_DATETIME = 'Y-m-d H:i:s';
-    const FORMAT_DATETIME_TZ = 'Y-m-d H:i:sP';
-    const FORMAT_DATETIME_USEC = 'Y-m-d H:i:s.u';
-    const FORMAT_DATETIME_USEC_TZ = 'Y-m-d H:i:s.uP';
-    const FORMAT_TIME = 'H:i:s';
-    const FORMAT_TIME_TZ = 'H:i:sP';
-    const FORMAT_TIME_USEC = 'H:i:s.u';
-    const FORMAT_TIME_USEC_TZ = 'H:i:s.uP';
+    public const FORMAT_DATE = 'Y-m-d';
+    public const FORMAT_DATETIME = 'Y-m-d H:i:s';
+    public const FORMAT_DATETIME_TZ = 'Y-m-d H:i:sP';
+    public const FORMAT_DATETIME_USEC = 'Y-m-d H:i:s.u';
+    public const FORMAT_DATETIME_USEC_TZ = 'Y-m-d H:i:s.uP';
+    public const FORMAT_TIME = 'H:i:s';
+    public const FORMAT_TIME_TZ = 'H:i:sP';
+    public const FORMAT_TIME_USEC = 'H:i:s.u';
+    public const FORMAT_TIME_USEC_TZ = 'H:i:s.uP';
 
     /**
      * {@inheritdoc}

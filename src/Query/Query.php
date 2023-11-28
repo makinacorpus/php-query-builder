@@ -11,19 +11,19 @@ use MakinaCorpus\QueryBuilder\Result\Result;
 
 interface Query extends Expression
 {
-    const JOIN_INNER = 'outer';
-    const JOIN_LEFT = 'left';
-    const JOIN_LEFT_OUTER = 'left outer';
-    const JOIN_RIGHT = 'right';
-    const JOIN_RIGHT_OUTER = 'right outer';
-    const JOIN_NATURAL = 'natural';
-    const NULL_FIRST = 2;
-    const NULL_IGNORE = 0;
-    const NULL_LAST = 1;
-    const ORDER_ASC = 1;
-    const ORDER_DESC = 2;
-    const CONFLICT_IGNORE = 1;
-    const CONFLICT_UPDATE = 2;
+    public const JOIN_INNER = 'outer';
+    public const JOIN_LEFT = 'left';
+    public const JOIN_LEFT_OUTER = 'left outer';
+    public const JOIN_RIGHT = 'right';
+    public const JOIN_RIGHT_OUTER = 'right outer';
+    public const JOIN_NATURAL = 'natural';
+    public const NULL_FIRST = 2;
+    public const NULL_IGNORE = 0;
+    public const NULL_LAST = 1;
+    public const ORDER_ASC = 1;
+    public const ORDER_DESC = 2;
+    public const CONFLICT_IGNORE = 1;
+    public const CONFLICT_UPDATE = 2;
 
     /**
      * Get expression builder instance.

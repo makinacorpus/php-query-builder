@@ -156,7 +156,7 @@ class ExpressionFactory
      *   as SELECT FROM VALUES ((1, 2)) AS "table" ("col1", "col2").
      *   This allows you then to reference those aliase elswhere in the query.
      */
-    public static function constantTable(mixed $rows = null, ?array $columns = null,): ConstantTable
+    public static function constantTable(mixed $rows = null, ?array $columns = null): ConstantTable
     {
         return new ConstantTable($rows, $columns);
     }
@@ -232,7 +232,7 @@ class ExpressionFactory
     /**
      * Create a `FLOOR(random() * (max - min + 1) + min)` expression.
      *
-     * This generates a random integer between min and max. 
+     * This generates a random integer between min and max.
      *
      * This is not standard SQL, and some dialects might not support this.
      */
@@ -262,7 +262,7 @@ class ExpressionFactory
      * If you provide a composite type name, generated SQL will cast the
      * row using the given type name.
      *
-     * When used in a constant table context, the `ROW` prefix will be omitted. 
+     * When used in a constant table context, the `ROW` prefix will be omitted.
      */
     public static function row(mixed $values, ?string $compositeTypeName = null): Row
     {

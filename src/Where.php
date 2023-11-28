@@ -17,8 +17,8 @@ class Where implements Expression
 {
     use WhereBuilder;
 
-    const AND = 'and';
-    const OR = 'or';
+    public const AND = 'and';
+    public const OR = 'or';
 
     private string $operator = self::AND;
     private array $children = [];

@@ -57,7 +57,7 @@ trait WhereBuilder
     /**
      * Allows using this trait on other components that the Where class.
      */
-    protected abstract function getInstance(): Where;
+    abstract protected function getInstance(): Where;
 
     /**
      * Add a comparison condition.

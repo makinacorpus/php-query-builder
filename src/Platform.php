@@ -13,12 +13,12 @@ namespace MakinaCorpus\QueryBuilder;
  */
 final class Platform
 {
-    const MARIADB = 'mariadb';
-    const MYSQL = 'mysql';
-    const ORACLE = 'oracle';
-    const POSTGRESQL = 'postgresql';
-    const SQLITE = 'sqlite';
-    const SQLSERVER = 'sqlsrv';
+    public const MARIADB = 'mariadb';
+    public const MYSQL = 'mysql';
+    public const ORACLE = 'oracle';
+    public const POSTGRESQL = 'postgresql';
+    public const SQLITE = 'sqlite';
+    public const SQLSERVER = 'sqlsrv';
 
     /**
      * Normalize version to an x.y.z semantic version string.

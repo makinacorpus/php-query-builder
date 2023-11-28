@@ -23,7 +23,7 @@ final class OptionsBag
      */
     public function getAll(?array $overrides = null): array
     {
-        return $overrides ? \array_merge($this->data, $overrides) :  $this->data;
+        return $overrides ? \array_merge($this->data, $overrides) : $this->data;
     }
 
     /**

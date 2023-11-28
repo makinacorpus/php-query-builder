@@ -281,9 +281,6 @@ final class ExpressionHelper
 
         /*
          * @todo Array expression
-        if () {
-            
-        }
          */
 
         return new Value($expression);
