@@ -4,24 +4,21 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Bridge\Pdo;
 
-use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Platform;
 use MakinaCorpus\QueryBuilder\Bridge\AbstractBridge;
 use MakinaCorpus\QueryBuilder\Bridge\Pdo\Escaper\PdoEscaper;
 use MakinaCorpus\QueryBuilder\Bridge\Pdo\Escaper\PdoMySQLEscaper;
-use MakinaCorpus\QueryBuilder\Bridge\Pdo\Query\PdoDelete;
-use MakinaCorpus\QueryBuilder\Bridge\Pdo\Query\PdoInsert;
-use MakinaCorpus\QueryBuilder\Bridge\Pdo\Query\PdoMerge;
-use MakinaCorpus\QueryBuilder\Bridge\Pdo\Query\PdoRawQuery;
-use MakinaCorpus\QueryBuilder\Bridge\Pdo\Query\PdoSelect;
-use MakinaCorpus\QueryBuilder\Bridge\Pdo\Query\PdoUpdate;
 use MakinaCorpus\QueryBuilder\Escaper\Escaper;
+use MakinaCorpus\QueryBuilder\Result\Result;
+use MakinaCorpus\QueryBuilder\Result\IterableResult;
 
 class PdoQueryBuilder extends AbstractBridge
 {
     public function __construct(
         private \PDO $connection
-    ) {}
+    ) {
+        parent::__construct();
+    }
 
     /**
      * {@inheritdoc}
@@ -87,6 +84,21 @@ class PdoQueryBuilder extends AbstractBridge
     /**
      * {@inheritdoc}
      */
+    protected function doExecuteQuery(string $expression, array $arguments = []): Result
+    {
+        $statement = $this->connection->prepare($expression);
+        $statement->execute($arguments);
+
+        return new IterableResult(
+            $statement->getIterator(),
+            $statement->rowCount(),
+            fn () => $statement->closeCursor(),
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     protected function doExecuteStatement(string $expression, array $arguments = []): ?int
     {
         $statement = $this->connection->prepare($expression);
@@ -103,71 +115,5 @@ class PdoQueryBuilder extends AbstractBridge
     public function getConnection(): \PDO
     {
         return $this->connection;
-    }
-
-    /**
-     * Create SELECT query builder.
-     */
-    public function select(null|string|Expression $table = null, ?string $alias = null): PdoSelect
-    {
-        $ret = new PdoSelect($table, $alias);
-        $ret->initialize($this);
-
-        return $ret;
-    }
-
-    /**
-     * Create UPDATE query.
-     */
-    public function update(string|Expression $table, ?string $alias = null): PdoUpdate
-    {
-        $ret = new PdoUpdate($table, $alias);
-        $ret->initialize($this);
-
-        return $ret;
-    }
-
-    /**
-     * Create INSERT query.
-     */
-    public function insert(string|Expression $table): PdoInsert
-    {
-        $ret = new PdoInsert($table);
-        $ret->initialize($this);
-
-        return $ret;
-    }
-
-    /**
-     * Create MERGE query.
-     */
-    public function merge(string|Expression $table): PdoMerge
-    {
-        $ret = new PdoMerge($table);
-        $ret->initialize($this);
-
-        return $ret;
-    }
-
-    /**
-     * Create DELETE query.
-     */
-    public function delete(string|Expression $table, ?string $alias = null): PdoDelete
-    {
-        $ret = new PdoDelete($table, $alias);
-        $ret->initialize($this);
-
-        return $ret;
-    }
-
-    /**
-     * Create raw SQL query.
-     */
-    public function raw(string $expression = null, mixed $arguments = null, bool $returns = false): PdoRawQuery
-    {
-        $ret = new PdoRawQuery($expression, $arguments, $returns);
-        $ret->initialize($this);
-
-        return $ret;
     }
 }

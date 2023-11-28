@@ -14,53 +14,35 @@ use MakinaCorpus\QueryBuilder\Query\Update;
 /**
  * Builds queries, and allow you to forward them to a driver.
  */
-class QueryBuilder
+interface QueryBuilder
 {
     /**
      * Create SELECT query.
      */
-    public function select(null|string|Expression $table = null, ?string $alias = null): Select
-    {
-        return new Select($table, $alias);
-    }
+    public function select(null|string|Expression $table = null, ?string $alias = null): Select;
 
     /**
      * Create UPDATE query.
      */
-    public function update(string|Expression $table, ?string $alias = null): Update
-    {
-        return new Update($table, $alias);
-    }
+    public function update(string|Expression $table, ?string $alias = null): Update;
 
     /**
      * Create INSERT query.
      */
-    public function insert(string|Expression $table): Insert
-    {
-        return new Insert($table);
-    }
+    public function insert(string|Expression $table): Insert;
 
     /**
      * Create MERGE query.
      */
-    public function merge(string|Expression $table): Merge
-    {
-        return new Merge($table);
-    }
+    public function merge(string|Expression $table): Merge;
 
     /**
      * Create DELETE query.
      */
-    public function delete(string|Expression $table, ?string $alias = null): Delete
-    {
-        return new Delete($table, $alias);
-    }
+    public function delete(string|Expression $table, ?string $alias = null): Delete;
 
     /**
      * Create raw SQL query.
      */
-    public function raw(string $expression = null, mixed $arguments = null, bool $returns = false): RawQuery
-    {
-        return new RawQuery($expression, $arguments, $returns);
-    }
+    public function raw(string $expression = null, mixed $arguments = null, bool $returns = false): RawQuery;
 }

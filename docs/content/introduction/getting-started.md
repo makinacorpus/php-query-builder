@@ -24,9 +24,9 @@ a few implementations:
 ### 2. Setup the query builder
 
 ```php
+use MakinaCorpus\QueryBuilder\DefaultQueryBuidler;
 use MakinaCorpus\QueryBuilder\Platform\Escaper\StandardEscaper;
 use MakinaCorpus\QueryBuilder\Platform\Writer\PostgreSQLWriter;
-use MakinaCorpus\QueryBuilder\QueryBuidler;
 
 // Escaper is the component that ties the query-builder with third-party
 // Database Access Layers, such as `doctrine/dbal` or simply `PDO`.
@@ -39,7 +39,7 @@ $writer = new PostgreSQLWriter($escaper);
 /*
  * User facade for you to build SQL queries.
  */
-$queryBuilder = new QueryBuilder();
+$queryBuilder = new DefaultQueryBuilder();
 ```
 
 ### 3. Write your query
@@ -47,9 +47,9 @@ $queryBuilder = new QueryBuilder();
 Let's write a simple query:
 
 ```php
-use MakinaCorpus\QueryBuilder\QueryBuidler;
+use MakinaCorpus\QueryBuilder\DefaultQueryBuidler;
 
-$queryBuilder = new QueryBuilder();
+$queryBuilder = new DefaultQueryBuilder();
 
 $query = $queryBuilder
     ->select('users')

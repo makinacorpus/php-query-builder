@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Tests;
 
-use Doctrine\DBAL\Result;
 use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Bridge\Bridge;
-use MakinaCorpus\QueryBuilder\Bridge\Doctrine\DoctrineQueryBuilder;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
+use MakinaCorpus\QueryBuilder\Result\Result;
 
 abstract class FunctionalTestCase extends UnitTestCase
 {
@@ -83,15 +82,10 @@ abstract class FunctionalTestCase extends UnitTestCase
      *
      * This is a proxy function to $this->getBridge()->executeStatement();
      */
-    protected function executeDoctrineQuery(string|Expression $query, ?array $arguments = null): Result
+    protected function executeQuery(string|Expression $query, ?array $arguments = null): Result
     {
-        $bridge = $this->getBridge();
-        if (!$bridge instanceof DoctrineQueryBuilder) {
-            throw new \LogicException("This method can only be called with a doctrine bridge.");
-        }
-
         try {
-            return $bridge->executeQuery($query, $arguments);
+            return $this->getBridge()->executeQuery($query, $arguments);
         } catch (\Throwable $e) {
             throw new QueryBuilderError(
                 \sprintf(

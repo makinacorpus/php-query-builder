@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Bridge;
 
+use MakinaCorpus\QueryBuilder\DefaultQueryBuilder;
 use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Platform;
 use MakinaCorpus\QueryBuilder\Converter\Converter;
@@ -20,9 +21,10 @@ use MakinaCorpus\QueryBuilder\Platform\Writer\MySQLWriter;
 use MakinaCorpus\QueryBuilder\Platform\Writer\PostgreSQLWriter;
 use MakinaCorpus\QueryBuilder\Platform\Writer\SQLServerWriter;
 use MakinaCorpus\QueryBuilder\Platform\Writer\SQLiteWriter;
+use MakinaCorpus\QueryBuilder\Result\Result;
 use MakinaCorpus\QueryBuilder\Writer\Writer;
 
-abstract class AbstractBridge implements Bridge
+abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
 {
     private ?ConverterPluginRegistry $converterPluginRegistry = null;
     private ?Writer $writer = null;
@@ -35,6 +37,7 @@ abstract class AbstractBridge implements Bridge
     public function __construct(?ConverterPluginRegistry $converterPluginRegistry = null)
     {
         $this->converterPluginRegistry = $converterPluginRegistry;
+        $this->setQueryExecutor($this);
     }
 
     /**
@@ -168,6 +171,27 @@ abstract class AbstractBridge implements Bridge
             Platform::versionNormalize($serverVersion),
             Platform::versionNormalize($version),
         );
+    }
+
+    /**
+     * Alias of QueryBuilder::raw() which executes the query.
+     */
+    protected abstract function doExecuteQuery(string $expression, array $arguments = []): Result;
+
+    /**
+     * {@inheritdoc}
+     */
+    public function executeQuery(string|Expression $expression = null, mixed $arguments = null): Result
+    {
+        if (\is_string($expression)) {
+            $expression = new Raw($expression, $arguments);
+        } else if ($arguments) {
+            throw new QueryBuilderError("Cannot pass \$arguments if \$query is not a string.");
+        }
+
+        $prepared = $this->getWriter()->prepare($expression);
+
+        return $this->doExecuteQuery($prepared->toString(), $prepared->getArguments()->getAll());
     }
 
     /**

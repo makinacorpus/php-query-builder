@@ -97,21 +97,21 @@ Planned implementations for:
 ```php
 use MakinaCorpus\QueryBuilder\Platform\Escaper\StandardEscaper;
 use MakinaCorpus\QueryBuilder\Platform\Writer\PostgreSQLWriter;
-use MakinaCorpus\QueryBuilder\QueryBuidler;
+use MakinaCorpus\QueryBuilder\DefaultQueryBuidler;
 
 $escaper = new StandardEscaper();
 
 $writer = new PostgreSQLWriter($escaper);
 
-$queryBuilder = new QueryBuilder();
+$queryBuilder = new DefaultQueryBuilder();
 ```
 
 ### 3. Write your query
 
 ```php
-use MakinaCorpus\QueryBuilder\QueryBuidler;
+use MakinaCorpus\QueryBuilder\DefaultQueryBuidler;
 
-$queryBuilder = new QueryBuilder();
+$queryBuilder = new DefaultQueryBuilder();
 
 $query = $queryBuilder
     ->select('users')

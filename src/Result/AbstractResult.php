@@ -160,6 +160,27 @@ abstract class AbstractResult implements Result, \IteratorAggregate
 
     /**
      * {@inheritdoc}
+     * @deprecated
+     */
+    public function fetch(int $mode = self::ASSOCIATIVE): mixed
+    {
+        if ($mode === self::ASSOCIATIVE) {
+            return $this->fetchAssociative();
+        }
+
+        if ($mode === self::NUMERIC) {
+            return $this->fetchNumeric();
+        }
+
+        if ($mode === self::COLUMN) {
+            return $this->fetchOne();
+        }
+
+        throw new \LogicException('Only fetch modes declared on Doctrine\DBAL\FetchMode are supported by legacy API.');
+    }
+
+    /**
+     * {@inheritdoc}
      */
     public function fetchNumeric(): null|array
     {

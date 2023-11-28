@@ -18,7 +18,7 @@ class ArithmeticFunctionalTest extends DoctrineTestCase
 
         self::assertSame(
             3,
-            (int) $this->executeDoctrineQuery($select)->fetchOne(),
+            (int) $this->executeQuery($select)->fetchOne(),
         );
     }
 }

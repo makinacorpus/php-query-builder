@@ -38,7 +38,7 @@ class PdoDriverTest extends PdoTestCase
             )
         ;
 
-        $actual = (int) $query->executeQuery()->fetchColumn();
+        $actual = (int) $query->executeQuery()->fetchFirstColumn();
 
         self::assertLessThan(10000, $actual);
         self::assertGreaterThan(0, $actual);

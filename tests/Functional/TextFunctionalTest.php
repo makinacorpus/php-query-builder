@@ -22,7 +22,7 @@ class TextFunctionalTest extends DoctrineTestCase
 
         self::assertSame(
             'foo-bar',
-            $this->executeDoctrineQuery($select)->fetchOne(),
+            $this->executeQuery($select)->fetchOne(),
         );
     }
 
@@ -36,7 +36,7 @@ class TextFunctionalTest extends DoctrineTestCase
 
         self::assertSame(
             'acbd18db4cc2f85cedef654fccc4a4d8',
-            $this->executeDoctrineQuery($select)->fetchOne(),
+            $this->executeQuery($select)->fetchOne(),
         );
     }
 
@@ -51,7 +51,7 @@ class TextFunctionalTest extends DoctrineTestCase
 
         self::assertSame(
             '0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33',
-            $this->executeDoctrineQuery($select)->fetchOne(),
+            $this->executeQuery($select)->fetchOne(),
         );
     }
 
@@ -62,7 +62,7 @@ class TextFunctionalTest extends DoctrineTestCase
 
         self::assertSame(
             'ababfoo',
-            $this->executeDoctrineQuery($select)->fetchOne(),
+            $this->executeQuery($select)->fetchOne(),
         );
     }
 
@@ -73,7 +73,7 @@ class TextFunctionalTest extends DoctrineTestCase
 
         self::assertSame(
             'aaa10',
-            $this->executeDoctrineQuery($select)->fetchOne(),
+            $this->executeQuery($select)->fetchOne(),
         );
     }
 
@@ -84,7 +84,7 @@ class TextFunctionalTest extends DoctrineTestCase
 
         self::assertSame(
             'fooabab',
-            $this->executeDoctrineQuery($select)->fetchOne(),
+            $this->executeQuery($select)->fetchOne(),
         );
     }
 }

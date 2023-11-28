@@ -7,6 +7,7 @@ namespace MakinaCorpus\QueryBuilder\Query;
 use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\ExpressionFactory;
 use MakinaCorpus\QueryBuilder\OptionsBag;
+use MakinaCorpus\QueryBuilder\Result\Result;
 
 interface Query extends Expression
 {
@@ -95,4 +96,17 @@ interface Query extends Expression
      * force the RETURN_AFFECTED behavior.
      */
     public function willReturnRows(): bool;
+
+    /**
+     * Execute this query and return result.
+     */
+    public function executeQuery(): Result;
+
+    /**
+     * Execute this query and return affected row count if possible.
+     *
+     * @return null|int
+     *   Affected row count if applyable and driver supports it.
+     */
+    public function executeStatement(): ?int;
 }

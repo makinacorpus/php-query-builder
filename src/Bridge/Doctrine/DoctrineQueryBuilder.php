@@ -5,24 +5,16 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Bridge\Doctrine;
 
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Result;
 use Doctrine\DBAL\Driver\ServerInfoAwareConnection;
-use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Platform;
 use MakinaCorpus\QueryBuilder\Bridge\AbstractBridge;
 use MakinaCorpus\QueryBuilder\Bridge\Doctrine\Escaper\DoctrineEscaper;
 use MakinaCorpus\QueryBuilder\Bridge\Doctrine\Escaper\DoctrineMySQLEscaper;
-use MakinaCorpus\QueryBuilder\Bridge\Doctrine\Query\DoctrineDelete;
-use MakinaCorpus\QueryBuilder\Bridge\Doctrine\Query\DoctrineInsert;
-use MakinaCorpus\QueryBuilder\Bridge\Doctrine\Query\DoctrineMerge;
-use MakinaCorpus\QueryBuilder\Bridge\Doctrine\Query\DoctrineRawQuery;
-use MakinaCorpus\QueryBuilder\Bridge\Doctrine\Query\DoctrineSelect;
-use MakinaCorpus\QueryBuilder\Bridge\Doctrine\Query\DoctrineUpdate;
 use MakinaCorpus\QueryBuilder\Converter\Converter;
-use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Escaper\Escaper;
-use MakinaCorpus\QueryBuilder\Expression\Raw;
+use MakinaCorpus\QueryBuilder\Result\Result;
 use MakinaCorpus\QueryBuilder\Writer\Writer;
+use MakinaCorpus\QueryBuilder\Result\IterableResult;
 
 class DoctrineQueryBuilder extends AbstractBridge
 {
@@ -30,7 +22,9 @@ class DoctrineQueryBuilder extends AbstractBridge
 
     public function __construct(
         private Connection $connection,
-    ) {}
+    ) {
+        parent::__construct();
+    }
 
     /**
      * {@inheritdoc}
@@ -96,31 +90,19 @@ class DoctrineQueryBuilder extends AbstractBridge
     /**
      * {@inheritdoc}
      */
-    protected function doExecuteStatement(string $expression, array $arguments = []): ?int
+    protected function doExecuteQuery(string $expression, array $arguments = []): Result
     {
-        return (int) $this->connection->executeStatement($expression, $arguments);
+        $doctrineResult = $this->connection->executeQuery($expression, $arguments);
+
+        return new IterableResult($doctrineResult->iterateAssociative(), $doctrineResult->rowCount(), fn () => $doctrineResult->free());
     }
 
     /**
-     * Execute query and return result.
+     * {@inheritdoc}
      */
-    public function executeQuery(string|Expression $expression = null, mixed $arguments = null): Result
+    protected function doExecuteStatement(string $expression, array $arguments = []): ?int
     {
-        if (\is_string($expression)) {
-            $expression = new Raw($expression, $arguments);
-        } else if ($arguments) {
-            throw new QueryBuilderError("Cannot pass \$arguments if \$query is not a string.");
-        }
-
-        $prepared = $this->getWriter()->prepare($expression);
-
-        return $this
-            ->connection
-            ->executeQuery(
-                $prepared->toString(),
-                $prepared->getArguments()->getAll(),
-            )
-        ;
+        return (int) $this->connection->executeStatement($expression, $arguments);
     }
 
     /**
@@ -131,71 +113,5 @@ class DoctrineQueryBuilder extends AbstractBridge
     public function getConnection(): Connection
     {
         return $this->connection;
-    }
-
-    /**
-     * Create SELECT query builder.
-     */
-    public function select(null|string|Expression $table = null, ?string $alias = null): DoctrineSelect
-    {
-        $ret = new DoctrineSelect($table, $alias);
-        $ret->initialize($this);
-
-        return $ret;
-    }
-
-    /**
-     * Create UPDATE query.
-     */
-    public function update(string|Expression $table, ?string $alias = null): DoctrineUpdate
-    {
-        $ret = new DoctrineUpdate($table, $alias);
-        $ret->initialize($this);
-
-        return $ret;
-    }
-
-    /**
-     * Create INSERT query.
-     */
-    public function insert(string|Expression $table): DoctrineInsert
-    {
-        $ret = new DoctrineInsert($table);
-        $ret->initialize($this);
-
-        return $ret;
-    }
-
-    /**
-     * Create MERGE query.
-     */
-    public function merge(string|Expression $table): DoctrineMerge
-    {
-        $ret = new DoctrineMerge($table);
-        $ret->initialize($this);
-
-        return $ret;
-    }
-
-    /**
-     * Create DELETE query.
-     */
-    public function delete(string|Expression $table, ?string $alias = null): DoctrineDelete
-    {
-        $ret = new DoctrineDelete($table, $alias);
-        $ret->initialize($this);
-
-        return $ret;
-    }
-
-    /**
-     * Create raw SQL query.
-     */
-    public function raw(string $expression = null, mixed $arguments = null, bool $returns = false): DoctrineRawQuery
-    {
-        $ret = new DoctrineRawQuery($expression, $arguments, $returns);
-        $ret->initialize($this);
-
-        return $ret;
     }
 }

@@ -13,6 +13,23 @@ namespace MakinaCorpus\QueryBuilder\Result;
  */
 interface DbalResult
 {
+    /** @deprecated */
+    public const ASSOCIATIVE = 2;
+
+    /** @deprecated */
+    public const NUMERIC = 3;
+
+    /** @deprecated */
+    public const COLUMN = 7;
+
+    /**
+     * BC layer for a wide-spread use-case of old DBAL APIs.
+     *
+     * @deprecated
+     *   Use {@see fetchNumeric()}, {@see fetchAssociative()} or {@see fetchOne()} instead.
+     */
+    public function fetch(int $mode = self::ASSOCIATIVE): mixed;
+
     /**
      * Get next element as an numerically indexed array.
      *

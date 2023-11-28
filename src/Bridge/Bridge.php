@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Bridge;
 
-use MakinaCorpus\QueryBuilder\Expression;
+use MakinaCorpus\QueryBuilder\QueryBuilder;
+use MakinaCorpus\QueryBuilder\QueryExecutor;
 use MakinaCorpus\QueryBuilder\Writer\Writer;
 
-interface Bridge
+interface Bridge extends QueryExecutor, QueryBuilder
 {
     /**
      * Get server name.
@@ -33,14 +34,6 @@ interface Bridge
      * Version is greater or equal than given.
      */
     public function isVersionGreaterOrEqualThan(string $version): bool;
-
-    /**
-     * Execute query and return affected row count if possible.
-     *
-     * @return null|int
-     *   Affected row count if applyable and driver supports it.
-     */
-    public function executeStatement(string|Expression $expression = null, mixed $arguments = null): ?int;
 
     /**
      * Get SQL writer instance.

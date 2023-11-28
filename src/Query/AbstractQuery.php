@@ -6,17 +6,30 @@ namespace MakinaCorpus\QueryBuilder\Query;
 
 use MakinaCorpus\QueryBuilder\ExpressionFactory;
 use MakinaCorpus\QueryBuilder\OptionsBag;
+use MakinaCorpus\QueryBuilder\QueryExecutor;
 use MakinaCorpus\QueryBuilder\Query\Partial\AliasHolderTrait;
 use MakinaCorpus\QueryBuilder\Query\Partial\WithClauseTrait;
+use MakinaCorpus\QueryBuilder\Result\Result;
+use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 
 abstract class AbstractQuery implements Query
 {
     use AliasHolderTrait;
     use WithClauseTrait;
 
+    private ?QueryExecutor $queryExecutor = null;
     private ?string $identifier = null;
     private ?OptionsBag $options = null;
     private ?ExpressionFactory $expressionFactory = null;
+
+    /**
+     * @internal
+     *   For bridges only.
+     */
+    public function setQueryExecutor(QueryExecutor $queryExecutor): void
+    {
+        $this->queryExecutor = $queryExecutor;
+    }
 
     /**
      * {@inheritdoc}
@@ -86,5 +99,29 @@ abstract class AbstractQuery implements Query
     public function getOptions(): OptionsBag
     {
         return $this->options ??= new OptionsBag();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function executeQuery(): Result
+    {
+        if (!$this->queryExecutor) {
+            throw new QueryBuilderError("Query executor is not set.");
+        }
+
+        return $this->queryExecutor->executeQuery($this);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function executeStatement(): int
+    {
+        if (!$this->queryExecutor) {
+            throw new QueryBuilderError("Query executor is not set.");
+        }
+
+        return $this->queryExecutor->executeStatement($this);
     }
 }
