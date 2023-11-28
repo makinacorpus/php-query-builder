@@ -34,7 +34,7 @@
         "doctrine/dbal": "^3.7",
         "phpbench/phpbench": "^1.0",
         "phpstan/phpstan": "^1.10",
-        "phpunit/phpunit" : "^10.0",
+        "phpunit/phpunit" : "^10.3",
         "ramsey/uuid": ">=3.8",
         "symfony/uid": ">=6.0"
     }
