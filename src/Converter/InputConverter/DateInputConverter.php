@@ -101,8 +101,11 @@ class DateInputConverter implements InputConverter, InputTypeGuesser
                 }
                 return $value->format(self::FORMAT_TIME_USEC);
 
-            case 'timestamp':
+            case 'datetime':
+            case 'datetimez':
             case 'timestamp with time zone':
+            case 'timestamp':
+            case 'timestampz':
             default:
                 $userTimeZone = new \DateTimeZone($context->getClientTimeZone());
                 // If user given date time is not using the client timezone

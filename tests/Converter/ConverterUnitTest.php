@@ -59,6 +59,82 @@ class ConverterUnitTest extends UnitTestCase
         self::assertNull($value->getType());
     }
 
+    public function testFromSqlBool(): void
+    {
+        $converter = new Converter();
+
+        self::assertFalse($converter->fromSql('bool', "false"));
+        self::assertFalse($converter->fromSql('bool', "f"));
+        self::assertFalse($converter->fromSql('bool', "FALSE"));
+        self::assertFalse($converter->fromSql('bool', "F"));
+        self::assertTrue($converter->fromSql('bool', "true"));
+        self::assertTrue($converter->fromSql('bool', "t"));
+        self::assertTrue($converter->fromSql('bool', "TRUE"));
+        self::assertTrue($converter->fromSql('bool', "T"));
+    }
+
+    public function testFromSqlBoolAsInt(): void
+    {
+        $converter = new Converter();
+
+        self::assertFalse($converter->fromSql('bool', 0));
+        self::assertTrue($converter->fromSql('bool', 1));
+    }
+
+    public function testFromSqlBoolAsIntString(): void
+    {
+        $converter = new Converter();
+
+        self::assertFalse($converter->fromSql('bool', "0"));
+        self::assertTrue($converter->fromSql('bool', "1"));
+    }
+
+    public function testFromSqlIntAsString(): void
+    {
+        $converter = new Converter();
+
+        self::assertSame(12, $converter->fromSql('int', "12"));
+        self::assertSame(12, $converter->fromSql('int', "12.2"));
+    }
+
+    public function testFromSqlInt(): void
+    {
+        $converter = new Converter();
+
+        self::assertSame(12, $converter->fromSql('int', 12));
+        self::assertSame(12, $converter->fromSql('int', 12.2));
+    }
+
+    public function testFromSqlFloat(): void
+    {
+        $converter = new Converter();
+
+        self::assertSame(12.0, $converter->fromSql('float', "12"));
+        self::assertSame(12.2, $converter->fromSql('float', "12.2"));
+    }
+
+    public function testFromSqlFloatAsString(): void
+    {
+        $converter = new Converter();
+
+        self::assertSame(12.0, $converter->fromSql('float', 12));
+        self::assertSame(12.2, $converter->fromSql('float', 12.2));
+    }
+
+    public function testFromSqlString(): void
+    {
+        $converter = new Converter();
+
+        self::assertSame("weeeeh", $converter->fromSql('string', "weeeeh"));
+    }
+
+    public function testFromSqlPlugin(): void
+    {
+        $converter = new Converter();
+
+        self::assertInstanceof(\DateTimeImmutable::class, $converter->fromSql(\DateTimeImmutable::class, "2012-12-12 12:12:12"));
+    }
+
     public function testToSqlInt(): void
     {
         self::assertSame(

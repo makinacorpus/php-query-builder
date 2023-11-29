@@ -8,6 +8,9 @@ use MakinaCorpus\QueryBuilder\Converter\InputConverter\DateInputConverter;
 use MakinaCorpus\QueryBuilder\Converter\InputConverter\IntervalInputConverter;
 use MakinaCorpus\QueryBuilder\Converter\InputConverter\RamseyUuidInputConverter;
 use MakinaCorpus\QueryBuilder\Converter\InputConverter\SymfonyUidInputConverter;
+use MakinaCorpus\QueryBuilder\Converter\OutputConverter\DateOutputConverter;
+use MakinaCorpus\QueryBuilder\Converter\OutputConverter\RamseyUuidOutputConverter;
+use MakinaCorpus\QueryBuilder\Converter\OutputConverter\SymfonyUidOutputConverter;
 use Ramsey\Uuid\UuidInterface;
 use Symfony\Component\Uid\AbstractUid;
 
@@ -20,6 +23,8 @@ class ConverterPluginRegistry
 {
     /** @var array<string,array<InputConverter>> */
     private array $inputConverters = [];
+    /** @var array<string,array<OutputConverter>> */
+    private array $outputConverters = [];
     /** @var array<InputTypeGuesser> */
     private array $typeGuessers = [];
 
@@ -34,12 +39,15 @@ class ConverterPluginRegistry
 
         // Register defaults.
         $this->register(new DateInputConverter());
+        $this->register(new DateOutputConverter());
         $this->register(new IntervalInputConverter());
         if (\class_exists(UuidInterface::class)) {
             $this->register(new RamseyUuidInputConverter());
+            $this->register(new RamseyUuidOutputConverter());
         }
         if (\class_exists(AbstractUid::class)) {
             $this->register(new SymfonyUidInputConverter());
+            $this->register(new SymfonyUidOutputConverter());
         }
     }
 
@@ -49,17 +57,23 @@ class ConverterPluginRegistry
     public function register(ConverterPlugin $plugin): void
     {
         $found = false;
+
         if ($plugin instanceof InputConverter) {
             $found = true;
-
             foreach ($plugin->supportedInputTypes() as $type) {
                 $this->inputConverters[$type][] = $plugin;
             }
         }
 
+        if ($plugin instanceof OutputConverter) {
+            $found = true;
+            foreach ($plugin->supportedOutputTypes() as $type) {
+                $this->outputConverters[$type][] = $plugin;
+            }
+        }
+
         if ($plugin instanceof InputTypeGuesser) {
             $found = true;
-
             $this->typeGuessers[] = $plugin;
         }
 
@@ -72,6 +86,12 @@ class ConverterPluginRegistry
     public function getInputConverters(string $type): iterable
     {
         return $this->inputConverters[$type] ?? [];
+    }
+
+    /** @return iterable<OutputConverter> */
+    public function getOutputConverters(string $type): iterable
+    {
+        return $this->outputConverters[$type] ?? [];
     }
 
     /** @return iterable<InputTypeGuesser> */

@@ -62,6 +62,64 @@ class Converter
     }
 
     /**
+     * Convert SQL formatted value to given PHP type.
+     *
+     * You may return null for null values.
+     *
+     * @return mixed
+     *
+     * @throws ValueConversionError
+     *   In case of value conversion error.
+     */
+    public function fromSql(string $type, int|float|string $value): mixed
+    {
+        if (null === $value) {
+            return null;
+        }
+
+        // @todo Maybe later, too slow for hydration. Never do this automatically.
+        // if (null === $type) {
+        //     $type = $this->guessOutputType($value);
+        // }
+
+        if (\str_ends_with($type, '[]')) {
+            // @todo Handle collections.
+            throw new ValueConversionError("Handling arrays is not implemented yet.");
+        }
+
+        try {
+            return $this->fromSqlUsingPlugins($value, $type);
+        } catch (ValueConversionError) {}
+
+        try {
+            return $this->fromSqlUsingPlugins($value, '*');
+        } catch (ValueConversionError) {}
+
+        // Calling default implementation after plugins allows API users to
+        // override default behavior and implement their own logic pretty
+        // much everywhere.
+        return $this->fromSqlDefault($type, $value);
+    }
+
+    /**
+     * Proceed to naive PHP type conversion.
+     */
+    public function guessInputType(mixed $value): string
+    {
+        if (\is_object($value)) {
+            foreach ($this->registry->getTypeGuessers() as $plugin) {
+                \assert($plugin instanceof InputTypeGuesser);
+
+                if ($type = $plugin->guessInputType($value)) {
+                    return $type;
+                }
+            }
+        }
+
+        return \get_debug_type($value);
+    }
+
+    /**
      * Convert PHP native value to given SQL type.
      *
      * This will happen in ArgumentBag when values are fetched prior being
@@ -112,6 +170,48 @@ class Converter
     }
 
     /**
+     * Allow bridge specific implementations to create their own context.
+     */
+    protected function getConverterContext(): ConverterContext
+    {
+        return new ConverterContext($this);
+    }
+
+    /**
+     * Run all plugins to convert a value.
+     */
+    protected function fromSqlUsingPlugins(null|int|float|string|object $value, string $type, ?string $realType = null): mixed
+    {
+        $realType ??= $type;
+        $context = $this->getConverterContext();
+
+        foreach ($this->registry->getOutputConverters($type) as $plugin) {
+            \assert($plugin instanceof OutputConverter);
+
+            try {
+                return $plugin->fromSql($realType, $value, $context);
+            } catch (ValueConversionError) {}
+        }
+
+        throw new ValueConversionError();
+    }
+
+    /**
+     * Handles common primitive types.
+     */
+    protected function fromSqlDefault(string $type, null|int|float|string|object $value): mixed
+    {
+        return match ($type) {
+            'bool' => \is_int($value) ? (bool) $value : ((!$value || 'f' === $value || 'F' === $value || 'false' === \strtolower($value)) ? false : true),
+            'float' => (float) $value,
+            'int' => (int) $value,
+            'json' => \json_decode($value, true),
+            'string' => (string) $value,
+            default => throw new ValueConversionError(\sprintf("Unhandled PHP type '%s'", $type)),
+        };
+    }
+
+    /**
      * Run all plugins to convert a value.
      */
     protected function toSqlUsingPlugins(mixed $value, string $type, ?string $realType = null): null|int|float|string|object
@@ -128,32 +228,6 @@ class Converter
         }
 
         throw new ValueConversionError();
-    }
-
-    /**
-     * Allow bridge specific implementations to create their own context.
-     */
-    protected function getConverterContext(): ConverterContext
-    {
-        return new ConverterContext($this);
-    }
-
-    /**
-     * Proceed to naive PHP type conversion.
-     */
-    public function guessInputType(mixed $value): string
-    {
-        if (\is_object($value)) {
-            foreach ($this->registry->getTypeGuessers() as $plugin) {
-                \assert($plugin instanceof InputTypeGuesser);
-
-                if ($type = $plugin->guessInputType($value)) {
-                    return $type;
-                }
-            }
-        }
-
-        return \get_debug_type($value);
     }
 
     /**
