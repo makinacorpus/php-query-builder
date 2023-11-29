@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Result;
 
+use MakinaCorpus\QueryBuilder\Converter\Converter;
 use MakinaCorpus\QueryBuilder\Error\ResultError;
 
 class DefaultResultRow implements ResultRow
@@ -12,6 +13,7 @@ class DefaultResultRow implements ResultRow
 
     public function __construct(
         private array $rawValues,
+        private ?Converter $converter = null,
     ) {
         $this->names = \array_keys($rawValues);
     }
@@ -28,7 +30,10 @@ class DefaultResultRow implements ResultRow
         }
 
         if ($phpType) {
-            throw new \Exception("Type conversion from SQL to PHP is not implemented yet.");
+            if (!$this->converter) {
+                $this->converter = new Converter();
+            }
+            $value = $this->converter->fromSql($phpType, $value);
         }
 
         return $value;

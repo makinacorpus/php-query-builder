@@ -102,11 +102,14 @@ class PdoQueryBuilder extends AbstractBridge
         $statement = $this->connection->prepare($expression);
         $statement->execute($arguments);
 
-        return new IterableResult(
+        $result = new IterableResult(
             $statement->getIterator(),
             $statement->rowCount(),
             fn () => $statement->closeCursor(),
         );
+        $result->setConverter($this->getConverter());
+
+        return $result;
     }
 
     /**

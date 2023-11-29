@@ -26,6 +26,7 @@ use MakinaCorpus\QueryBuilder\Writer\Writer;
 
 abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
 {
+    private ?Converter $converter = null;
     private ?ConverterPluginRegistry $converterPluginRegistry = null;
     private ?Writer $writer = null;
     private ?string $serverName = null;
@@ -236,7 +237,7 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
     /**
      * Create default writer based upon server name and version and driver.
      */
-    protected function createConverter(ConverterPluginRegistry $converterPluginRegistry): Converter
+    protected function getConverter(): Converter
     {
         $ret = match ($this->getServerFlavor()) {
             Platform::MARIADB => new MySQLConverter(),
@@ -244,7 +245,7 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
             default => new Converter(),
         };
 
-        $ret->setConverterPluginRegistry($converterPluginRegistry);
+        $ret->setConverterPluginRegistry($this->getConverterPluginRegistry());
 
         return $ret;
     }
@@ -299,11 +300,6 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
      */
     public function getWriter(): Writer
     {
-        return $this->writer ??= $this->createWriter(
-            $this->createEscaper(),
-            $this->createConverter(
-                $this->getConverterPluginRegistry(),
-            ),
-        );
+        return $this->writer ??= $this->createWriter($this->createEscaper(), $this->getConverter());
     }
 }

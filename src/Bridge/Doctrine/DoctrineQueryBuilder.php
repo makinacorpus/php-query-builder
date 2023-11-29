@@ -106,7 +106,10 @@ class DoctrineQueryBuilder extends AbstractBridge
 
         $doctrineResult = $this->connection->executeQuery($expression, $arguments);
 
-        return new IterableResult($doctrineResult->iterateAssociative(), $doctrineResult->rowCount(), fn () => $doctrineResult->free());
+        $result = new IterableResult($doctrineResult->iterateAssociative(), $doctrineResult->rowCount(), fn () => $doctrineResult->free());
+        $result->setConverter($this->getConverter());
+
+        return $result;
     }
 
     /**

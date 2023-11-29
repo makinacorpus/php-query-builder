@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Result;
 
+use MakinaCorpus\QueryBuilder\Converter\Converter;
 use MakinaCorpus\QueryBuilder\Error\ResultAlreadyStartedError;
 use MakinaCorpus\QueryBuilder\Error\ResultError;
 use MakinaCorpus\QueryBuilder\Error\ResultLockedError;
@@ -24,10 +25,22 @@ abstract class AbstractResult implements Result, \IteratorAggregate
     private bool $iterationCompleted = false;
     private bool $justRewinded = false;
     private bool $rewindable = false;
+    private ?Converter $converter = null;
 
     public function __construct(
         private bool $countIsReliable = true,
     ) {}
+
+    /**
+     * Set converter.
+     *
+     * @internal
+     *   For bridge only.
+     */
+    public function setConverter(Converter $converter): void
+    {
+        $this->converter = $converter;
+    }
 
     /**
      * Get row count from driver.
@@ -131,7 +144,7 @@ abstract class AbstractResult implements Result, \IteratorAggregate
     public function fetchRow(): ?ResultRow
     {
         if ($row = $this->fetchNext()) {
-            return new DefaultResultRow($row);
+            return new DefaultResultRow($row, $this->converter);
         }
         return null;
     }
@@ -151,7 +164,7 @@ abstract class AbstractResult implements Result, \IteratorAggregate
             return null;
         }
 
-        return ($this->hydrator)($this->hydratorUsesArray ? $row : new DefaultResultRow($row));
+        return ($this->hydrator)($this->hydratorUsesArray ? $row : new DefaultResultRow($row, $this->converter));
     }
 
     /**

@@ -74,26 +74,22 @@ use MakinaCorpus\QueryBuilder\Query\Partial\WithStatement;
 class Writer
 {
     private string $matchParametersRegex;
+    private ?Converter $converter = null;
     protected Escaper $escaper;
-    protected Converter $converter;
 
     public function __construct(?Escaper $escaper = null, ?Converter $converter = null)
     {
-        $this->converter = $converter ?? $this->createConverter();
+        $this->converter = $converter;
         $this->escaper = $escaper ?? new StandardEscaper();
         $this->buildParameterRegex();
     }
 
     /**
-     * Create default converter.
-     *
-     * This is a fallback, during production runtime, the converter should have
-     * been injected by setup code, in order to inherit from the converter
-     * registry and user implementations.
+     * Get converter.
      */
-    protected function createConverter(): Converter
+    protected function getConverter(): Converter
     {
-        return new Converter();
+        return $this->converter ??= new Converter();
     }
 
     /**
@@ -114,7 +110,7 @@ class Writer
             //   then $identifier = $sql->getIdentifier();
         }
 
-        $context = new WriterContext($this->converter);
+        $context = new WriterContext($this->getConverter());
         $rawSql = $this->format($sql, $context);
 
         return new SqlString(
@@ -151,7 +147,7 @@ class Writer
         }
 
         if ($expression instanceof Value) {
-            if ($type = $this->converter->guessInputType($expression->getValue())) {
+            if ($type = $this->getConverter()->guessInputType($expression->getValue())) {
                 // Cache guessed type to avoid doing it twice when converting
                 // values later at query time.
                 $expression->setType($type);
@@ -314,7 +310,7 @@ class Writer
             return $asString;
         }
 
-        $converter = $this->converter;
+        $converter = $this->getConverter();
 
         // See https://stackoverflow.com/a/3735908 for the  starting
         // sequence explaination, the rest should be comprehensible.
