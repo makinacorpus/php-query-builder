@@ -9,6 +9,7 @@ use MakinaCorpus\QueryBuilder\Error\ResultError;
 use MakinaCorpus\QueryBuilder\Error\ResultLockedError;
 use MakinaCorpus\QueryBuilder\Result\ArrayResult;
 use MakinaCorpus\QueryBuilder\Result\Result;
+use MakinaCorpus\QueryBuilder\Result\ResultRow;
 use PHPUnit\Framework\TestCase;
 
 class AbstractResultTest extends TestCase
@@ -21,9 +22,36 @@ class AbstractResultTest extends TestCase
         ]);
     }
 
-    public function testTraverseWhenHydrator(): void
+    public function testTraverseWhenHydratorUsingResultRow(): void
     {
-        self::markTestIncomplete("Implement me.");
+        $result = $this
+            ->createResult()
+            ->setHydrator(fn (ResultRow $row) => $row->get('a') . $row->get('b'))
+        ;
+
+        self::assertSame(
+            [
+                "key1val1",
+                "key2val2",
+            ],
+            \iterator_to_array($result),
+        );
+    }
+
+    public function testTraverseWhenHydratorUsingArray(): void
+    {
+        $result = $this
+            ->createResult()
+            ->setHydrator(fn (array $row) => $row['a'] . $row['b'])
+        ;
+
+        self::assertSame(
+            [
+                "key1val1",
+                "key2val2",
+            ],
+            \iterator_to_array($result),
+        );
     }
 
     public function testTraverseWithoutHydrator(): void
@@ -50,9 +78,28 @@ class AbstractResultTest extends TestCase
         self::assertNull($result->fetchRow());
     }
 
-    public function testFetchHydrated(): void
+    public function testFetchHydratedUsingResultRow(): void
     {
-        self::markTestIncomplete("Implement me.");
+        $result = $this
+            ->createResult()
+            ->setHydrator(fn (ResultRow $row) => $row->get('a') . $row->get('b'))
+        ;
+
+        self::assertSame("key1val1", $result->fetchHydrated());
+        self::assertSame("key2val2", $result->fetchHydrated());
+        self::assertNull($result->fetchRow());
+    }
+
+    public function testFetchHydratedUsingArray(): void
+    {
+        $result = $this
+            ->createResult()
+            ->setHydrator(fn (array $row) => $row['a'] . $row['b'])
+        ;
+
+        self::assertSame("key1val1", $result->fetchHydrated());
+        self::assertSame("key2val2", $result->fetchHydrated());
+        self::assertNull($result->fetchRow());
     }
 
     public function testFetchHydratedErrorWhenNoHydratorSet(): void

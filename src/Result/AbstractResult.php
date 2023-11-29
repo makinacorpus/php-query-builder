@@ -92,7 +92,7 @@ abstract class AbstractResult implements Result, \IteratorAggregate
     {
         $this->dieIfStarted();
 
-        $this->hydrator = $hydrator;
+        $this->hydrator = $this->prepareHydrator($hydrator);
 
         return $this;
     }
@@ -151,11 +151,7 @@ abstract class AbstractResult implements Result, \IteratorAggregate
             return null;
         }
 
-        if ($this->hydratorUsesArray) {
-            return ($this->hydrator)($row);
-        }
-
-        throw new ResultError("Not implemented yet.");
+        return ($this->hydrator)($this->hydratorUsesArray ? $row : new DefaultResultRow($row));
     }
 
     /**
@@ -449,5 +445,39 @@ abstract class AbstractResult implements Result, \IteratorAggregate
             throw new ResultAlreadyStartedError("Result iteration has already started.");
         }
         $this->dieIfFreed();
+    }
+
+    /**
+     * From its parameters, prepare hydrator.
+     */
+    protected function prepareHydrator(callable $hydrator): callable
+    {
+        $hydrator = \Closure::fromCallable($hydrator);
+        $this->hydratorUsesArray = true;
+
+        $reflection = new \ReflectionFunction($hydrator);
+        if ($parameters = $reflection->getParameters()) {
+            \assert($parameters[0] instanceof \ReflectionParameter);
+            if ($parameters[0]->hasType() && ($type = $parameters[0]->getType())) {
+                \assert($type instanceof \ReflectionType);
+                if ($type instanceof \ReflectionNamedType) {
+                    if ($type->getName() === ResultRow::class) {
+                        $this->hydratorUsesArray = false;
+                    }
+                } else {
+                    // We didn't implement union types or such, we could
+                    // but I'm not sure it worths it.
+                }
+            } else {
+                // Callback has no type, simply provide the ResultRow.
+                $this->hydratorUsesArray = false;
+            }
+        } else {
+            // No parameter is probably an error, but the user probably
+            // knowns what's its doing.
+            $this->hydratorUsesArray = false;
+        }
+
+        return $hydrator;
     }
 }
