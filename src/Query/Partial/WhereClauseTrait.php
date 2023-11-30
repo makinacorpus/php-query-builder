@@ -8,53 +8,14 @@ use MakinaCorpus\QueryBuilder\Where;
 use MakinaCorpus\QueryBuilder\Expression\Comparison;
 
 /**
- * Represents the WHERE part of any query.
- *
- * Don't forget to handle WHERE in __clone(), __construct().
+ * Additional methods for query with WHERE.
  */
 trait WhereClauseTrait
 {
-    private Where $where;
-
     /**
      * Get WHERE clause.
      */
-    public function getWhere(): Where
-    {
-        return $this->where;
-    }
-
-    /**
-     * Open OR statement with parenthesis.
-     *
-     * @param callable $callback
-     *   First argument of callback is the nested Where instance.
-     *
-     * @deprecated
-     *   Normalize with composite Where interface.
-     */
-    public function whereOr(callable $callback): static
-    {
-        $this->where->or($callback);
-
-        return $this;
-    }
-
-    /**
-     * Open AND statement with parenthesis.
-     *
-     * @param callable $callback
-     *   First argument of callback is the nested Where instance.
-     *
-     * @deprecated
-     *   Normalize with composite Where interface.
-     */
-    public function whereAnd(callable $callback): static
-    {
-        $this->where->and($callback);
-
-        return $this;
-    }
+    abstract protected function getWhereInstance(): Where;
 
     /**
      * Add a condition in the WHERE clause.
@@ -63,7 +24,7 @@ trait WhereClauseTrait
      */
     public function where(mixed $column, mixed $value = null, string $operator = Comparison::EQUAL): static
     {
-        $this->where->compare($column, $value, $operator);
+        $this->getWhereInstance()->compare($column, $value, $operator);
 
         return $this;
     }
@@ -75,7 +36,7 @@ trait WhereClauseTrait
      */
     public function whereRaw(mixed $expression, mixed $arguments = null): static
     {
-        $this->where->raw($expression, $arguments);
+        $this->getWhereInstance()->raw($expression, $arguments);
 
         return $this;
     }

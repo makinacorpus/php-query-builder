@@ -11,6 +11,7 @@ use MakinaCorpus\QueryBuilder\Expression\TableName;
 use MakinaCorpus\QueryBuilder\Query\Partial\FromClauseTrait;
 use MakinaCorpus\QueryBuilder\Query\Partial\ReturningQueryTrait;
 use MakinaCorpus\QueryBuilder\Query\Partial\WhereClauseTrait;
+use MakinaCorpus\QueryBuilder\Query\Where\WhereDelete;
 
 /**
  * Represents an DELETE query.
@@ -24,6 +25,7 @@ class Delete extends AbstractQuery
     use WhereClauseTrait;
 
     private TableName $table;
+    private WhereDelete $where;
 
     /**
      * Build a new query.
@@ -36,7 +38,7 @@ class Delete extends AbstractQuery
     public function __construct(string|Expression $table, ?string $alias = null)
     {
         $this->table = $this->normalizeStrictTable($table, $alias);
-        $this->where = new Where();
+        $this->where = new WhereDelete($this);
     }
 
     /**
@@ -45,6 +47,22 @@ class Delete extends AbstractQuery
     public function getTable(): TableName
     {
         return $this->table;
+    }
+
+    /**
+     * Get WHERE clause.
+     */
+    public function getWhere(): WhereDelete
+    {
+        return $this->where;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getWhereInstance(): Where
+    {
+        return $this->where;
     }
 
     /**

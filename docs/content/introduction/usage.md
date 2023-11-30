@@ -28,7 +28,9 @@ $result = $queryBuilder
     ->column('id')
     ->column('name')
     ->column('email')
-    ->where(fn (Where $where) => $where->isLike('email', '%@?', 'gmail.com'))
+    ->getWhere()
+        ->isLike('email', '%@?', 'gmail.com')
+    ->end()
     ->where('created_at', new \DateTime('2023-01-01 00:00:00'), '>')
     ->range(100)
     ->orderBy('created_at')
@@ -464,6 +466,115 @@ in any method.
 
 The `Where` class acts as a specification pattern implementation, and give numerous
 helper methods for adding various comparison expressions.
+
+### Simple comparison
+
+All of `Delete`, `Select` and `Update` allows a `WHERE` clause, which enable
+the following syntax:
+
+```php
+$query->where('some_column', 'some_value');
+```
+
+Will give the following SQL:
+
+```sql
+WHERE "some_column" = 'some_value'
+```
+
+Additionnaly, you can use a third parameter `$operator` which allows you to
+shortcut other expressions:
+
+```php
+$query->where('some_column', 'some_value', '<=');
+```
+
+Will give the following SQL:
+
+```sql
+WHERE "some_column" <= 'some_value'
+```
+:::warning
+Using it this way, operator is considered as raw SQL and may lead to SQL injection.
+:::
+
+### Using fluent methods
+
+`Where` class provide numerous comparison functions that will help you write faster
+code without knowing the exact comparison or operator syntax:
+
+```php
+$query
+    ->getWhere()
+        ->exists('SELECT 1')
+        ->isEqual('foo', 2)
+        ->isBetween('bar', 3, 4)
+        ->isLike('baz', 'foo%')
+        ->isGreaterThan('fizz', 5)
+        ->isNotIn('buzz', [7, 8, 9])
+    ->end()
+    // Here you returned to the original query and can continue chaining.
+```
+
+Which will generate the following SQL:
+
+```SQL
+WHERE
+    EXISTS (
+        SELECT 1
+    )
+    AND "foo" = 2
+    AND "bar" BETWEEN 3 AND 4
+    AND "baz" IS LIKE 'foo%'
+    AND "fizz" > 5
+    AND "buzz" NOT IN (
+        7, 8, 9
+    )
+```
+
+You can enve nest `AND` or `OR` clauses:
+
+```php
+$query
+    ->getWhere()
+        ->exists('SELECT 1')
+        ->and()
+            ->isEqual('foo', 2)
+            ->isBetween('bar', 3, 4)
+        ->end()
+        ->or()
+            ->isGreaterThan('fizz', 5)
+            ->isNotIn('buzz', [7, 8, 9])
+        ->end()
+    ->end()
+    // Here you returned to the original query and can continue chaining.
+```
+
+Which will generate the following SQL:
+
+```SQL
+WHERE
+    EXISTS (
+        SELECT 1
+    )
+    AND (
+        "foo" = 2
+        AND "bar" BETWEEN 3 AND 4
+    )
+    AND (
+        "fizz" > 5
+        OR "buzz" NOT IN (
+            7, 8, 9
+        )
+    )
+```
+
+:::warning
+Your IDE will be tricked by the `end()` method for properly chaining, but for this
+to work, we had to create as many classes as depth dimensions we support:
+**chaining depeer that 2 levels will break IDE autocompletion** yet the code will
+execute correctly.
+:::
 
 ## Inserting arbitrary data
 

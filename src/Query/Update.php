@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Query;
 
 use MakinaCorpus\QueryBuilder\Expression;
+use MakinaCorpus\QueryBuilder\ExpressionHelper;
 use MakinaCorpus\QueryBuilder\Where;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Expression\TableName;
 use MakinaCorpus\QueryBuilder\Query\Partial\FromClauseTrait;
 use MakinaCorpus\QueryBuilder\Query\Partial\ReturningQueryTrait;
 use MakinaCorpus\QueryBuilder\Query\Partial\WhereClauseTrait;
-use MakinaCorpus\QueryBuilder\ExpressionHelper;
+use MakinaCorpus\QueryBuilder\Query\Where\WhereUpdate;
 
 /**
  * Represents an UPDATE query.
@@ -25,6 +26,7 @@ class Update extends AbstractQuery
     private TableName $table;
     /** @var Expression[] */
     private array $columns = [];
+    private WhereUpdate $where;
 
     /**
      * Build a new query.
@@ -37,7 +39,7 @@ class Update extends AbstractQuery
     public function __construct(string|Expression $table, ?string $alias = null)
     {
         $this->table = $this->normalizeStrictTable($table, $alias);
-        $this->where = new Where();
+        $this->where = new WhereUpdate($this);
     }
 
     /**
@@ -99,6 +101,22 @@ class Update extends AbstractQuery
     public function getUpdatedColumns(): array
     {
         return $this->columns;
+    }
+
+    /**
+     * Get WHERE clause.
+     */
+    public function getWhere(): WhereUpdate
+    {
+        return $this->where;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getWhereInstance(): Where
+    {
+        return $this->where;
     }
 
     /**

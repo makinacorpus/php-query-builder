@@ -140,70 +140,6 @@ class SelectTest extends UnitTestCase
         );
     }
 
-    public function testWhereAnd(): void
-    {
-        $query = (new Select('a'))
-            ->whereAnd(fn (Where $where) => $where
-                ->isEqual('c', 13)
-                ->isEqual('d', 14)
-            )
-            ->where('b', 12)
-        ;
-
-        self::assertSameSql(
-            'select * from "a" where ("c" = ? and "d" = ?) and "b" = ?',
-            $query
-        );
-    }
-
-    public function testWhereOr(): void
-    {
-        $query = (new Select('a'))
-            ->whereOr(fn (Where $where) => $where
-                ->isEqual('c', 13)
-                ->isEqual('d', 14)
-            )
-            ->where('b', 12)
-        ;
-
-        self::assertSameSql(
-            'select * from "a" where ("c" = ? or "d" = ?) and "b" = ?',
-            $query
-        );
-    }
-
-    public function testHavingAnd(): void
-    {
-        $query = (new Select('a'))
-            ->havingAnd(fn (Where $where) => $where
-                ->isEqual('c', 13)
-                ->isEqual('d', 14)
-            )
-            ->having('b', 12)
-        ;
-
-        self::assertSameSql(
-            'select * from "a" having ("c" = ? and "d" = ?) and "b" = ?',
-            $query
-        );
-    }
-
-    public function testHavingOr(): void
-    {
-        $query = (new Select('a'))
-            ->havingOr(fn (Where $where) => $where
-                ->isEqual('c', 13)
-                ->isEqual('d', 14)
-            )
-            ->having('b', 12)
-        ;
-
-        self::assertSameSql(
-            'select * from "a" having ("c" = ? or "d" = ?) and "b" = ?',
-            $query
-        );
-    }
-
     public function testHavingWithOrderAndLimit(): void
     {
         $query = (new Select('a'))
@@ -620,6 +556,60 @@ class SelectTest extends UnitTestCase
         );
     }
 
+    public function testWhereNesting(): void
+    {
+        $query = new Select('some_table');
+
+        $query
+            ->getWhere()
+                ->isEqual('foo', 'bar')
+                ->isBetween('bla', 1, 2)
+            ->end()
+            ->range(1)
+        ;
+
+        self::assertSameSql(
+            <<<SQL
+            select *
+            from "some_table"
+            where
+                "foo" = ?
+                and "bla" between ? and ?
+            limit 1
+            SQL,
+            $query
+        );
+    }
+
+    public function testWhereNestingNesting(): void
+    {
+        $query = new Select('some_table');
+
+        $query
+            ->getWhere()
+                ->or()
+                    ->isEqual('foo', 'bar')
+                    ->isBetween('bla', 1, 2)
+                ->end()
+            ->end()
+            ->range(1)
+        ;
+
+        self::assertSameSql(
+            <<<SQL
+            select *
+            from "some_table"
+            where
+                (
+                    "foo" = ?
+                    or "bla" between ? and ?
+                )
+            limit 1
+            SQL,
+            $query
+        );
+    }
+
     public function testExpression(): void
     {
         $query = new Select('some_table');
@@ -755,6 +745,31 @@ class SelectTest extends UnitTestCase
 
         self::assertSameSql(
             'select * from "some_table" having "a" = ? and "b" = ?',
+            $query
+        );
+    }
+
+    public function testHavingNesting(): void
+    {
+        $query = new Select('some_table');
+
+        $query
+            ->getHaving()
+                ->isEqual('foo', 'bar')
+                ->isBetween('bla', 1, 2)
+            ->end()
+            ->range(1)
+        ;
+
+        self::assertSameSql(
+            <<<SQL
+            select *
+            from "some_table"
+            having
+                "foo" = ?
+                and "bla" between ? and ?
+            limit 1
+            SQL,
             $query
         );
     }

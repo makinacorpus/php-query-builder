@@ -7,11 +7,50 @@ namespace MakinaCorpus\QueryBuilder;
 use MakinaCorpus\QueryBuilder\Expression\Not;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\Expression\Value;
+use MakinaCorpus\QueryBuilder\Query\Where\WhereWhere;
 
 /**
  * Represent a condition set with an operator ("and" or "or").
  *
  * Of course, any other expression can be used to create it.
+ *
+ * Genericity doesn't exists, and we need to be able to chain like this:
+ *
+ * @code
+ * (new Select())
+ *     // Enter in Where
+ *     ->whereBuilder()
+ *         ->isEqual('foo', 'bar')
+ *         ->isNotLike('foo', 'bar%')
+ *         // ...
+ *     ->end()
+ *     // Return to Select
+ *     ->range()
+ * @endcode
+ *
+ * Ideal solution would be to have a class such as:
+ *
+ * @code
+ * class Where<Owner>
+ * {
+ *     public function __construct(Owner $parent);
+ *
+ *     public function end(): Owner;
+ * }
+ * @endcode
+ *
+ * But we can't, so for each usage of Owner we will create a OwnerWhere class
+ * which will be instanciated in the right context, with a dedicated function
+ * end() that returns the owner type.
+ *
+ * @see \MakinaCorpus\QueryBuilder\Query\Where\WhereDelete
+ * @see \MakinaCorpus\QueryBuilder\Query\Where\WhereDeleteNested
+ * @see \MakinaCorpus\QueryBuilder\Query\Where\WhereSelect
+ * @see \MakinaCorpus\QueryBuilder\Query\Where\WhereSelectNested
+ * @see \MakinaCorpus\QueryBuilder\Query\Where\WhereUpdate
+ * @see \MakinaCorpus\QueryBuilder\Query\Where\WhereUpdateNested
+ * @see \MakinaCorpus\QueryBuilder\Query\Where\WhereWhere
+ * @see \MakinaCorpus\QueryBuilder\Query\Where\WhereWhereNested
  */
 class Where implements Expression
 {
@@ -21,7 +60,7 @@ class Where implements Expression
     public const OR = 'or';
 
     private string $operator = self::AND;
-    private array $children = [];
+    protected array $children = [];
 
     public function __construct(?string $operator = null)
     {
@@ -150,9 +189,9 @@ class Where implements Expression
     /**
      * Create a nested where clause with a custom operator.
      */
-    public function nested(string $operator, mixed ...$expressions): self
+    public function nested(string $operator, mixed ...$expressions): WhereWhere
     {
-        $nested = new self($operator);
+        $nested = new WhereWhere($this, $operator);
         if ($expressions) {
             $nested->with(...$expressions);
         }
@@ -166,7 +205,7 @@ class Where implements Expression
      * @return self
      *   The newly created clause.
      */
-    public function or(mixed ...$expressions): self
+    public function or(mixed ...$expressions): WhereWhere
     {
         return $this->nested(self::OR, ...$expressions);
     }
@@ -177,7 +216,7 @@ class Where implements Expression
      * @return self
      *   The newly created clause.
      */
-    public function and(mixed ...$expressions): self
+    public function and(mixed ...$expressions): WhereWhere
     {
         return $this->nested(self::AND, ...$expressions);
     }

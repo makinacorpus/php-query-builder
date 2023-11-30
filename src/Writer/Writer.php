@@ -216,6 +216,8 @@ class Writer
             } else {
                 throw new UnsupportedExpressionError(\sprintf("Unexpected expression object type: %s", \get_class($expression)));
             }
+        } else if ($expression instanceof Where) {
+            $ret = $this->formatWhere($expression, $context);
         } else {
             try {
                 $ret = match (\get_class($expression)) {
@@ -247,7 +249,6 @@ class Writer
                     StringHash::class => $this->formatStringHash($expression, $context),
                     TableName::class => $this->formatIdentifier($expression, $context),
                     Value::class => $this->formatValue($expression, $context),
-                    Where::class => $this->formatWhere($expression, $context),
                     Window::class => $this->formatWindow($expression, $context),
                     default => throw new UnsupportedExpressionError(\sprintf("Unexpected expression object type: %s", \get_class($expression))),
                 };

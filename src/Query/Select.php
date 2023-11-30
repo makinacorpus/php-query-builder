@@ -18,6 +18,7 @@ use MakinaCorpus\QueryBuilder\Query\Partial\HavingClauseTrait;
 use MakinaCorpus\QueryBuilder\Query\Partial\OrderByTrait;
 use MakinaCorpus\QueryBuilder\Query\Partial\SelectColumn;
 use MakinaCorpus\QueryBuilder\Query\Partial\WhereClauseTrait;
+use MakinaCorpus\QueryBuilder\Query\Where\WhereSelect;
 
 /**
  * Represents a SELECT query.
@@ -26,8 +27,8 @@ class Select extends AbstractQuery implements TableExpression
 {
     use FromClauseTrait;
     use HavingClauseTrait;
-    use WhereClauseTrait;
     use OrderByTrait;
+    use WhereClauseTrait;
 
     private bool $distinct = false;
     /** @var SelectColumn[] */
@@ -41,6 +42,8 @@ class Select extends AbstractQuery implements TableExpression
     private array $windows = [];
     /** @var Expression[] */
     private array $unions = [];
+    private WhereSelect $where;
+    private WhereSelect $having;
 
     /**
      * Build a new query.
@@ -56,8 +59,8 @@ class Select extends AbstractQuery implements TableExpression
         if ($table) {
             $this->from($table, $alias);
         }
-        $this->having = new Where();
-        $this->where = new Where();
+        $this->having = new WhereSelect($this);
+        $this->where = new WhereSelect($this);
     }
 
     /**
@@ -350,6 +353,38 @@ class Select extends AbstractQuery implements TableExpression
     public function createWindow(string $alias): Window
     {
         return $this->windows[] = new Window(null, null, $alias);
+    }
+
+    /**
+     * Get WHERE clause.
+     */
+    public function getWhere(): WhereSelect
+    {
+        return $this->where;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getWhereInstance(): Where
+    {
+        return $this->where;
+    }
+
+    /**
+     * Get HAVING clause.
+     */
+    public function getHaving(): WhereSelect
+    {
+        return $this->having;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getHavingInstance(): Where
+    {
+        return $this->having;
     }
 
     /**
