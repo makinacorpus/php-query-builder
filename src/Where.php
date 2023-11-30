@@ -202,7 +202,7 @@ class Where implements Expression
     /**
      * Create an OR clause and add expressions into it.
      *
-     * @return self
+     * @return WhereWhere
      *   The newly created clause.
      */
     public function or(mixed ...$expressions): WhereWhere
@@ -213,7 +213,7 @@ class Where implements Expression
     /**
      * Create an AND clause and add expressions into it.
      *
-     * @return self
+     * @return WhereWhere
      *   The newly created clause.
      */
     public function and(mixed ...$expressions): WhereWhere
