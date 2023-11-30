@@ -386,6 +386,20 @@ class Select extends AbstractQuery implements TableExpression
     }
 
     /**
+     * Add a group by clause using raw SQL.
+     *
+     * @param callable|string|Expression $column
+     *   Column identifier must contain the table alias, if might be a raw SQL
+     *   string if you wish, for example, to write a case when statement.
+     */
+    public function groupByRaw(callable|string|Expression $column): static
+    {
+        $this->groups[] = ExpressionHelper::raw($column);
+
+        return $this;
+    }
+
+    /**
      * Set limit.
      */
     public function limit(int $limit = 0): static

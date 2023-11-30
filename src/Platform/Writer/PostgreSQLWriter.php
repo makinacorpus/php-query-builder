@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Platform\Writer;
 
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
-use MakinaCorpus\QueryBuilder\Expression\Cast;
-use MakinaCorpus\QueryBuilder\Expression\Modulo;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\Query\Merge;
 use MakinaCorpus\QueryBuilder\Query\Query;

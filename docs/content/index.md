@@ -10,8 +10,11 @@ hero:
       text: Get Started
       link: /introduction/getting-started
     - theme: brand
-      text: Documentation
-      link: /usage
+      text: Sample usage
+      link: /introduction/usage
+    - theme: brand
+      text: Features matrix
+      link: /introduction/features
     - theme: alt
       text: View on GitHub
       link: https://github.com/makinacorpus/query-builder

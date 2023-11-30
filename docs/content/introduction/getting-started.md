@@ -84,6 +84,8 @@ $myDbal->execute(
 );
 ```
 
+You may now proceed with [usage examples](./usage).
+
 :::tip
 Raw PHP values that were passed as arguments in your queries will automatically
 run throught the converter and be converted to values that the SQL server
@@ -139,6 +141,8 @@ $result = $queryBuilder
 ;
 ```
 
+You may now proceed with [usage examples](./usage).
+
 :::tip
 `$result` is an instance of `MakinaCorpus\QueryBuilder\Result\Result`.
 
@@ -193,6 +197,8 @@ $result = $queryBuilder
 ;
 ```
 
+You may now proceed with [usage examples](./usage).
+
 :::tip
 `$result` is an instance of `MakinaCorpus\QueryBuilder\Result\Result`.
 
@@ -211,7 +217,7 @@ See [the datatype matrix](../query/datatype) for supported data types conversion
 
 ### 1. Install and register bundle
 
-:::tip
+:::warning
 For this to work, you need to setup a `doctrine/dbal` connection using the
 `doctrine/doctrine-bundle` integration first.
 :::
@@ -271,6 +277,8 @@ class TestingController extends AbstractController
     }
 }
 ```
+
+You may now proceed with [usage examples](./usage).
 
 :::warning
 This will inject the query builder instance plugged on the `default` connection.

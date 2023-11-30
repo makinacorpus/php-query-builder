@@ -107,4 +107,12 @@ class DefaultQueryBuilder implements QueryBuilder
 
         return $ret;
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function expression(): ExpressionFactory
+    {
+        return new ExpressionFactory();
+    }
 }

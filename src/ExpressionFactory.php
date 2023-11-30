@@ -11,6 +11,7 @@ use MakinaCorpus\QueryBuilder\Expression\Cast;
 use MakinaCorpus\QueryBuilder\Expression\ColumnName;
 use MakinaCorpus\QueryBuilder\Expression\Concat;
 use MakinaCorpus\QueryBuilder\Expression\ConstantTable;
+use MakinaCorpus\QueryBuilder\Expression\CurrentTimestamp;
 use MakinaCorpus\QueryBuilder\Expression\FunctionCall;
 use MakinaCorpus\QueryBuilder\Expression\Identifier;
 use MakinaCorpus\QueryBuilder\Expression\IfThen;
@@ -90,6 +91,14 @@ class ExpressionFactory
     public static function column(string $column, ?string $table = null, bool $noAutomaticNamespace = false): ColumnName
     {
         return new ColumnName($column, $table, $noAutomaticNamespace);
+    }
+
+    /**
+     * Create CURRENT_TIMESTAMP expression.
+     */
+    public static function currentTimestamp(): CurrentTimestamp
+    {
+        return new CurrentTimestamp();
     }
 
     /**

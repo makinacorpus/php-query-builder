@@ -57,11 +57,12 @@ export default defineConfig({
               { text: 'Symfony setup', link: '/introduction/getting-started#symfony-setup' },
             ]
           },
-          { text: 'Configuration', link: '/introduction/configuration' },
+          { text: 'Samples usages', link: '/introduction/usage' },
+          { text: 'Features matrix', link: '/introduction/features' }
         ]
       },
       {
-        text: 'Writing queries',
+        text: 'Basics',
         collapsed: false,
         items: [
           {
