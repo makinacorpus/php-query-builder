@@ -5,7 +5,6 @@ export default defineConfig({
   lang: 'en',
   title: "Query Builder",
   srcDir: "content",
-  cleanUrls: true,
   base: "/",
   metaChunk: false,
   head: [
