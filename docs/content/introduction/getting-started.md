@@ -97,7 +97,7 @@ Raw PHP values that were passed as arguments in your queries will automatically
 run throught the converter and be converted to values that the SQL server
 understands.
 
-See [the datatype matrix](../query/datatype) for supported data types conversions.
+See [the value converter documentation](../converter/converter) for supported data types conversions.
 :::
 
 ## Doctrine DBAL setup
@@ -160,7 +160,7 @@ Raw PHP values that were passed as arguments in your queries will automatically
 run throught the converter and be converted to values that the SQL server
 understands prior being sent as arguments to `doctrine/dbal`.
 
-See [the datatype matrix](../query/datatype) for supported data types conversions.
+See [the value converter documentation](../converter/converter) for supported data types conversions.
 :::
 
 ## PDO setup
@@ -216,7 +216,7 @@ Raw PHP values that were passed as arguments in your queries will automatically
 run throught the converter and be converted to values that the SQL server
 understands prior being sent as arguments to `PDOStatement`.
 
-See [the datatype matrix](../query/datatype) for supported data types conversions.
+See [the value converter documentation](../converter/converter) for supported data types conversions.
 :::
 
 ## Symfony setup

@@ -46,7 +46,7 @@ $writer->prepare(
 )
 ```
 
-See the [data types matrix](/query/datatype) for available types.
+See [the value converter documentation](../converter/converter) for supported data types.
 
 You can specify any number of parameter placeholders within the query, parameters
 array must be ordered:

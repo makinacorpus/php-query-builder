@@ -1,5 +1,10 @@
 # Data types
 
+:::warning
+Whereas the supported type list is still valid, this page is mostly
+outdated and will be replaced by the [value converter page](../converter/converter).
+:::
+
 ## Rationale
 
 Data types are purely informational: the user may or may not specify its

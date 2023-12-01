@@ -53,7 +53,7 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
     /**
      * Get converter plugin registry.
      */
-    protected function getConverterPluginRegistry(): ConverterPluginRegistry
+    public function getConverterPluginRegistry(): ConverterPluginRegistry
     {
         return $this->converterPluginRegistry ??= new ConverterPluginRegistry();
     }

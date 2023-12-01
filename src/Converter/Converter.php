@@ -10,12 +10,7 @@ use MakinaCorpus\QueryBuilder\Error\ValueConversionError;
 
 class Converter
 {
-    private ConverterPluginRegistry $registry;
-
-    public function __construct()
-    {
-        $this->registry = new ConverterPluginRegistry();
-    }
+    private ?ConverterPluginRegistry $converterPluginRegistry = null;
 
     /**
      * Set converter plugin registry.
@@ -27,7 +22,15 @@ class Converter
      */
     public function setConverterPluginRegistry(ConverterPluginRegistry $converterPluginRegistry): void
     {
-        $this->registry = $converterPluginRegistry;
+        $this->converterPluginRegistry = $converterPluginRegistry;
+    }
+
+    /**
+     * Get converter plugin registry.
+     */
+    protected function getConverterPluginRegistry(): ConverterPluginRegistry
+    {
+        return $this->converterPluginRegistry ??= new ConverterPluginRegistry();
     }
 
     /**
@@ -107,7 +110,7 @@ class Converter
     public function guessInputType(mixed $value): string
     {
         if (\is_object($value)) {
-            foreach ($this->registry->getTypeGuessers() as $plugin) {
+            foreach ($this->getConverterPluginRegistry()->getTypeGuessers() as $plugin) {
                 \assert($plugin instanceof InputTypeGuesser);
 
                 if ($type = $plugin->guessInputType($value)) {
@@ -185,7 +188,7 @@ class Converter
         $realType ??= $type;
         $context = $this->getConverterContext();
 
-        foreach ($this->registry->getOutputConverters($type) as $plugin) {
+        foreach ($this->getConverterPluginRegistry()->getOutputConverters($type) as $plugin) {
             \assert($plugin instanceof OutputConverter);
 
             try {
@@ -219,7 +222,7 @@ class Converter
         $realType ??= $type;
         $context = $this->getConverterContext();
 
-        foreach ($this->registry->getInputConverters($type) as $plugin) {
+        foreach ($this->getConverterPluginRegistry()->getInputConverters($type) as $plugin) {
             \assert($plugin instanceof InputConverter);
 
             try {
