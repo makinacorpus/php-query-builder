@@ -75,7 +75,11 @@ export default defineConfig({
             items: []
           },
           {
-            text: 'Parameter placeholder',
+            text: 'Raw SQL',
+            link: '/query/raw',
+          },
+          {
+            text: 'Raw SQL: placeholder',
             link: '/query/placeholder',
             items: [
               { text: 'Values type-hinting', link: '/query/placeholder#placeholder-value-type-hinting' },

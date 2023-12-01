@@ -30,18 +30,22 @@ In all cases, whenever this is the case, each builder method documents
 which expression will be created, for example:
 
 ```php
-use MakinaCorpus\QueryBuilder\Query\Select;
+use MakinaCorpus\QueryBuilder\QueryBuilder;
 
-// Will implicitely create a TableName('my_table') instance.
-$select = new Select('my_table');
+assert($queryBuilder instanceof QueryBuilder);
 
-// Will implicitely create a ColumnName('my_column', 'my_table') instance.
-$select->column('my_table.my_column');
+$select = $queryBuilder
+    // Will implicitely create a TableName('my_table') instance.
+    ->select('my_table');
 
-// Will implicitely create Raw('count(foo) = 2') instance, and inject
-// it into the Where instance.
-// It also creates an ColumName('some_other_column') instance.
-$select->havingRaw('count(?::column) = 2', ['some_other_column']);
+    // Will implicitely create a ColumnName('my_column', 'my_table') instance.
+    ->column('my_table.my_column');
+
+    // Will implicitely create Raw('count(?) = 2') instance,
+    // and inject it into the Where instance.
+    // It also creates an ColumName('some_other_column') instance.
+    ->havingRaw('count(?::column) = 2', ['some_other_column'])
+;
 ```
 
 This is true for every method of the builder.
@@ -62,30 +66,32 @@ Let's convert the previous code:
 use MakinaCorpus\QueryBuilder\Expression\ColumnName;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\Expression\TableName;
-use MakinaCorpus\QueryBuilder\Query\Select;
+use MakinaCorpus\QueryBuilder\QueryBuilder;
 
-$select = new Select(
-    new TableName('my_table'),
-);
+assert($queryBuilder instanceof QueryBuilder);
 
-$select->column(
-    new ColumnName('my_column', 'my_table'),
-);
-
-$select->having(
-    new Raw(
-        'count(?) = 2',
-        [
-            new ColumnName('some_other_column'),
-        ],
+$select = $queryBuilder
+    ->select(
+        new TableName('my_table'),
     )
-);
+    ->column(
+        new ColumnName('my_column', 'my_table'),
+    )
+    ->having(
+        new Raw(
+            'count(?) = 2',
+            [
+                new ColumnName('some_other_column'),
+            ],
+        )
+    )
+;
 ```
 
 :::tip
 Code is more explicit, it can be easier to read for some, harder for others.
 But in all cases, it's the most verbose syntax, which leads into having a lot
-of `use` statements.
+of `use` statements. The choice is up you to chose either convention.
 :::
 
 :::warning
@@ -105,24 +111,26 @@ once again convert the previous code:
 
 ```php
 use MakinaCorpus\QueryBuilder\ExpressionFactory;
-use MakinaCorpus\QueryBuilder\Query\Select;
+use MakinaCorpus\QueryBuilder\QueryBuilder;
 
-$select = new Select(
-    ExpressionFactory::table('my_table'),
-);
+assert($queryBuilder instanceof QueryBuilder);
 
-$select->column(
-    ExpressionFactory::column('my_table.my_column'),
-);
-
-$select->having(
-    ExpressionFactory::raw(
-        'count(?) = 2',
-        [
-            ExpressionFactory::column('some_other_column'),
-        ],
+$select = $queryBuilder
+    ->select(
+        ExpressionFactory::table('my_table'),
     )
-);
+    ->column(
+        ExpressionFactory::column('my_table.my_column'),
+    )
+    ->having(
+        ExpressionFactory::raw(
+            'count(?) = 2',
+            [
+                ExpressionFactory::column('some_other_column'),
+            ],
+        )
+    )
+;
 ```
 
 :::tip
@@ -139,26 +147,28 @@ you can fetch an instance of the factory directly from all query objects.
 Once again, same code:
 
 ```php
-use MakinaCorpus\QueryBuilder\Query\Select;
+use MakinaCorpus\QueryBuilder\QueryBuilder;
 
-// For the sake of example, use implicit name here.
-$select = new Select('my_table');
+assert($queryBuilder instanceof QueryBuilder);
 
 // Get the factory.
-$expr = $select->expression();
+$expr = $queryBuilder->expression();
 
-$select->column(
-    $expr->column('my_table.my_column'),
-);
-
-$select->having(
-    $expr->raw(
-        'count(?) = 2',
-        [
-            $expr->column('some_other_column'),
-        ],
+// For the sake of example, use implicit name here.
+$select = $queryBuilder
+    ->select('my_table')
+    ->column(
+        $expr->column('my_table.my_column'),
     )
-);
+    ->having(
+        $expr->raw(
+            'count(?) = 2',
+            [
+                $expr->column('some_other_column'),
+            ],
+        )
+    )
+;
 ```
 
 :::tip

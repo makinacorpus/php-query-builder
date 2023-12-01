@@ -1,3 +1,9 @@
+---
+outline: false
+aside: false
+layout: doc
+---
+
 # Getting Started
 
 All you need to know to start using *Query Builder*.

@@ -1,9 +1,17 @@
-# Parameters placeholders
+# Raw SQL parameters placeholders
 
-## Placeholder value type-hinting
+When writing raw SQL, you can use the `?` parameter placeholder in to arbitrarily:
 
-Independently from the final database driver, all parameters within arbitrary SQL
-must be written using the `?` placeholder in raw SQL:
+ - **send user input, values**, that will be later parametrized when sent to the
+   database server using the bridge, thus preventing SQL-injection,
+ - **escape properly tables, columns and function names or any other identifier**,
+   thus preventing SQL-injection or keyword conflicting identifiers ambiguities,
+ - **inject arbitrary expressions instances** the writer can format for you.
+
+## Value placeholder
+
+Independently from the final database driver, all value parameters within arbitrary
+SQL must be written using the `?` placeholder in raw SQL:
 
 ```php
 use MakinaCorpus\QueryBuilder\Writer\Writer;
@@ -59,11 +67,21 @@ $writer->prepare(
 );
 ```
 
-## Placeholder identifier escaping
+:::warning
+When using the `?::TYPE` syntax, avoid accidentally using one of the [identifier escapers](#identifier-escaper).
+:::
 
-Raw SQL [placeholders](./placeholder) can be used to set user-given values to
-prevent injection or complex expressions inside a raw SQL string, but they also
-can help you set dynamic identifiers in your queries.
+:::warning
+Using the `::TYPE` syntax unpreceeded with the `?` character will be left as-is
+within the query. This type cast syntax is PostgreSQL specific and you can use
+it in your raw SQL.
+:::
+
+## Identifier escaper
+
+Placeholders can be used to set user-given values to prevent injection or complex
+expressions inside a raw SQL string, but they also can help you set dynamic
+identifiers in your queries.
 
 For example, you might want to write such query:
 
@@ -140,12 +158,12 @@ as a value type hint instead.
 :::
 
 :::warning
-Using the `::type` syntax unpreceeded with the `?` character will be left as-is
+Using the `::TYPE` syntax unpreceeded with the `?` character will be left as-is
 within the query. This type cast syntax is PostgreSQL specific and you can use
 it in your raw SQL.
 :::
 
-## Placeholder and expressions
+## Expressions instances
 
 The placeholder is much more than a value placeholder, it can also be used to
 place complex SQL expressions in a raw SQL string, for example:

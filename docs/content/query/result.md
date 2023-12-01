@@ -98,7 +98,7 @@ $result = $queryBuilder
 ;
 
 foreach ($result as $row) {
-    \assert($result instanceof ResultRow);
+    assert($result instanceof ResultRow);
     // ...
 }
 ```
@@ -109,13 +109,13 @@ SQL to PHP value conversion:
 
 ```php
 foreach ($result as $row) {
-    \assert($result instanceof ResultRow);
+    assert($result instanceof ResultRow);
 
     $intValue = $result->get('some_column', 'int');
-    \assert(\is_int($intValue) || null === $intValue);
+    assert(\is_int($intValue) || null === $intValue);
 
     $dateValue = $result->get('some_other_column', \DateTimeImmutable::class);
-    \assert($dateValue instanceof \DateTimeImmutable || null === $dateValue);
+    assert($dateValue instanceof \DateTimeImmutable || null === $dateValue);
 }
 ```
 
@@ -159,11 +159,11 @@ $result = $queryBuilder
 ;
 
 while ($user = $result->fetchHydrated()) {
-    \assert($result instanceof User);
+    assert($result instanceof User);
 }
 
 foreach ($result as $row) {
-    \assert($result instanceof User);
+    assert($result instanceof User);
 }
 ```
 

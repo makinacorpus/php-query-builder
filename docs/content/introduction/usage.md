@@ -1,5 +1,7 @@
 # Samples usages
 
+[[toc]]
+
 This page will expose a few commonly used examples, but is not a complete
 documentation. **Many more features exist** that you may discover either by
 reading the documentation or by navigating directly into the code.
@@ -43,7 +45,7 @@ $result = $queryBuilder
 ;
 
 foreach ($result as $user) {
-    \assert($user instanceof User);
+    assert($user instanceof User);
     // ...
 }
 ```
@@ -152,9 +154,9 @@ Which will generate the following SQL for dialects supporting it:
 
 ```sql
 SELECT
-    avg("salary") AS "average_salary" FILTER (WHERE "salary" > 1000) AS "high_average",
-    avg("salary") AS "average_salary" FILTER (WHERE "salary" < 1000) AS "low_average",
-    avg("salary") AS "average_salary" AS "all_average",
+    avg("salary") FILTER (WHERE "salary" > 1000) AS "high_average",
+    avg("salary") FILTER (WHERE "salary" < 1000) AS "low_average",
+    avg("salary") AS "all_average",
 FROM "employee_salary"
 GROUP BY 1
 ```
@@ -334,8 +336,13 @@ $select = $queryBuilder
 ;
 
 $select
-    ->createColumnAgg(function: 'row_number', alias: 'rownum')
-    ->over(orderBy: ExpressionFactory::random())
+    ->createColumnAgg(
+        function: 'row_number',
+        alias: 'rownum'
+    )
+    ->over(
+        orderBy: ExpressionFactory::random()
+    )
 ;
 
 $result = $select->executeQuery();
@@ -355,11 +362,17 @@ into the `FROM` as such:
 ```php
 $select = $queryBuilder
     ->select('some_table')
-    ->window(alias: 'my_window', orderBy: ExpressionFactory::random())
+    ->window(
+        alias: 'my_window',
+        orderBy: ExpressionFactory::random()
+    )
 ;
 
 $select
-    ->createColumnAgg(function: 'row_number', alias: 'rownum')
+    ->createColumnAgg(
+        function: 'row_number',
+        alias: 'rownum'
+    )
     ->overWindow('my_window')
 ;
 
@@ -532,7 +545,7 @@ WHERE
     )
 ```
 
-You can enve nest `AND` or `OR` clauses:
+You can even nest `AND` or `OR` clauses:
 
 ```php
 $query
@@ -609,7 +622,8 @@ INSERT INTO "user" (
     "id",
     "name",
     "email",
-) VALUES (
+)
+VALUES (
     'fcd45cac-4787-45ad-8d96-3db94f906858', 'John Smith', 'john.doe@example.com'
 ), (
     '203fd391-8d35-4c87-85ba-4ff5470693a7', 'Jane Doe', 'jane.doe@example.com'
@@ -769,13 +783,16 @@ INSERT INTO "user" (
     "name",
     "email",
 )
-SELECT
-    gen_random_uuid(),
-    "name",
-    "email"
-FROM "user_pending_approval"
-WHERE
-    "approved" = true
+VALUES (
+    'fcd45cac-4787-45ad-8d96-3db94f906858', 'John Smith', 'john.doe@example.com'
+), (
+    '203fd391-8d35-4c87-85ba-4ff5470693a7', 'Jane Doe', 'jane.doe@example.com'
+)
+ON DUPLICATE KEY ("email")
+    DO UPDATE SET
+        "id" = EXCLUDED."id",
+        "name" = EXCLUDED."name"
+        "email" = EXCLUDED."email",
 ```
 
 And the following SQL for MariaDB and MySQL:
@@ -786,17 +803,20 @@ INSERT INTO "user" (
     "name",
     "email",
 )
-SELECT
-    gen_random_uuid(),
-    "name",
-    "email"
-FROM "user_pending_approval"
-WHERE
-    "approved" = true
+VALUES (
+    'fcd45cac-4787-45ad-8d96-3db94f906858', 'John Smith', 'john.doe@example.com'
+), (
+    '203fd391-8d35-4c87-85ba-4ff5470693a7', 'Jane Doe', 'jane.doe@example.com'
+) AS "new"
+ON DUPLICATE KEY UPDATE
+    "id" = "new"."id",
+    "name" = "new"."name"
+    "email" = "new"."email",
 ```
 
 :::warning
-The current implementation does not allow you to specify which columns will be=
+The current implementation does not allow you to specify which columns will be
+update in case of conflict, this feature will be added in a near future.
 :::
 
 :::info
@@ -807,24 +827,26 @@ it is not completed yet and is a planned feature.
 
 ## Updating data
 
-@todo
+:::warning
+@todo This section is incomplete, and will be added in a near future.
+:::
 
 ## Deleting data
 
-@todo
+:::warning
+@todo This section is incomplete, and will be added in a near future.
+:::
 
 ## Returning mutated data
 
-@todo
+:::warning
+@todo This section is incomplete, and will be added in a near future.
+:::
 
-## I want to write SQL
+## Escaper from builder: raw SQL
 
 At any place, everywhere, you can happend raw SQL whenver this query builder
 does not support a feature. This is one of the most important features of the
 query builder.
 
-The API requires you to be explicit about raw SQL, any code that is not
-identified as explicit raw SQL will be escaped in one way or another in order
-to prevent SQL injection.
-
-@todo
+See the [arbitrary SQL injection documentation](../query/raw).

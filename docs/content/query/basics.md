@@ -28,15 +28,21 @@ does not support WITH or RETURNING statements): in most cases, it will fail whil
 during query execution in tyhe RDBMS side.
 :::
 
-## Arbitrary SQL
+## Generated SQL is arbitrary
 
-Table and column references are not validated during query building: you can always
-write arbitrary identifiers, they will be left untouched within the generated SQL.
+:::tip
+Validity of the SQL you build with the query builder is never validated, by design.
 
-**Each identifier, value, predicate, table, ... as method parameter accepts any
- `MakinaCorpus\QueryBuilder\Expression` instance**: those objects will be
-considered as raw SQL and formated as they should be independently of the context
-they are passed into.
+**Any method parameter in the whole builder can be arbitrary `MakinaCorpus\QueryBuilder\Expression`
+instance** including the [raw SQL expression](raw).
+
+When an expression object is given anywhere, the query writer will simply format
+it at the exact place it was given.
+:::
+
+This includes table and column names which are not validated during query building:
+you can always write arbitrary identifiers, they will be left untouched within the
+generated SQL.
 
 This explicitely allows you to go beyond the query builder capabilities and write
 custom or specific arbitrary SQL.
@@ -61,11 +67,13 @@ $select->whereRaw('COUNT("comment") > ?', [5]);
 Parameter placeholders will be gracefully merged to the others in their
 rightful respective order when SQL will be generated.
 
-## Expressions
+See the [arbitrary SQL injection documentation](../query/raw).
+
+## Expression formatting examples
 
 :::tip
-There are many different expression implementations, please read code
-directly in order to see them all.
+There are many different expression implementations, please read the
+[feature matrix](../introduction/features) for an exhaustive list.
 :::
 
 ### Raw
