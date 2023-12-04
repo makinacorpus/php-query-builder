@@ -61,7 +61,7 @@ export default defineConfig({
         ]
       },
       {
-        text: 'Basics',
+        text: 'Documentation',
         collapsed: false,
         items: [
           {
@@ -121,48 +121,7 @@ export default defineConfig({
             items: []
           },
         ]
-      },
-      {
-        text: 'Query builder',
-        collapsed: false,
-        items: [
-          {
-            text: 'Select',
-            link: '/query/impl',
-            items: []
-          },
-          {
-            text: 'Insert',
-            link: '/query/impl',
-            items: []
-          },
-          {
-            text: 'Insert as select',
-            link: '/query/impl',
-            items: []
-          },
-          {
-            text: 'Update',
-            link: '/query/impl',
-            items: []
-          },
-          {
-            text: 'Delete',
-            link: '/query/impl',
-            items: []
-          },
-          {
-            text: 'Merge',
-            link: '/query/impl',
-            items: []
-          },
-          {
-            text: 'Where',
-            link: '/query/impl/where',
-            items: []
-          },
-        ]
-      },
+      }
     ]
   }
 })

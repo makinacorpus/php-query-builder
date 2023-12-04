@@ -115,6 +115,12 @@ $bridge
 
 ### When using the Symfony bundle
 
-:::warning
-@todo Compiler pass are not implemented in the bundle yet.
+Implement either `MakinaCorpus\QueryBuilder\Converter\InputConverter` or
+`MakinaCorpus\QueryBuilder\Converter\OutputConverter`, register your classes as
+services into the container.
+
+:::tip
+If your services are not found automatically by autowiring, add the
+`query_builder.converter_plugin` tag on each of them.
 :::
+

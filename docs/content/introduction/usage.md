@@ -398,7 +398,7 @@ window will be generated this way: `row_number() OVER (PARTITION BY 1 ORDER BY r
 
 :::info
 `random()` expression is not standard SQL and is used by PostgreSQL and SQLite,
-for others, it will generated using their respective dialects.
+for others, it will generate using their respective dialects.
 :::
 
 :::tip
@@ -680,6 +680,10 @@ the SQL code being generated.
 :::
 
 :::tip
+You can also use `WITH` (CTE), `FROM` and `JOIN` to write complex queries.
+:::
+
+:::tip
 Mutation queries don't return any rows, except when you use a `RETURNING|OUTPUT` clause,
 using `executeStatement()` instead of `executeQuery()` will return the affected row
 count if the brige allows it.
@@ -709,7 +713,7 @@ $affectedRowCount = $queryBuilder
 ;
 ```
 
-Which will generated the following SQL:
+Which will generate the following SQL:
 
 ```sql
 INSERT INTO "user" (
@@ -725,6 +729,10 @@ FROM "user_pending_approval"
 WHERE
     "approved" = true
 ```
+
+:::tip
+You can also use `WITH` (CTE), `FROM` and `JOIN` to write complex queries.
+:::
 
 :::tip
 Here for demonstration purpose, we wrote `->columnRaw('gen_random_uuid()')`
@@ -775,7 +783,7 @@ $affectedRowCount = $queryBuilder
 ;
 ```
 
-Which will generated the following SQL for PostgreSQL:
+Which will generate the following SQL for PostgreSQL:
 
 ```sql
 INSERT INTO "user" (
@@ -819,6 +827,10 @@ The current implementation does not allow you to specify which columns will be
 update in case of conflict, this feature will be added in a near future.
 :::
 
+:::tip
+You can also use `WITH` (CTE), `FROM` and `JOIN` to write complex queries.
+:::
+
 :::info
 The SQL writer implement is already able to partially write `MERGE` queries,
 which are long supported by SQL Server and recently supported by PostgreSQL:
@@ -827,20 +839,113 @@ it is not completed yet and is a planned feature.
 
 ## Updating data
 
-:::warning
-@todo This section is incomplete, and will be added in a near future.
+Updating data is as simple as:
+
+```php
+$affectedRowCount = $queryBuilder
+    ->update('user')
+    ->set('login_latest', new \DateTimeImmutable('now'))
+    ->set(
+        'login_count',
+        $queryBuilder
+            ->expression()
+            ->raw(
+                '?::column + 1',
+                ['login_count']
+            )
+    )
+    ->where('id', 'some_id')
+    ->executeStatement()
+;
+```
+
+Which will generate the following SQL:
+
+```sql
+UPDATE "user"
+SET
+    "login_lastest" = '2023-12-04 13:12:00',
+    "login_count" = "login_count" + 1
+WHERE
+    "id" = 'some_id'
+```
+
+:::tip
+You can also use `WITH` (CTE), `FROM` and `JOIN` to write complex queries.
 :::
 
 ## Deleting data
 
-:::warning
-@todo This section is incomplete, and will be added in a near future.
+Deleting data is as simple as:
+
+```php
+$affectedRowCount = $queryBuilder
+    ->delete('user')
+    ->where('id', 'some_id')
+    ->executeStatement()
+;
+```
+
+Which will generate the following SQL:
+
+```sql
+DELETE FROM "user"
+WHERE
+    "id" = 'some_id'
+```
+
+:::tip
+You can also use `WITH` (CTE), `FROM` and `JOIN` to write complex queries.
 :::
 
 ## Returning mutated data
 
-:::warning
-@todo This section is incomplete, and will be added in a near future.
+PostgreSQL has a specific `RETURNING` clause, SQL Server has the equivalent `OUPUT` clause,
+both allows you to return either:
+
+- rows after mutation with SQL Server,
+- rows before or after mutation with SQL Server,
+
+from mutation queries (ie. `DELETE`, `INSERT`, `MERGE` and `UPDATE` queries).
+
+This API only supports returning rows after mutation, using the `returning()` method:
+
+```php
+$result = $queryBuilder
+    ->delete('user')
+    ->where('id', 'some_id')
+    ->returning('id')
+    ->returning('email')
+    ->executeQuery()
+;
+```
+
+Which will generate the following SQL with PostgreSQL:
+
+```sql
+DELETE FROM "user"
+WHERE
+    "id" = 'some_id'
+RETURNING
+    "id",
+    "email"
+```
+
+And which will generate the following SQL for SQL Server:
+
+```sql
+DELETE FROM "user"
+WHERE
+    "id" = 'some_id'
+OUTPUT
+    "id",
+    "email"
+```
+
+:::info
+When using SQL Server `OUTPUT` close, you can identify columns as
+`DELETED."foo"` or `INSERTED."foo"`, we don't support that syntax. Not specifying
+`DELETED` or `INSERTED` will implicitely translate to `INSERTED`.
 :::
 
 ## Escaper from builder: raw SQL
