@@ -11,10 +11,8 @@ case in which we implement a custom variant.
 It is based upon a fluent API, which makes basic SELECT, DELETE, INSERT,
 UPDATE and MERGE queries easy to write, even if you don't really now SQL.
 
-Under the hood, your queries are trees of Expression instances, and at any
-place, any method, you may pass arbitrary expressions if the builder does
-not support the feature you want to use: this means you can use all
-features of your favorite RDBMS without worrying about this API limitations.
+At any place the user can inject raw SQL in order to escape the query
+builder own limitations.
 
 This API by itself is only a SQL string generator, in order to use it
 transparently, a few bridges are provided:
@@ -22,9 +20,19 @@ transparently, a few bridges are provided:
  - `doctrine/dbal:^3` bridge and query builder,
  - soon a `doctrine/dbal:^4` bridge and query builder,
  - `PDO` bridge and query builder,
- - Symfony bundle is available in the [makinacorpus/query-builder-bundle](https://github.com/makinacorpus/query-builder-bundle) package
+ - Symfony bundle integrating with `doctrine/doctrine-bundle` is available in the
+   [makinacorpus/query-builder-bundle](https://github.com/makinacorpus/query-builder-bundle)
+   package.
 
-# Incomplete SQL feature list
+# Getting started
+
+Read the [documentation on read the docs](https://php-query-builder.readthedocs.io/en/latest/introduction/getting-started.html).
+
+Overview [list of SQL supported features](https://php-query-builder.readthedocs.io/en/latest/introduction/features.html#).
+
+See the [officially supported vendor dialects](https://php-query-builder.readthedocs.io/en/latest/introduction/getting-started.html#standalone-setup).
+
+# Non-exhaustive feature list
 
  - **Common Table Expressions**:
     - `WITH "foo" AS (SELECT ...)`
@@ -66,129 +74,6 @@ transparently, a few bridges are provided:
  - **Identifier escaping everywgere**
  - **User value conversion to SQL**
 
-# Getting started
-
-## Standalone setup
-
-### 1. Install
-
-Simply:
-
-```sh
-composer require makinacorpus/query-builder
-```
-
-First of all, you need to chose your SQL dialect, this package provides
-a few implementations:
-
- - **MariaDB** >= 10.0,
- - **MySQL** 5.7 and >= 8.0,
- - **PostgreSQL** >= 10,
- - **SQL Server** >= 2019 (previous versions from 2015 are untested but should work),
- - **SQLite** >= 3.0 (previous versions are untested but should work).
-
-Please note that for all supported RDBMS, you can still attempt to use the
-query builder for unsupported version, it should work in most cases.
-
-Planned implementations for:
-
- - Oracle.
-
-### 2. Setup the query builder
-
-```php
-use MakinaCorpus\QueryBuilder\Platform\Escaper\StandardEscaper;
-use MakinaCorpus\QueryBuilder\Platform\Writer\PostgreSQLWriter;
-use MakinaCorpus\QueryBuilder\DefaultQueryBuidler;
-
-$escaper = new StandardEscaper();
-
-$writer = new PostgreSQLWriter($escaper);
-
-$queryBuilder = new DefaultQueryBuilder();
-```
-
-### 3. Write your query
-
-```php
-use MakinaCorpus\QueryBuilder\DefaultQueryBuidler;
-
-$queryBuilder = new DefaultQueryBuilder();
-
-$query = $queryBuilder
-    ->select('users')
-    ->column('id')
-    ->column('name')
-    ->column(
-        $queryBuilder
-            ->select('orders')
-            ->columnRaw('count(*)')
-            ->where('user_id', new Column('users.id'))
-        ,
-        'order_count'
-    )
-    ->columnRaw(
-        <<<SQL
-        (
-            SELECT max("login")
-            FROM "login_history"
-            WHERE
-                "user_id" = "users"."id"
-            SQL
-        )
-        'last_login'
-    )
-    ->where('id', 'john.doe@example.com')
-;
-```
-
-This is a simple one, but the query builder can help you for many things:
-
- - write CTE (`with "foo" as (select ...)` clauses,
- - handle many `JOIN` types, in `DELETE`, `SELECT` and `UPDATE` queries and
-   generating them using the chosen SQL dialect,
- - write complex `WHERE` expressions,
- - properly escape identifiers and other string literals in generated SQL,
-   security oriented unit tests exist for this,
- - replace user-given arbitrary parameters using the placeholder schema of
-   your choice,
- - and much more!
-
-### 4. Generate the SQL and execute it
-
-Considering you have a DBAL of your own with the following method:
-
-```
-interface MyDbal
-{
-    public function execute(string $sql, array $parameters): MyDbalStatement;
-}
-```
-
-Then simply generate SQL and pass it along:
-
-```php
-use MakinaCorpus\QueryBuilder\QueryBuidler;
-
-$prepared = $writer->prepare($query);
-
-$myDbal->execute(
-    $prepared->toString(),
-    $prepared->getArguments()->getAll(),
-);
-```
-
-If you need to convert PHP native values to SQL first, please see the
-next chapter.
-
-## Doctrine DBAL setup
-
-A `doctrine/dbal` bridge is provided, please read the documentation.
-
-## PDO setup
-
-A `PDO` bridge is provided, please read the documentation.
-
 # Building documentation
 
 Documentation is written using [VitePress](https://vitepress.dev).
@@ -211,34 +96,6 @@ nvm use
 npm ci
 npm run docs:dev
 ```
-
-# Known issues or deviations
-
- - MariaDB: Does not support `VALUES` aliasing, using it will lead to server
-   error.
-
- - MariaDB: Does not supports using `VALUES` in `WITH` and `JOIN` clauses,
-   using it will lead to server error.
-
- - MariaDB / MySQL: Does not support `RETURNING` or `OUTPUT` clause.
-
- - PostgreSQL: a lot if not all arithmetic or text operators and functions
-   we support exist for many types, we arbitrarily add many `CAST()`
-   expressions otherwise the server cannot guess placeholder values types.
-
- - SQLite: `RANDOM()` will return an integer between int min and int max
-   instead of a float between 0 and 1.
-
- - SQL Server: `OUTPUT` clause supports returning row values before or after
-   mutation was done, we only support returning row values after mutation.
-
- - SQL Server: does not support pagination without any `ORDER BY` clause,
-   hence `ORDER BY 1` is always added in queries with limit or offset.
-
- - SQL Server: `LPAD()` and `RPAD()` expression is simulated using
-   `RIGHT(REPLICATE(fill, 100) + value, size)`  which means that over 100
-   characters long, this won't work. If fill string contains more than one
-   character, placement might change.
 
 # Run tests
 
