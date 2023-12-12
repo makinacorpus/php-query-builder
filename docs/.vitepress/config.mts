@@ -7,6 +7,7 @@ export default defineConfig({
   srcDir: "content",
   base: "/",
   metaChunk: false,
+  description: "Query Builder - Driver-agnostic, fluent, PHP SQL query builder with advanced SQL language features",
   head: [
     ['link', {
       rel: 'icon',
