@@ -20,7 +20,7 @@ trait FunctionalTestCaseTrait
     private ?Bridge $privConnection = null;
 
     /** @after */
-    final protected function closeConnection(): void
+    protected function closeConnection(): void
     {
         if (null !== $this->connection) {
             $this->connection->close();
@@ -35,7 +35,7 @@ trait FunctionalTestCaseTrait
     /**
      * Create query builder.
      */
-    final protected function getBridge(): Bridge
+    protected function getBridge(): Bridge
     {
         return $this->connection ??= $this->createBridge();
     }
@@ -43,7 +43,7 @@ trait FunctionalTestCaseTrait
     /**
      * Create priviledged query builder.
      */
-    final protected function getPriviledgedBridge(): Bridge
+    protected function getPriviledgedBridge(): Bridge
     {
         return $this->privConnection ??= $this->createPriviledgeBridge();
     }
