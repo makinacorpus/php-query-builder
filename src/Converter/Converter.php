@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Converter;
 
+use MakinaCorpus\QueryBuilder\Error\ValueConversionError;
 use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\ExpressionFactory;
-use MakinaCorpus\QueryBuilder\Error\ValueConversionError;
 
 class Converter
 {
@@ -33,6 +33,37 @@ class Converter
         return $this->converterPluginRegistry ??= new ConverterPluginRegistry();
     }
 
+    /** @todo This needs cleanup. */
+    protected function map(mixed $values, callable $function): iterable
+    {
+        return \array_map($function, \is_array($values) ? $values : (\is_iterable($values) ? \iterator_to_array($values) : [$values]));
+    }
+
+    /** @todo This needs cleanup. */
+    protected function join(mixed $values, string $separator = '', null|string|callable $function = null): string
+    {
+        if (!\is_iterable($values)) {
+            $values = [$values];
+        }
+        $ret = '';
+        $first = true;
+        foreach ($values as $value) {
+            if ($first) {
+                $first = false;
+            } else {
+                $ret .= $separator;
+            }
+            if (\is_string($function)) {
+                $ret .= $function;
+            } else if (\is_callable($function)) {
+                $ret .= (string) $function($value);
+            } else {
+                $ret .= (string) $value;
+            }
+        }
+        return $ret;
+    }
+
     /**
      * Convert PHP native type to an expresion in raw SQL parser.
      *
@@ -50,6 +81,21 @@ class Converter
 
         if ($value instanceof Expression) {
             return $value;
+        }
+
+        // @todo This needs cleanup.
+        if ($type && \str_ends_with($type, '[]')) {
+            $valueType = \substr($type, 0, -2);
+
+            return match ($valueType) {
+                'array' => throw new ValueConversionError("ARRAY[ARRAY] is not supported yet."),
+                'column' => throw new ValueConversionError("ARRAY[column_expr] is not supported yet."),
+                'identifier' => ExpressionFactory::raw($this->join($value, ',', fn () => '?'), $this->map($value, ExpressionFactory::identifier(...))),
+                'row' => ExpressionFactory::array($this->map($value, ExpressionFactory::row(...))),
+                'table' => throw new ValueConversionError("ARRAY[column_expr] is not supported yet."),
+                'value' => ExpressionFactory::array($value),
+                default => ExpressionFactory::array($value, $valueType),
+            };
         }
 
         // Directly act with the parser and create expressions.
@@ -155,7 +201,7 @@ class Converter
 
         if (\str_ends_with($type, '[]')) {
             // @todo Handle array.
-            throw new ValueConversionError("Handling arrays is not implemented yet.");
+            throw new ValueConversionError(\sprintf("Handling arrays is not implemented yet, found type '%s'.", $type));
         }
 
         try {

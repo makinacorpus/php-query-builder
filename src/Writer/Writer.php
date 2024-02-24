@@ -1693,8 +1693,8 @@ class Writer
          */
         $parameterMatch = '@
             ESCAPE
-            (\?\?)|                 # Matches ??
-            (\?((\:\:([\w]+))|))    # Matches ?[::WORD] (placeholders)
+            (\?\?)|                     # Matches ??
+            (\?((\:\:([\w]+(\[\]|)))|)) # Matches ?, ?::WORD, ?::WORD[] (placeholders)
             @x';
 
         // Please see this really excellent Stack Overflow answer:
