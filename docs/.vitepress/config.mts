@@ -118,6 +118,11 @@ export default defineConfig({
             items: []
           },
           {
+            text: 'Transactions',
+            link: '/query/transaction',
+            items: []
+          },
+          {
             text: 'Data types',
             link: '/query/datatype',
             items: []

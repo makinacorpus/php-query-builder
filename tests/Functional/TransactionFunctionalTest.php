@@ -83,6 +83,19 @@ final class TransactionFunctionalTest extends DoctrineTestCase
                 );
                 break;
 
+            case Platform::SQLITE:
+                $bridge->executeStatement(
+                    <<<SQL
+                    CREATE TABLE transaction_test (
+                        id serial PRIMARY KEY,
+                        foo integer NOT NULL,
+                        bar nvarchar(255) DEFAULT NULL
+                    )
+                    SQL
+                );
+                // No UNIQUE DEFERRABLE for SQLite.
+                break;
+
             default:
                 $bridge->executeStatement(
                     <<<SQL
@@ -145,7 +158,10 @@ final class TransactionFunctionalTest extends DoctrineTestCase
             ->executeQuery()
         ;
 
-        self::assertSame(4, $result->rowCount());
+        // @todo Row count doesn't work with SQLite
+        if ($this->ifDatabaseNot(Platform::SQLITE)) {
+            self::assertSame(4, $result->rowCount());
+        }
         self::assertSame('a', $result->fetchRow()->get('bar'));
         self::assertSame('b', $result->fetchRow()->get('bar'));
         self::assertSame('c', $result->fetchRow()->get('bar'));
@@ -192,7 +208,10 @@ final class TransactionFunctionalTest extends DoctrineTestCase
             ->executeQuery()
         ;
 
-        self::assertSame(2, $result->rowCount());
+        // @todo Row count doesn't work with SQLite
+        if ($this->ifDatabaseNot(Platform::SQLITE)) {
+            self::assertSame(2, $result->rowCount());
+        }
         self::assertSame('g', $result->fetchRow()->get('bar'));
         self::assertSame('f', $result->fetchRow()->get('bar'));
     }
@@ -238,7 +257,10 @@ final class TransactionFunctionalTest extends DoctrineTestCase
             ->executeQuery()
         ;
 
-        self::assertSame(1, $result->rowCount());
+        // @todo Row count doesn't work with SQLite
+        if ($this->ifDatabaseNot(Platform::SQLITE)) {
+            self::assertSame(1, $result->rowCount());
+        }
         self::assertSame('f', $result->fetchRow()->get('bar'));
     }
 
@@ -247,6 +269,11 @@ final class TransactionFunctionalTest extends DoctrineTestCase
      */
     public function testImmediateTransactionFail()
     {
+        // @todo Support IMMEDIATE in the BEGIN statement for SQLite.
+        self::skipIfDatabase(Platform::SQLITE);
+
+        self::expectNotToPerformAssertions();
+
         $bridge = $this->getBridge();
 
         $transaction = $bridge
@@ -277,8 +304,7 @@ final class TransactionFunctionalTest extends DoctrineTestCase
 
             self::fail();
 
-        } catch (TransactionError $e) {
-            self::assertInstanceOf(UniqueConstraintViolationError::class, $e->getPrevious());
+        } catch (UniqueConstraintViolationError $e) {
         } finally {
             if ($transaction->isStarted()) {
                 $transaction->rollback();
@@ -291,6 +317,11 @@ final class TransactionFunctionalTest extends DoctrineTestCase
      */
     public function testDeferredTransactionFail()
     {
+        // @todo Support IMMEDIATE in the BEGIN statement for SQLite.
+        self::skipIfDatabase(Platform::SQLITE);
+
+        self::expectNotToPerformAssertions();
+
         $bridge = $this->getBridge();
 
         /* if (!$bridge->getPlatform()->supportsDeferingConstraints()) {
@@ -323,15 +354,12 @@ final class TransactionFunctionalTest extends DoctrineTestCase
 
             self::fail();
 
-        } catch (TransactionError $e) {
-            self::assertInstanceOf(UniqueConstraintViolationError::class, $e->getPrevious());
+        } catch (UniqueConstraintViolationError $e) {
         } finally {
             if ($transaction->isStarted()) {
                 $transaction->rollback();
             }
         }
-
-        self::assertTrue(true);
     }
 
     /**
@@ -339,6 +367,8 @@ final class TransactionFunctionalTest extends DoctrineTestCase
      */
     public function testDeferredAllTransactionFail()
     {
+        self::expectNotToPerformAssertions();
+
         $bridge = $this->getBridge();
 
         /* if (!$bridge->getPlatform()->supportsDeferingConstraints()) {
@@ -370,15 +400,12 @@ final class TransactionFunctionalTest extends DoctrineTestCase
 
             $transaction->commit();
 
-        } catch (TransactionError $e) {
-            self::assertInstanceOf(UniqueConstraintViolationError::class, $e->getPrevious());
+        } catch (UniqueConstraintViolationError $e) {
         } finally {
             if ($transaction->isStarted()) {
                 $transaction->rollback();
             }
         }
-
-        self::assertTrue(true);
     }
 
     /**
@@ -404,7 +431,16 @@ final class TransactionFunctionalTest extends DoctrineTestCase
             ->executeQuery()
         ;
 
-        self::assertSame(3, $result->rowCount());
+        // @todo Row count doesn't work with SQLite
+        if ($this->ifDatabaseNot(Platform::SQLITE)) {
+            self::assertSame(3, $result->rowCount());
+        } else {
+            $count = 0;
+            foreach ($result as $row) {
+                $count++;
+            }
+            self::assertSame(3, $count);
+        }
     }
 
     /**

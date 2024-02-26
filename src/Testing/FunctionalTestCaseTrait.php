@@ -109,12 +109,23 @@ trait FunctionalTestCaseTrait
         }
     }
 
+
+    protected function ifDatabase(string $database): bool
+    {
+        return $this->getBridge()->getServerFlavor() === $database;
+    }
+
+    protected function ifDatabaseNot(string $database): bool
+    {
+        return $this->getBridge()->getServerFlavor() !== $database;
+    }
+
     /**
      * Skip for given database.
      */
     protected function skipIfDatabase(string $database, ?string $message = null): void
     {
-        if ($this->getBridge()->getServerFlavor() === $database) {
+        if ($this->ifDatabase($database)) {
             self::markTestSkipped(\sprintf("Test disabled for database '%s'", $database));
         }
     }
@@ -124,7 +135,7 @@ trait FunctionalTestCaseTrait
      */
     protected function skipIfDatabaseNot(string $database, ?string $message = null): void
     {
-        if ($this->getBridge()->getServerFlavor() !== $database) {
+        if ($this->ifDatabaseNot($database)) {
             self::markTestSkipped(\sprintf("Test disabled for database '%s'", $database));
         }
     }

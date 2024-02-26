@@ -85,6 +85,30 @@ abstract class AbstractErrorConverterTestCase extends FunctionalTestCase
                 );
                 break;
 
+            case Platform::SQLITE:
+                $this->getBridge()->executeStatement(
+                    <<<SQL
+                    CREATE TABLE foo (
+                        id int UNIQUE NOT NULL,
+                        name text UNIQUE NOT NULL,
+                        date timestamp DEFAULT current_timestamp
+                    )
+                    SQL
+                );
+                $this->getBridge()->executeStatement(
+                    <<<SQL
+                    CREATE TABLE bar (
+                        id int UNIQUE NOT NULL,
+                        foo_id INT DEFAULT NULL,
+                        data text DEFAULT NULL,
+                        FOREIGN KEY (foo_id)
+                            REFERENCES bar (id)
+                            ON DELETE CASCADE
+                    )
+                    SQL
+                );
+                break;
+
             default:
                 $this->getBridge()->executeStatement(
                     <<<SQL

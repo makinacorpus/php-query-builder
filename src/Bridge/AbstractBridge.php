@@ -4,24 +4,29 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Bridge;
 
-use MakinaCorpus\QueryBuilder\DefaultQueryBuilder;
-use MakinaCorpus\QueryBuilder\Expression;
-use MakinaCorpus\QueryBuilder\Platform;
 use MakinaCorpus\QueryBuilder\Converter\Converter;
 use MakinaCorpus\QueryBuilder\Converter\ConverterPluginRegistry;
+use MakinaCorpus\QueryBuilder\DefaultQueryBuilder;
+use MakinaCorpus\QueryBuilder\Error\Bridge\TransactionError;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Escaper\Escaper;
+use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
+use MakinaCorpus\QueryBuilder\Platform;
 use MakinaCorpus\QueryBuilder\Platform\Converter\MySQLConverter;
 use MakinaCorpus\QueryBuilder\Platform\Escaper\MySQLEscaper;
 use MakinaCorpus\QueryBuilder\Platform\Escaper\StandardEscaper;
+use MakinaCorpus\QueryBuilder\Platform\Transaction\MySQLTransaction;
+use MakinaCorpus\QueryBuilder\Platform\Transaction\PostgreSQLTransaction;
+use MakinaCorpus\QueryBuilder\Platform\Transaction\SQLiteTransaction;
 use MakinaCorpus\QueryBuilder\Platform\Writer\MariaDBWriter;
 use MakinaCorpus\QueryBuilder\Platform\Writer\MySQL8Writer;
 use MakinaCorpus\QueryBuilder\Platform\Writer\MySQLWriter;
 use MakinaCorpus\QueryBuilder\Platform\Writer\PostgreSQLWriter;
-use MakinaCorpus\QueryBuilder\Platform\Writer\SQLServerWriter;
 use MakinaCorpus\QueryBuilder\Platform\Writer\SQLiteWriter;
+use MakinaCorpus\QueryBuilder\Platform\Writer\SQLServerWriter;
 use MakinaCorpus\QueryBuilder\Result\Result;
+use MakinaCorpus\QueryBuilder\Transaction\Transaction;
 use MakinaCorpus\QueryBuilder\Writer\Writer;
 
 abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
@@ -34,6 +39,7 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
     private ?string $serverVersion = null;
     private bool $serverVersionLookekUp = false;
     private ?string $serverFlavor = null;
+    private ?Transaction $currentTransaction = null;
     private ?ErrorConverter $errorConverter = null;
 
     public function __construct(?ConverterPluginRegistry $converterPluginRegistry = null)
@@ -269,6 +275,66 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
         } catch (\Throwable $e) {
             throw $this->getErrorConverter()->convertError($e);
         }
+    }
+
+    /**
+     * Get current transaction if any.
+     */
+    private function findCurrentTransaction(): ?Transaction
+    {
+        if ($this->currentTransaction) {
+            if ($this->currentTransaction->isStarted()) {
+                return $this->currentTransaction;
+            }
+            // Transparently cleanup leftovers.
+            unset($this->currentTransaction);
+        }
+        return null;
+    }
+
+    /**
+     * Create a transaction instance, do not start it.
+     */
+    protected function doCreateTransaction(int $isolationLevel = Transaction::REPEATABLE_READ): Transaction
+    {
+        return match ($this->getServerFlavor()) {
+            Platform::MARIADB => new MySQLTransaction($this, $isolationLevel),
+            Platform::MYSQL => new MySQLTransaction($this, $isolationLevel),
+            Platform::POSTGRESQL => new PostgreSQLTransaction($this, $isolationLevel),
+            Platform::SQLITE => new SQLiteTransaction($this, $isolationLevel),
+            default => new QueryBuilderError(\sprintf("Transactions are not supported yet for vendor '%s'", $this->getServerFlavor())),
+        };
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function createTransaction(int $isolationLevel = Transaction::REPEATABLE_READ, bool $allowPending = true): Transaction
+    {
+        $transaction = $this->findCurrentTransaction();
+
+        if ($transaction) {
+            if (!$allowPending) {
+                throw new TransactionError("a transaction already been started, you cannot nest transactions");
+            }
+            /* if (!$platform->supportsTransactionSavepoints()) {
+                throw new TransactionError("Cannot create a nested transaction, driver does not support savepoints");
+            } */
+
+            $savepoint = $transaction->savepoint();
+
+            return $savepoint;
+        }
+
+        return $this->currentTransaction = $this->doCreateTransaction($isolationLevel);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function beginTransaction(int $isolationLevel = Transaction::REPEATABLE_READ, bool $allowPending = true): Transaction
+    {
+        return $this->createTransaction($isolationLevel, $allowPending)->start();
     }
 
     /**

@@ -27,4 +27,28 @@ interface QueryExecutor
      *   Affected row count if applyable and driver supports it.
      */
     public function executeStatement(string|Expression $expression = null, mixed $arguments = null): ?int;
+
+    /**
+     * Creates a new transaction.
+     *
+     * @param int $isolationLevel
+     *   Default transaction isolation level, it is advised that you set it
+     *   directly at this point, since some drivers don't allow isolation
+     *   level changes while transaction is started.
+     * @param bool $allowPending = true
+     *   If set to true, explicitely allow to fetch the currently pending
+     *   transaction, else errors will be raised.
+     *
+     * @throws TransactionError
+     *   If you asked a new transaction while another one is opened, or if the
+     *   transaction fails starting.
+     *
+     * @return Transaction
+     */
+    public function createTransaction(int $isolationLevel = Transaction::REPEATABLE_READ, bool $allowPending = true): Transaction;
+
+    /**
+     * Alias of createTransaction() but it will force it to start
+     */
+    public function beginTransaction(int $isolationLevel = Transaction::REPEATABLE_READ, bool $allowPending = true): Transaction;
 }
