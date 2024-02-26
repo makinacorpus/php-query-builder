@@ -13,7 +13,7 @@ interface Bridge extends QueryExecutor, QueryBuilder
     /**
      * Disable error converter. Must be called prior to initilization.
      */
-    public function disableErrorConverter(): bool;
+    public function disableErrorConverter(): void;
 
     /**
      * Get server name.

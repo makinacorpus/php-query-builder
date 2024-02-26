@@ -11,7 +11,7 @@ interface ErrorConverter
      *
      * @param \Throwable $error
      *   Original error from driver.
-     * @param null|string $sqlQuery
+     * @param null|string $sql
      *   The raw SQL query that is the subject of this error.
      * @param null|string $message
      *   Overriden error message, if any.

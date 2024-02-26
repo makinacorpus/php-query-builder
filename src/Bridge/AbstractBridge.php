@@ -45,7 +45,7 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
     /**
      * Disable error converter. Must be called prior to initilization.
      */
-    public function disableErrorConverter(): bool
+    public function disableErrorConverter(): void
     {
         if ($this->errorConverter) {
             throw new QueryBuilderError("Bridge is already initialized, configuration must happend before it gets used.");

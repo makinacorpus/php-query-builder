@@ -35,6 +35,7 @@ class PdoPostgreSQLErrorConverter implements ErrorConverter
         }
 
         $errorCode = $error->errorInfo[1] ?? $error->getCode();
+        $sqlState = $error->errorInfo[0] ?? $error->getCode();
 
         switch ($errorCode) {
 
