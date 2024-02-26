@@ -55,6 +55,7 @@ export default defineConfig({
               { text: 'Doctrine DBAL setup', link: '/introduction/getting-started#doctrine-dbal-setup' },
               { text: 'PDO setup', link: '/introduction/getting-started#pdo-setup' },
               { text: 'Symfony setup', link: '/introduction/getting-started#symfony-setup' },
+              { text: 'Error handling', link: '/bridges/error' },
             ]
           },
           { text: 'Samples usages', link: '/introduction/usage' },

@@ -11,6 +11,11 @@ use MakinaCorpus\QueryBuilder\Writer\Writer;
 interface Bridge extends QueryExecutor, QueryBuilder
 {
     /**
+     * Disable error converter. Must be called prior to initilization.
+     */
+    public function disableErrorConverter(): bool;
+
+    /**
      * Get server name.
      */
     public function getServerName(): ?string;

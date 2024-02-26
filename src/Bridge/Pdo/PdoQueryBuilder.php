@@ -4,12 +4,18 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Bridge\Pdo;
 
-use MakinaCorpus\QueryBuilder\Platform;
 use MakinaCorpus\QueryBuilder\Bridge\AbstractBridge;
+use MakinaCorpus\QueryBuilder\Bridge\ErrorConverter;
+use MakinaCorpus\QueryBuilder\Bridge\PassthroughErrorConverter;
+use MakinaCorpus\QueryBuilder\Bridge\Pdo\ErrorConverter\PdoMySQLErrorConverter;
+use MakinaCorpus\QueryBuilder\Bridge\Pdo\ErrorConverter\PdoPostgreSQLErrorConverter;
+use MakinaCorpus\QueryBuilder\Bridge\Pdo\ErrorConverter\PdoSQLiteErrorConverter;
+use MakinaCorpus\QueryBuilder\Bridge\Pdo\ErrorConverter\PdoSQLServerErrorConverter;
 use MakinaCorpus\QueryBuilder\Bridge\Pdo\Escaper\PdoEscaper;
 use MakinaCorpus\QueryBuilder\Bridge\Pdo\Escaper\PdoMySQLEscaper;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Escaper\Escaper;
+use MakinaCorpus\QueryBuilder\Platform;
 use MakinaCorpus\QueryBuilder\Result\IterableResult;
 use MakinaCorpus\QueryBuilder\Result\Result;
 
@@ -23,6 +29,21 @@ class PdoQueryBuilder extends AbstractBridge
         parent::__construct();
 
         $this->connection = $connection;
+    }
+
+    /**
+     * Please override.
+     */
+    protected function createErrorConverter(): ErrorConverter
+    {
+        return match ($this->getServerFlavor()) {
+            Platform::MARIADB => new PdoMySQLErrorConverter(),
+            Platform::MYSQL => new PdoMySQLErrorConverter(),
+            Platform::POSTGRESQL => new PdoPostgreSQLErrorConverter(),
+            Platform::SQLITE => new PdoSQLiteErrorConverter(),
+            Platform::SQLSERVER => new PdoSQLServerErrorConverter(),
+            default => new PassthroughErrorConverter(),
+        };
     }
 
     /**
@@ -71,7 +92,7 @@ class PdoQueryBuilder extends AbstractBridge
         }
 
         // Last resort version string lookup.
-        if (\preg_match('@(\d+\.\d+(\.\d+))@i', $rawVersion)) {
+        if (\preg_match('@(\d+\.\d+(\.\d+))@i', $rawVersion, $matches)) {
             return $matches[1];
         }
 

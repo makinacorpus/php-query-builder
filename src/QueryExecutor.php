@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder;
 
+use MakinaCorpus\QueryBuilder\Error\Bridge\TransactionError;
 use MakinaCorpus\QueryBuilder\Result\Result;
+use MakinaCorpus\QueryBuilder\Transaction\Transaction;
 
 /**
  * Executes query.

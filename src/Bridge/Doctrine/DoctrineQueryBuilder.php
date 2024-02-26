@@ -6,13 +6,15 @@ namespace MakinaCorpus\QueryBuilder\Bridge\Doctrine;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\ServerInfoAwareConnection;
-use MakinaCorpus\QueryBuilder\Platform;
 use MakinaCorpus\QueryBuilder\Bridge\AbstractBridge;
+use MakinaCorpus\QueryBuilder\Bridge\Doctrine\ErrorConverter\DoctrineErrorConverter;
 use MakinaCorpus\QueryBuilder\Bridge\Doctrine\Escaper\DoctrineEscaper;
 use MakinaCorpus\QueryBuilder\Bridge\Doctrine\Escaper\DoctrineMySQLEscaper;
+use MakinaCorpus\QueryBuilder\Bridge\ErrorConverter;
 use MakinaCorpus\QueryBuilder\Converter\Converter;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Escaper\Escaper;
+use MakinaCorpus\QueryBuilder\Platform;
 use MakinaCorpus\QueryBuilder\Result\IterableResult;
 use MakinaCorpus\QueryBuilder\Result\Result;
 use MakinaCorpus\QueryBuilder\Writer\Writer;
@@ -28,6 +30,14 @@ class DoctrineQueryBuilder extends AbstractBridge
         parent::__construct();
 
         $this->connection = $connection;
+    }
+
+    /**
+     * Please override.
+     */
+    protected function createErrorConverter(): ErrorConverter
+    {
+        return new DoctrineErrorConverter();
     }
 
     /**

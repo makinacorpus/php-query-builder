@@ -34,11 +34,23 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
     private ?string $serverVersion = null;
     private bool $serverVersionLookekUp = false;
     private ?string $serverFlavor = null;
+    private ?ErrorConverter $errorConverter = null;
 
     public function __construct(?ConverterPluginRegistry $converterPluginRegistry = null)
     {
         $this->converterPluginRegistry = $converterPluginRegistry;
         $this->setQueryExecutor($this);
+    }
+
+    /**
+     * Disable error converter. Must be called prior to initilization.
+     */
+    public function disableErrorConverter(): bool
+    {
+        if ($this->errorConverter) {
+            throw new QueryBuilderError("Bridge is already initialized, configuration must happend before it gets used.");
+        }
+        $this->errorConverter = new PassthroughErrorConverter();
     }
 
     /**
@@ -80,6 +92,31 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
         $this->serverNameLookedUp = true;
 
         return $this->serverName;
+    }
+
+    /**
+     * Get error converter.
+     */
+    protected function getErrorConverter(): ErrorConverter
+    {
+        return $this->errorConverter ??= $this->createErrorConverter();
+    }
+
+    /**
+     * @internal
+     *    For dependency injection only.
+     */
+    public function setErrorConverter(ErrorConverter $errorConverter): void
+    {
+        $this->errorConverter = $errorConverter;
+    }
+
+    /**
+     * Please override.
+     */
+    protected function createErrorConverter(): ErrorConverter
+    {
+        return new PassthroughErrorConverter();
     }
 
     /**
@@ -199,7 +236,11 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
 
         $prepared = $this->getWriter()->prepare($expression);
 
-        return $this->doExecuteQuery($prepared->toString(), $prepared->getArguments()->getAll());
+        try {
+            return $this->doExecuteQuery($prepared->toString(), $prepared->getArguments()->getAll());
+        } catch (\Throwable $e) {
+            throw $this->getErrorConverter()->convertError($e);
+        }
     }
 
     /**
@@ -223,7 +264,11 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
 
         $prepared = $this->getWriter()->prepare($expression);
 
-        return $this->doExecuteStatement($prepared->toString(), $prepared->getArguments()->getAll());
+        try {
+            return $this->doExecuteStatement($prepared->toString(), $prepared->getArguments()->getAll());
+        } catch (\Throwable $e) {
+            throw $this->getErrorConverter()->convertError($e);
+        }
     }
 
     /**
