@@ -61,7 +61,7 @@ do_test_mysql57() {
         -e DBAL_ROOT_USER="root" \
         -e DBAL_USER=root \
         -e DATABASE_URL=mysql://root:password@mysql57:3306/test_db?serverVersion=5.7 \
-        phpunit vendor/bin/phpunit $@
+        phpunit vendor/bin/phpunit "$@"
 }
 
 do_test_mysql80() {
@@ -76,7 +76,7 @@ do_test_mysql80() {
         -e DBAL_ROOT_USER=root \
         -e DBAL_USER=root \
         -e DATABASE_URL=mysql://root:password@mysql80:3306/test_db?serverVersion=8 \
-        phpunit vendor/bin/phpunit $@
+        phpunit vendor/bin/phpunit "$@"
 }
 
 do_test_mariadb11() {
@@ -91,13 +91,13 @@ do_test_mariadb11() {
         -e DBAL_ROOT_USER="root" \
         -e DBAL_USER=root \
         -e DATABASE_URL=mysql://root:password@mariadb11:3306/test_db?serverVersion=11.1.3-MariaDB \
-        phpunit vendor/bin/phpunit $@
+        phpunit vendor/bin/phpunit "$@"
 }
 
 do_test_mysql() {
-    do_test_mysql57
-    do_test_mysql80
-    do_test_mariadb11
+    do_test_mysql57 "$@"
+    do_test_mysql80 "$@"
+    do_test_mariadb11 "$@"
 }
 
 do_test_postgresql10() {
@@ -112,7 +112,7 @@ do_test_postgresql10() {
         -e DBAL_ROOT_USER=postgres \
         -e DBAL_USER=postgres \
         -e DATABASE_URL="postgresql://postgres:password@postgresql10:5432/test_db?serverVersion=10&charset=utf8" \
-        phpunit vendor/bin/phpunit $@
+        phpunit vendor/bin/phpunit "$@"
 }
 
 do_test_postgresql16() {
@@ -127,12 +127,12 @@ do_test_postgresql16() {
         -e DBAL_ROOT_USER=postgres \
         -e DBAL_USER=postgres \
         -e DATABASE_URL="postgresql://postgres:password@postgresql16:5432/test_db?serverVersion=16&charset=utf8" \
-        phpunit vendor/bin/phpunit $@
+        phpunit vendor/bin/phpunit "$@"
 }
 
 do_test_postgresql() {
-    do_test_postgresql10
-    do_test_postgresql16
+    do_test_postgresql10 "$@"
+    do_test_postgresql16 "$@"
 }
 
 do_test_sqlsrv2019() {
@@ -147,11 +147,11 @@ do_test_sqlsrv2019() {
         -e DBAL_ROOT_USER=sa \
         -e DBAL_USER=sa \
         -e DATABASE_URL="pdo-sqlsrv://sa:P%40ssword123@sqlsrv2019:1433/test_db?serverVersion=2019&charset=utf8&driverOptions[TrustServerCertificate]=true" \
-        phpunit vendor/bin/phpunit $@
+        phpunit vendor/bin/phpunit "$@"
 }
 
 do_test_sqlsrv() {
-    do_test_sqlsrv2019
+    do_test_sqlsrv2019 "$@"
 }
 
 # SQLite version depends upon the PHP embeded version or linked
@@ -163,20 +163,20 @@ do_test_sqlite() {
         -e DBAL_DBNAME=test_db \
         -e DBAL_HOST=127.0.0.1 \
         -e DATABASE_URL="pdo-sqlite:///:memory:" \
-        phpunit vendor/bin/phpunit $@
+        phpunit vendor/bin/phpunit "$@"
 }
 
 # Run PHPunit tests for all database vendors
 do_test_all() {
     do_composer_install
 
-    do_test_mysql57
-    do_test_mysql80
-    do_test_mariadb11
-    do_test_postgresql10
-    do_test_postgresql16
-    do_test_sqlsrv2019
-    do_test_sqlite
+    do_test_mysql57 "$@"
+    do_test_mysql80 "$@"
+    do_test_mariadb11 "$@"
+    do_test_postgresql10 "$@"
+    do_test_postgresql16 "$@"
+    do_test_sqlsrv2019 "$@"
+    do_test_sqlite "$@"
 }
 
 do_test_notice() {
