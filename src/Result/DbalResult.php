@@ -50,7 +50,7 @@ interface DbalResult
      * @return mixed
      *   SQL value. Some drivers might already have converted it.
      */
-    public function fetchOne(int|string $valueColumn = 1): mixed;
+    public function fetchOne(int|string $valueColumn = 0): mixed;
 
     /**
      * Returns an array containing all of the result rows represented as numeric arrays.
