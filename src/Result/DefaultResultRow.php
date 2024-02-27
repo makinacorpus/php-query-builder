@@ -10,6 +10,7 @@ use MakinaCorpus\QueryBuilder\Error\ResultError;
 class DefaultResultRow implements ResultRow
 {
     private array $names = [];
+    private ?array $lowered = null;
 
     public function __construct(
         private array $rawValues,
@@ -21,9 +22,9 @@ class DefaultResultRow implements ResultRow
     /**
      * {@inheritdoc}
      */
-    public function get(int|string $columnName, ?string $phpType = null): mixed
+    public function get(int|string $columnName, ?string $phpType = null, bool $caseSensitive = false): mixed
     {
-        $value = $this->rawValues[$this->getColumnName($columnName)];
+        $value = $this->rawValues[$this->getColumnName($columnName, $caseSensitive)];
 
         if (null === $value) {
             return null;
@@ -42,7 +43,7 @@ class DefaultResultRow implements ResultRow
     /**
      * {@inheritdoc}
      */
-    public function has(int|string $columnName, bool $allowNull = true): bool
+    public function has(int|string $columnName, bool $allowNull = true, bool $caseSensitive = false): bool
     {
         try {
             $name = $this->getColumnName($columnName);
@@ -56,7 +57,7 @@ class DefaultResultRow implements ResultRow
     /**
      * {@inheritdoc}
      */
-    public function raw(int|string $columnName): null|int|float|string
+    public function raw(int|string $columnName, bool $caseSensitive = false): null|int|float|string
     {
         return $this->rawValues[$this->getColumnName($columnName)];
     }
@@ -72,7 +73,7 @@ class DefaultResultRow implements ResultRow
     /**
      * Get column name..
      */
-    protected function getColumnName(int|string $name = 0): mixed
+    protected function getColumnName(int|string $name = 0, bool $caseSensitive = false): mixed
     {
         if (\is_int($name)) {
             if ($name < 0) {
@@ -85,6 +86,21 @@ class DefaultResultRow implements ResultRow
         }
 
         if (!\array_key_exists($name, $this->rawValues)) {
+            if (!$caseSensitive) {
+                if (null === $this->lowered) {
+                    $this->lowered = [];
+                    foreach ($this->names as $key) {
+                        if (\is_string($key)) {
+                            $this->lowered[\strtolower($key)] = $key;
+                        }
+                    }
+                }
+
+                if ($casedName = ($this->lowered[\strtolower($name)] ?? null)) {
+                    return $casedName;
+                }
+            }
+
             throw new ResultError(\sprintf("Column with name '%s' does not exist in result.", $name));
         }
         return $name;
