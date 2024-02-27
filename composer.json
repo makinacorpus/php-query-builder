@@ -28,7 +28,8 @@
         }
     },
     "require" : {
-        "php" : ">=8.1"
+        "php" : ">=8.1",
+        "symfony/polyfill-php83": "^1.29"
     },
     "require-dev" : {
         "doctrine/dbal": "^3.7",

@@ -72,4 +72,13 @@ interface Result extends DbalResult, \Traversable
      *   if an user hydrator is set.
      */
     public function fetchHydrated(): mixed;
+
+    /**
+     * Fetch all items hydrated.
+     *
+     * @return array<mixed>|array<ResultRow>
+     *   Either an array of ResultRow instances, or an array of anything the
+     *   hydrator will return if an user hydrator is set.
+     */
+    public function fetchAllHydrated(): array;
 }

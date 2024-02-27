@@ -169,6 +169,21 @@ abstract class AbstractResult implements Result, \IteratorAggregate
 
     /**
      * {@inheritdoc}
+     */
+    public function fetchAllHydrated(): array
+    {
+        $this->dieIfStarted();
+
+        $ret = [];
+        while ($row = $this->fetchHydrated()) {
+            $ret[] = $row;
+        }
+
+        return $ret;
+    }
+
+    /**
+     * {@inheritdoc}
      * @deprecated
      */
     public function fetch(int $mode = self::ASSOCIATIVE): mixed
