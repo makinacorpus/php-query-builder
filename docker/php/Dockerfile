@@ -25,6 +25,9 @@ RUN pecl install sqlsrv
 RUN pecl install pdo_sqlsrv
 RUN docker-php-ext-enable sqlsrv pdo_sqlsrv
 
+# Install Xdebug
+RUN pecl install xdebug-3.3.1 && docker-php-ext-enable xdebug
+
 # Cleanup.
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
