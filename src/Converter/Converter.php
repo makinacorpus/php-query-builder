@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Converter;
 
+use MakinaCorpus\QueryBuilder\Converter\Helper\ArrayRowParser;
 use MakinaCorpus\QueryBuilder\Error\ValueConversionError;
 use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\ExpressionFactory;
@@ -132,8 +133,7 @@ class Converter
         // }
 
         if (\str_ends_with($type, '[]')) {
-            // @todo Handle collections.
-            throw new ValueConversionError("Handling arrays is not implemented yet.");
+            return $this->parseArrayRecursion(\substr($type, 0, -2), ArrayRowParser::parseArray($value));
         }
 
         try {
@@ -216,6 +216,17 @@ class Converter
         // override default behavior and implement their own logic pretty
         // much everywhere.
         return $this->toSqlDefault($type, $value);
+    }
+
+    /**
+     * Parse SQL ARRAY output recursively.
+     */
+    protected function parseArrayRecursion(?string $type, array $values): array
+    {
+        return \array_map(
+            fn (mixed $value) => \is_array($value) ? $this->parseArrayRecursion($type, $value) : $this->fromSql($type, $value),
+            $values,
+        );
     }
 
     /**

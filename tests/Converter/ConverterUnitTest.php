@@ -135,6 +135,32 @@ class ConverterUnitTest extends UnitTestCase
         self::assertInstanceof(\DateTimeImmutable::class, $converter->fromSql(\DateTimeImmutable::class, "2012-12-12 12:12:12"));
     }
 
+    public function testFromSqlArrayEmpty(): void
+    {
+        $converter = new Converter();
+
+        self::assertSame([], $converter->fromSql('int[]', "{}"));
+    }
+
+    public function testFromSqlArray(): void
+    {
+        $converter = new Converter();
+
+        self::assertSame([1, 7, 11], $converter->fromSql('int[]', "{1,7,11}"));
+    }
+
+    public function testFromSqlArrayRecursive(): void
+    {
+        $converter = new Converter();
+
+        self::assertSame([[1, 2], [3, 4]], $converter->fromSql('int[]', "{{1,2},{3,4}}"));
+    }
+
+    public function testFromSqlArrayRows(): void
+    {
+        self::markTestIncomplete("Not implemented yet.");
+    }
+
     public function testToSqlInt(): void
     {
         self::assertSame(
@@ -206,5 +232,20 @@ class ConverterUnitTest extends UnitTestCase
             $object,
             (new Converter())->toSql($object),
         );
+    }
+
+    public function testToSqlArray(): void
+    {
+        self::markTestIncomplete("Not implemented yet.");
+    }
+
+    public function testToSqlArrayRecursive(): void
+    {
+        self::markTestIncomplete("Not implemented yet.");
+    }
+
+    public function testToSqlArrayRows(): void
+    {
+        self::markTestIncomplete("Not implemented yet.");
     }
 }
