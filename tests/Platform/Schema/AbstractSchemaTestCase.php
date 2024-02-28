@@ -347,8 +347,17 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
             ->getTable('test_db', 'users')
         ;
 
-        self::assertSame(['org_id'], $table->getForeignKeys()[0]?->getColumnNames());
-        self::assertSame(['user_id'], $table->getReverseForeignKeys()[0]?->getColumnNames());
+        self::assertNotNull($foreignKey = ($table->getForeignKeys()[0] ?? null));
+        self::assertSame(['org_id'], $foreignKey->getColumnNames());
+        self::assertSame(['id'], $foreignKey->getForeignColumnNames());
+        self::assertSame('users', $foreignKey->getTable());
+        self::assertSame('org', $foreignKey->getForeignTable());
+
+        self::assertNotNull($reverseForeignKey = ($table->getReverseForeignKeys()[0] ?? null));
+        self::assertSame(['user_id'], $reverseForeignKey->getColumnNames());
+        self::assertSame(['id'], $reverseForeignKey->getForeignColumnNames());
+        self::assertSame('user_address', $reverseForeignKey->getTable());
+        self::assertSame('users', $reverseForeignKey->getForeignTable());
     }
 
     public function testTableReverseForeignKeys(): void

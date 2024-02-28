@@ -6,7 +6,7 @@ namespace MakinaCorpus\QueryBuilder\Tests\Platform\Schema;
 
 use MakinaCorpus\QueryBuilder\Testing\FunctionalPdoTestCaseTrait;
 
-class PostgreSQLPlatformSchemaTest extends AbstractSchemaTestCase
+class PdoPlatformSchemaTest extends AbstractSchemaTestCase
 {
     use FunctionalPdoTestCaseTrait;
 }

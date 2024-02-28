@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Platform\Schema;
 
-use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
+use MakinaCorpus\QueryBuilder\Result\Result;
 use MakinaCorpus\QueryBuilder\Result\ResultRow;
 use MakinaCorpus\QueryBuilder\Schema\Column;
-use MakinaCorpus\QueryBuilder\Schema\ForeignKey;
 use MakinaCorpus\QueryBuilder\Schema\Key;
 use MakinaCorpus\QueryBuilder\Schema\SchemaManager;
-use MakinaCorpus\QueryBuilder\Schema\Table;
+use MakinaCorpus\QueryBuilder\Schema\ForeignKey;
 
 /**
  * Please note that some functions here might use information_schema tables
@@ -110,12 +109,31 @@ class PostgreSQLSchemaManager extends SchemaManager
     }
 
     #[\Override]
-    public function getTable(string $database, string $name, string $schema = 'public'): Table
+    protected function getTableComment(string $database, string $name, string $schema = 'public'): ?string
     {
-        if (!$this->tableExists($database, $name, $schema)) {
-            throw new QueryBuilderError(\sprintf("Table '%s.%s.%s' does not exist", $database, $schema, $name));
-        }
+        return $this
+            ->queryExecutor
+            ->executeQuery(
+                <<<SQL
+                SELECT
+                    description
+                FROM pg_description
+                WHERE objoid = (
+                    SELECT oid FROM pg_class
+                    WHERE
+                        relnamespace = to_regnamespace(?)
+                        AND oid = to_regclass(?)
+                )
+                SQL,
+                [$schema, $name]
+            )
+            ->fetchOne()
+        ;
+    }
 
+    #[\Override]
+    protected function getTableColumns(string $database, string $name, string $schema = 'public'): array
+    {
         $defaultCollation = $this
             ->queryExecutor
             ->executeQuery(
@@ -127,7 +145,7 @@ class PostgreSQLSchemaManager extends SchemaManager
             ->fetchOne()
         ;
 
-        $columns = $this
+        return $this
             ->queryExecutor
             ->executeQuery(
                 <<<SQL
@@ -165,12 +183,97 @@ class PostgreSQLSchemaManager extends SchemaManager
                 table: $name,
                 unsigned: false,
                 valueType: $row->get('udt_name', 'string'),
-                vendorId: null, // @todo
             ))
             ->fetchAllHydrated()
         ;
+    }
 
-        $allKeyInfo = $this
+    #[\Override]
+    protected function getTablePrimaryKey(string $database, string $name, string $schema = 'public'): ?Key
+    {
+        $result = $this->getAllTableKeysInfo($database, $name, $schema);
+
+        while ($row = $result->fetchRow()) {
+            if ($row->get('type') === 'p') {
+                return new Key(
+                    columnNames: $row->get('column_source', 'string[]'),
+                    comment: null, // @todo
+                    database: $database,
+                    name: $row->get('name', 'string'),
+                    options: [],
+                    schema: $row->get('table_source_schema', 'string'),
+                    table: $row->get('table_source', 'string'),
+                );
+            }
+        }
+
+        return null;
+    }
+
+    #[\Override]
+    protected function getTableForeignKeys(string $database, string $name, string $schema = 'public'): array
+    {
+        $ret = [];
+        $result = $this->getAllTableKeysInfo($database, $name, $schema);
+
+        while ($row = $result->fetchRow()) {
+            if ($row->get('type') === 'f' && $row->get('table_source', 'string') === $name) {
+                $ret[] = new ForeignKey(
+                    columnNames: $row->get('column_source', 'string[]'),
+                    comment: null, // @todo
+                    database: $database,
+                    foreignColumnNames: $row->get('column_target', 'string[]'),
+                    foreignSchema: $row->get('table_target_schema', 'string'),
+                    foreignTable: $row->get('table_target', 'string'),
+                    name: $row->get('name', 'string'),
+                    options: [],
+                    schema: $row->get('table_source_schema', 'string'),
+                    table: $row->get('table_source', 'string'),
+                );
+            }
+        }
+
+        return $ret;
+    }
+
+    #[\Override]
+    protected function getTableReverseForeignKeys(string $database, string $name, string $schema = 'public'): array
+    {
+        $ret = [];
+        $result = $this->getAllTableKeysInfo($database, $name, $schema);
+
+        while ($row = $result->fetchRow()) {
+            if ($row->get('type') === 'f' && $row->get('table_source', 'string') !== $name) {
+                $ret[] = new ForeignKey(
+                    columnNames: $row->get('column_source', 'string[]'),
+                    comment: null, // @todo
+                    database: $database,
+                    foreignColumnNames: $row->get('column_target', 'string[]'),
+                    foreignSchema: $row->get('table_target_schema', 'string'),
+                    foreignTable: $row->get('table_target', 'string'),
+                    name: $row->get('name', 'string'),
+                    options: [],
+                    schema: $row->get('table_source_schema', 'string'),
+                    table: $row->get('table_source', 'string'),
+                );
+            }
+        }
+
+        return $ret;
+    }
+
+    /**
+     * Get all table keys info.
+     *
+     * This SQL statement is terrible to maintain, so for maintainability,
+     * we prefer to load all even when uncessary and filter out the result.
+     *
+     * Since this is querying the catalog, it will be fast no matter how
+     * much result this yields.
+     */
+    private function getAllTableKeysInfo(string $database, string $name, string $schema = 'public'): Result
+    {
+        return $this
             ->queryExecutor
             ->executeQuery(
                 <<<SQL
@@ -221,79 +324,5 @@ class PostgreSQLSchemaManager extends SchemaManager
                 [$schema, $name, $name]
             )
         ;
-
-        $primaryKey = null;
-        $foreignKeys = [];
-        $reverseForeignKeys = [];
-
-        while ($row = $allKeyInfo->fetchRow()) {
-            switch ($row->get('type')) {
-                case 'f':
-                    $key = new ForeignKey(
-                        columnNames: $row->get('column_source', 'string[]'),
-                        comment: null, // @todo
-                        database: $database,
-                        foreignColumnNames: $row->get('column_target', 'string[]'),
-                        foreignSchema: $row->get('table_target_schema', 'string'),
-                        foreignTable: $row->get('table_target', 'string'),
-                        name: $row->get('name', 'string'),
-                        options: [],
-                        schema: $row->get('table_source_schema', 'string'),
-                        table: $row->get('table_source', 'string'),
-                        vendorId: null, // @todo
-                    );
-                    if ($key->getTable() === $name) {
-                        $foreignKeys[] = $key;
-                    } else {
-                        $reverseForeignKeys[] = $key;
-                    }
-                    break;
-                case 'p':
-                    $primaryKey = new Key(
-                        columnNames: $row->get('column_source', 'string[]'),
-                        comment: null, // @todo
-                        database: $database,
-                        name: $row->get('name', 'string'),
-                        options: [],
-                        schema: $row->get('table_source_schema', 'string'),
-                        table: $row->get('table_source', 'string'),
-                        vendorId: null,
-                    );
-                    break;
-            }
-        }
-
-        $result = $this
-            ->queryExecutor
-            ->executeQuery(
-                <<<SQL
-                SELECT
-                    objoid,
-                    description
-                FROM pg_description
-                WHERE objoid = (
-                    SELECT oid FROM pg_class
-                    WHERE
-                        relnamespace = to_regnamespace(?)
-                        AND oid = to_regclass(?)
-                )
-                SQL,
-                [$schema, $name]
-            )
-            ->fetchRow()
-        ;
-
-        return new Table(
-            columns: $columns,
-            comment: $result?->get('description', 'string'),
-            database: $database,
-            foreignKeys: $foreignKeys,
-            name: $name,
-            options: [],
-            primaryKey: $primaryKey,
-            reverseForeignKeys: $reverseForeignKeys,
-            schema: $schema,
-            vendorId: $result?->get('objoid', 'string'),
-        );
     }
 }

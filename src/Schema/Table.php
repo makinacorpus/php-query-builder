@@ -24,7 +24,6 @@ class Table extends AbstractObject
         string $name,
         ?string $comment,
         string $schema,
-        ?string $vendorId,
         array $options,
         private readonly ?Key $primaryKey,
         /** @var Column[] */
@@ -40,7 +39,6 @@ class Table extends AbstractObject
             namespace: null,
             schema: $schema,
             type: ObjectId::TYPE_TABLE,
-            vendorId: $vendorId,
         );
 
         if (null !== $foreignKeys) {

@@ -60,7 +60,55 @@ abstract class SchemaManager
     /**
      * Get table information.
      */
-    public abstract function getTable(string $database, string $name, string $schema = 'public'): Table;
+    public function getTable(string $database, string $name, string $schema = 'public'): Table
+    {
+        if (!$this->tableExists($database, $name, $schema)) {
+            throw new QueryBuilderError(\sprintf("Table '%s.%s.%s' does not exist", $database, $schema, $name));
+        }
+
+        return new Table(
+            columns: $this->getTableColumns($database, $name, $schema),
+            comment: $this->getTableComment($database, $name, $schema),
+            database: $database,
+            foreignKeys: $this->getTableForeignKeys($database, $name, $schema),
+            name: $name,
+            options: [],
+            primaryKey: $this->getTablePrimaryKey($database, $name, $schema),
+            reverseForeignKeys: $this->getTableReverseForeignKeys($database, $name, $schema),
+            schema: $schema,
+        );
+    }
+
+    /**
+     * Get table comment.
+     */
+    protected abstract function getTableComment(string $database, string $name, string $schema = 'public'): ?string;
+
+    /**
+     * Get table columns.
+     *
+     * @return Column[]
+     */
+    protected abstract function getTableColumns(string $database, string $name, string $schema = 'public'): array;
+
+    /**
+     * Get table primary key.
+     */
+    protected abstract function getTablePrimaryKey(string $database, string $name, string $schema = 'public'): ?Key;
+
+    /**
+     * Get table foreign keys.
+     *
+     * @return ForeignKey[]
+     */
+    protected abstract function getTableForeignKeys(string $database, string $name, string $schema = 'public'): array;
+
+    /**
+     * Get table reverse foreign keys.
+     *
+     * @return ForeignKey[]
+     */
+    protected abstract function getTableReverseForeignKeys(string $database, string $name, string $schema = 'public'): array;
 
     /**
      * Start a transaction for schema manipulation.

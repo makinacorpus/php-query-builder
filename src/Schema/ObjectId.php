@@ -22,8 +22,6 @@ class ObjectId
         /** For a column, for example, the table name. */
         private readonly ?string $namespace = null,
         private readonly ?string $schema = 'public',
-        /** For example, when using PostgreSQL, the OID value. */
-        private readonly ?string $vendorId = null,
     ) {}
 
     /**
@@ -67,19 +65,11 @@ class ObjectId
     }
 
     /**
-     * Get type.
-     */
-    public function getVendorId(): ?string
-    {
-        return $this->vendorId;
-    }
-
-    /**
      * Is equal to.
      */
     public function equals(ObjectId $other): bool
     {
-        return ($this->vendorId && $other->vendorId) ? $this->vendorId === $other->vendorId : $this->toString() === $other->toString();
+        return $this->toString() === $other->toString();
     }
 
     /**

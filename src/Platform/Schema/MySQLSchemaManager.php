@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Platform\Schema;
 
-use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Result\ResultRow;
 use MakinaCorpus\QueryBuilder\Schema\Column;
 use MakinaCorpus\QueryBuilder\Schema\ForeignKey;
-use MakinaCorpus\QueryBuilder\Schema\SchemaManager;
-use MakinaCorpus\QueryBuilder\Schema\Table;
 use MakinaCorpus\QueryBuilder\Schema\Key;
+use MakinaCorpus\QueryBuilder\Schema\SchemaManager;
 
 /**
  * Please note that some functions here might use information_schema tables
@@ -103,12 +101,29 @@ class MySQLSchemaManager extends SchemaManager
     }
 
     #[\Override]
-    public function getTable(string $database, string $name, string $schema = 'public'): Table
+    protected function getTableComment(string $database, string $name, string $schema = 'public'): ?string
     {
-        if (!$this->tableExists($database, $name, $schema)) {
-            throw new QueryBuilderError(\sprintf("Table '%s.%s.%s' does not exist", $database, $schema, $name));
-        }
+        return $this
+            ->queryExecutor
+            ->executeQuery(
+                <<<SQL
+                SELECT
+                    table_comment
+                FROM information_schema.tables
+                WHERE
+                    table_schema = ?
+                    AND table_name = ?
+                    AND table_type = 'BASE TABLE'
+                SQL,
+                [$schema, $name]
+            )
+            ->fetchOne()
+        ;
+    }
 
+    #[\Override]
+    protected function getTableColumns(string $database, string $name, string $schema = 'public'): array
+    {
         /*
         $defaultCollation = $this
             ->queryExecutor
@@ -124,7 +139,7 @@ class MySQLSchemaManager extends SchemaManager
         $defaultCollation = null; // @todo
 
         // @see https://dev.mysql.com/doc/refman/8.0/en/information-schema-columns-table.html
-        $columns = $this
+        return $this
             ->queryExecutor
             ->executeQuery(
                 <<<SQL
@@ -165,11 +180,80 @@ class MySQLSchemaManager extends SchemaManager
                     table: $name,
                     unsigned: \str_contains($creationType, 'unsigned'),
                     valueType: $row->get('data_type', 'string'),
-                    vendorId: null,
                 );
             })
             ->fetchAllHydrated()
         ;
+    }
+
+    #[\Override]
+    protected function getTablePrimaryKey(string $database, string $name, string $schema = 'public'): ?Key
+    {
+        $primaryKeyColumns = $this
+            ->queryExecutor
+            ->executeQuery(
+                <<<SQL
+                SELECT
+                    column_name
+                FROM information_schema.key_column_usage
+                WHERE
+                    constraint_schema = ?
+                    AND table_name = ?
+                    AND constraint_name = 'PRIMARY'
+                ORDER BY ordinal_position
+                SQL,
+                [$database, $name]
+            )
+            ->fetchFirstColumn()
+        ;
+
+        if ($primaryKeyColumns) {
+            return new Key(
+                columnNames: $primaryKeyColumns,
+                comment: null, // @todo
+                database: $database,
+                name: 'PRIMARY',
+                options: [],
+                schema: 'public',
+                table: $name,
+            );
+        }
+
+        return null;
+    }
+
+    #[\Override]
+    protected function getTableForeignKeys(string $database, string $name, string $schema = 'public'): array
+    {
+        return \array_values(\array_filter(
+            $this->getAllTableKeysInfo($database, $name, $schema),
+            fn (ForeignKey $key) => ($key->getTable() === $name && $key->getSchema() === $schema),
+        ));
+    }
+
+    #[\Override]
+    protected function getTableReverseForeignKeys(string $database, string $name, string $schema = 'public'): array
+    {
+        return \array_values(\array_filter(
+            $this->getAllTableKeysInfo($database, $name, $schema),
+            fn (ForeignKey $key) => ($key->getForeignTable() === $name && $key->getForeignSchema() === $schema),
+        ));
+    }
+
+    /**
+     * Get all table keys info.
+     *
+     * This SQL statement is terrible to maintain, so for maintainability,
+     * we prefer to load all even when uncessary and filter out the result.
+     *
+     * Since this is querying the catalog, it will be fast no matter how
+     * much result this yields.
+     *
+     * @return ForeignKey[]
+     */
+    private function getAllTableKeysInfo(string $database, string $name, string $schema = 'public'): array
+    {
+        $ret = [];
 
         $foreignKeyInfo = $this
             ->queryExecutor
@@ -191,8 +275,6 @@ class MySQLSchemaManager extends SchemaManager
             )
         ;
 
-        $foreignKeys = [];
-        $reverseForeignKeys = [];
         while ($row = $foreignKeyInfo->fetchRow()) {
             $constraintName = $row->get('constraint_name', 'string');
             $constraintTable = $row->get('table_name', 'string');
@@ -210,7 +292,7 @@ class MySQLSchemaManager extends SchemaManager
                 [$database, $constraintTable, $constraintName]
             )->fetchAllKeyValue();
 
-            $key = new ForeignKey(
+            $ret[] = new ForeignKey(
                 columnNames: \array_keys($keyColumns), 
                 comment: null, // @todo
                 database: $database,
@@ -221,75 +303,9 @@ class MySQLSchemaManager extends SchemaManager
                 options: [],
                 schema: 'public',
                 table: $constraintTable,
-                vendorId: null,
-            );
-            if ($key->getTable() === $name) {
-                $foreignKeys[] = $key;
-            } else {
-                $reverseForeignKeys[] = $key;
-            }
-        }
-
-        $primaryKey = null;
-        $primaryKeyColumns = $this
-            ->queryExecutor
-            ->executeQuery(
-                <<<SQL
-                SELECT
-                    column_name
-                FROM information_schema.key_column_usage
-                WHERE
-                    constraint_schema = ?
-                    AND table_name = ?
-                    AND constraint_name = 'PRIMARY'
-                ORDER BY ordinal_position
-                SQL,
-                [$database, $name]
-            )
-            ->fetchFirstColumn()
-        ;
-
-        if ($primaryKeyColumns) {
-            $primaryKey = new Key(
-                columnNames: $primaryKeyColumns,
-                comment: null, // @todo
-                database: $database,
-                name: 'PRIMARY',
-                options: [],
-                schema: 'public',
-                table: $name,
-                vendorId: null,
             );
         }
 
-        $result = $this
-            ->queryExecutor
-            ->executeQuery(
-                <<<SQL
-                SELECT
-                    table_comment
-                FROM information_schema.tables
-                WHERE
-                    table_schema = ?
-                    AND table_name = ?
-                    AND table_type = 'BASE TABLE'
-                SQL,
-                [$schema, $name]
-            )
-            ->fetchRow()
-        ;
-
-        return new Table(
-            columns: $columns,
-            comment: $result?->get('table_comment', 'string'),
-            database: $database,
-            foreignKeys: $foreignKeys,
-            name: $name,
-            options: [],
-            primaryKey: $primaryKey,
-            reverseForeignKeys: $reverseForeignKeys,
-            schema: $schema,
-            vendorId: null,
-        );
+        return $ret;
     }
 }

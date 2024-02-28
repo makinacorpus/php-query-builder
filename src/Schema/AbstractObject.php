@@ -12,7 +12,6 @@ abstract class AbstractObject extends ObjectId
         string $name,
         ?string $namespace,
         string $schema,
-        ?string $vendorId,
         private readonly ?string $comment,
         /**
          * Options at the discretion of the implementation.
@@ -27,7 +26,6 @@ abstract class AbstractObject extends ObjectId
             namespace: $namespace,
             schema: $schema,
             type: $type,
-            vendorId: $vendorId,
         );
     }
 

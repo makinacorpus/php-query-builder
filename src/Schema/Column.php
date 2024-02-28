@@ -12,7 +12,6 @@ class Column extends AbstractObject
         string $table,
         ?string $comment,
         string $schema,
-        ?string $vendorId,
         array $options,
         private readonly string $valueType,
         private readonly bool $nullabe = true,
@@ -30,7 +29,6 @@ class Column extends AbstractObject
             namespace: $table,
             schema: $schema,
             type: ObjectId::TYPE_COLUMN,
-            vendorId: $vendorId,
         );
     }
 
@@ -92,6 +90,9 @@ class Column extends AbstractObject
 
     /**
      * Is unsigned.
+     *
+     * Warning, unsigned integers are not part of the SQL standard, a only a few
+     * vendors implement it,
      */
     public function isUnsigned(): bool
     {

@@ -12,7 +12,6 @@ final class ForeignKey extends AbstractObject
         string $table,
         ?string $comment,
         string $schema,
-        ?string $vendorId,
         array $options,
         /** @var string[] */
         private readonly array $columnNames,
@@ -29,7 +28,6 @@ final class ForeignKey extends AbstractObject
             namespace: $table,
             schema: $schema,
             type: ObjectId::TYPE_FOREIGN_KEY,
-            vendorId: $vendorId,
         );
     }
 
