@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Platform\Schema;
 
+use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Result\ResultRow;
 use MakinaCorpus\QueryBuilder\Schema\Column;
 use MakinaCorpus\QueryBuilder\Schema\ForeignKey;
 use MakinaCorpus\QueryBuilder\Schema\Key;
 use MakinaCorpus\QueryBuilder\Schema\SchemaManager;
+use MakinaCorpus\QueryBuilder\Schema\Diff\Change\ForeignKeyAdd;
+use MakinaCorpus\QueryBuilder\Schema\Diff\Change\IndexDrop;
+use MakinaCorpus\QueryBuilder\Error\UnsupportedFeatureError;
 
 /**
  * Please note that some functions here might use information_schema tables
@@ -307,5 +311,43 @@ class MySQLSchemaManager extends SchemaManager
         }
 
         return $ret;
+    }
+
+    #[\Override]
+    protected function table(string $name, ?string $schema = null): Expression
+    {
+        return $this->expression()->table($name, null, null);
+    }
+
+    #[\Override]
+    protected function writeForeignKeySpec(ForeignKeyAdd $change): Expression
+    {
+        if ($change->isDeferrable()) {
+            // @todo log that MySQL doesn't support deferring?
+        }
+
+        return $this->writeConstraintSpec(
+            $change->getName(),
+            $this->raw(
+                'FOREIGN KEY (?::identifier[]) REFERENCES ? (?::identifier[])',
+                [
+                    $change->getColumns(),
+                    $this->table($change->getForeignTable(), $change->getForeignSchema()),
+                    $change->getForeignColumns(),
+                ],
+            ),
+        );
+    }
+
+    #[\Override]
+    protected function writeIndexDrop(IndexDrop $change): Expression
+    {
+        return $this->raw(
+            'DROP INDEX ?::identifier ON ?::identifier',
+            [
+                $change->getName(),
+                $change->getTable(),
+            ],
+        );
     }
 }

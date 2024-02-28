@@ -1,16 +1,24 @@
 <?php
 
-declare (strict_type=1);
+declare (strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Schema\Diff\Change;
 
 use MakinaCorpus\QueryBuilder\Schema\AbstractObject;
-use MakinaCorpus\QueryBuilder\Schema\Diff\Change;
+use MakinaCorpus\QueryBuilder\Schema\Diff\AbstractChange;
 
 /**
  * Renames a table.
+ *
+ * This code is generated using bin/generate_changes.php.
+ *
+ * It includes some manually written code, please review changes and apply
+ * manual code after each regeneration.
+ *
+ * @see \MakinaCorpus\QueryBuilder\Schema\Diff\Change\Template\Generator
+ * @see bin/generate_changes.php
  */
-class TableRename extends Change
+class TableRename extends AbstractChange
 {
     public function __construct(
         string $database,
@@ -44,6 +52,6 @@ class TableRename extends Change
     #[\Override]
     public function isModified(AbstractObject $source): bool
     {
-        throw new \Exception("Implement me");
+        throw new \Exception("Here should be the manually generated code, please revert it.");
     }
 }

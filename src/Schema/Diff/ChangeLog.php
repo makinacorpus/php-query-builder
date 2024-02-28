@@ -10,13 +10,18 @@ class ChangeLog
 {
     public function __construct(
         private readonly SchemaManager $schemaManager,
-        /** @var Change[] */
+        /** @var AbstractChange[] */
         private array $changes = [],
     ) {}
 
-    public function add(Change $change): void
+    public function add(AbstractChange $change): void
     {
         $this->changes[] = $change;
+    }
+
+    public function getAll(): iterable
+    {
+        return $this->changes;
     }
 
     public function diff(): ChangeLog
@@ -25,5 +30,8 @@ class ChangeLog
             // load target object
             // run has modified
         }
+
+        // @todo fix this
+        return $this;
     }
 }

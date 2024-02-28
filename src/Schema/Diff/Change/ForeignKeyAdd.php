@@ -1,16 +1,24 @@
 <?php
 
-declare (strict_type=1);
+declare (strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Schema\Diff\Change;
 
 use MakinaCorpus\QueryBuilder\Schema\AbstractObject;
-use MakinaCorpus\QueryBuilder\Schema\Diff\Change;
+use MakinaCorpus\QueryBuilder\Schema\Diff\AbstractChange;
 
 /**
  * Add a FOREIGN KEY constraint on a table.
+ *
+ * This code is generated using bin/generate_changes.php.
+ *
+ * It includes some manually written code, please review changes and apply
+ * manual code after each regeneration.
+ *
+ * @see \MakinaCorpus\QueryBuilder\Schema\Diff\Change\Template\Generator
+ * @see bin/generate_changes.php
  */
-class ForeignKeyAdd extends Change
+class ForeignKeyAdd extends AbstractChange
 {
     const INITIALLY_DEFERRED = 'deferred';
     const INITIALLY_IMMEDIATE = 'immediate';
@@ -42,14 +50,14 @@ class ForeignKeyAdd extends Change
         private readonly null|string $foreignSchema = null,
         /** @var string */
         private readonly null|string $name = null,
-        /** @var mixed */
-        private readonly mixed $onDelete = 'no action',
-        /** @var mixed */
-        private readonly mixed $onUpdate = 'no action',
+        /** @var string */
+        private readonly string $onDelete = ForeignKeyAdd::ON_DELETE_NO_ACTION,
+        /** @var string */
+        private readonly string $onUpdate = ForeignKeyAdd::ON_UPDATE_NO_ACTION,
         /** @var bool */
         private readonly bool $deferrable = true,
-        /** @var mixed */
-        private readonly mixed $initially = 'deferred',
+        /** @var string */
+        private readonly string $initially = ForeignKeyAdd::INITIALLY_DEFERRED,
     ) {
         parent::__construct(database: $database, schema: $schema);
     }
@@ -90,14 +98,14 @@ class ForeignKeyAdd extends Change
         return $this->name;
     }
 
-    /** @return mixed */
-    public function getOnDelete(): mixed
+    /** @return string */
+    public function getOnDelete(): string
     {
         return $this->onDelete;
     }
 
-    /** @return mixed */
-    public function getOnUpdate(): mixed
+    /** @return string */
+    public function getOnUpdate(): string
     {
         return $this->onUpdate;
     }
@@ -108,8 +116,8 @@ class ForeignKeyAdd extends Change
         return $this->deferrable;
     }
 
-    /** @return mixed */
-    public function getInitially(): mixed
+    /** @return string */
+    public function getInitially(): string
     {
         return $this->initially;
     }
@@ -123,6 +131,6 @@ class ForeignKeyAdd extends Change
     #[\Override]
     public function isModified(AbstractObject $source): bool
     {
-        throw new \Exception("Implement me");
+        throw new \Exception("Here should be the manually generated code, please revert it.");
     }
 }

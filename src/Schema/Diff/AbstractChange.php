@@ -6,7 +6,7 @@ namespace MakinaCorpus\QueryBuilder\Schema\Diff;
 
 use MakinaCorpus\QueryBuilder\Schema\AbstractObject;
 
-abstract class Change
+abstract class AbstractChange
 {
     public function __construct(
         private readonly string $database,

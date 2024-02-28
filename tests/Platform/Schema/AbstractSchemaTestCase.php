@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Tests\Platform\Schema;
 
+use MakinaCorpus\QueryBuilder\Platform;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Error\UnsupportedFeatureError;
-use MakinaCorpus\QueryBuilder\Platform;
 use MakinaCorpus\QueryBuilder\Schema\SchemaManager;
 use MakinaCorpus\QueryBuilder\Tests\FunctionalTestCase;
 
@@ -74,6 +74,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                     <<<SQL
                     CREATE TABLE user_address (
                         id int UNIQUE NOT NULL auto_increment PRIMARY KEY,
+                        org_id int DEFAULT NULL,
                         user_id int NOT NULL,
                         city text NOT NULL,
                         country varchar(6) NOT NULL DEFAULT 'fr',
@@ -86,11 +87,11 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                 break;
 
             case Platform::SQLSERVER:
-                throw new \Exception("Not implemented yet.");
+                self::markTestIncomplete();
                 break;
 
             case Platform::SQLITE:
-                throw new \Exception("Not implemented yet.");
+                self::markTestIncomplete();
                 break;
 
             case Platform::POSTGRESQL:
@@ -125,6 +126,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                     <<<SQL
                     CREATE TABLE user_address (
                         id serial UNIQUE NOT NULL PRIMARY KEY,
+                        org_id int DEFAULT NULL,
                         user_id int NOT NULL,
                         city text NOT NULL,
                         country varchar(6) NOT NULL DEFAULT 'fr',
@@ -147,94 +149,240 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
         }
     }
 
-    public function testConstraintDrop(): void
+    public function testColumnAddNullable(): void
     {
-        self::markTestIncomplete("Not implemented yet.");
+        $this
+            ->getSchemaManager()
+            ->modify('test_db')
+            ->columnAdd('users', 'age', 'int', true)
+            ->commit()
+        ;
+
+        $column = $this
+            ->getSchemaManager()
+            ->getTable('test_db', 'users')
+            ->getColumn('age')
+        ;
+
+        // @todo missing default
+        self::assertTrue($column->isNullable());
+        self::assertStringContainsString('int', $column->getValueType());
     }
 
-    public function testConstraintRename(): void
+    public function testColumnAddNullableWithDefault(): void
     {
-        self::markTestIncomplete("Not implemented yet.");
+        $this
+            ->getSchemaManager()
+            ->modify('test_db')
+            ->columnAdd('users', 'age', 'int', true, '12')
+            ->commit()
+        ;
+
+        $column = $this
+            ->getSchemaManager()
+            ->getTable('test_db', 'users')
+            ->getColumn('age')
+        ;
+
+        // @todo missing default
+        self::assertTrue($column->isNullable());
+        self::assertStringContainsString('int', $column->getValueType());
     }
 
-    public function testUniqueConstraintAdd(): void
+    public function testColumnAddNotNull(): void
     {
-        self::markTestIncomplete("Not implemented yet.");
+        $this
+            ->getSchemaManager()
+            ->modify('test_db')
+            ->columnAdd('users', 'age', 'int', false)
+            ->commit()
+        ;
+
+        $column = $this
+            ->getSchemaManager()
+            ->getTable('test_db', 'users')
+            ->getColumn('age')
+        ;
+
+        // @todo missing default
+        self::assertFalse($column->isNullable());
+        self::assertStringContainsString('int', $column->getValueType());
     }
 
-    public function testUniqueConstraintDrop(): void
+    public function testColumnAddNotNullWithDefault(): void
     {
-        self::markTestIncomplete("Not implemented yet.");
-    }
+        $this
+            ->getSchemaManager()
+            ->modify('test_db')
+            ->columnAdd('users', 'age', 'int', false, '12')
+            ->commit()
+        ;
 
-    public function testForeignKeyAdd(): void
-    {
-        self::markTestIncomplete("Not implemented yet.");
-    }
+        $column = $this
+            ->getSchemaManager()
+            ->getTable('test_db', 'users')
+            ->getColumn('age')
+        ;
 
-    public function testForeignKeyDrop(): void
-    {
-        self::markTestIncomplete("Not implemented yet.");
-    }
-
-    public function testTableCreate(): void
-    {
-        self::markTestIncomplete("Not implemented yet.");
-    }
-
-    public function testTableRename(): void
-    {
-        self::markTestIncomplete("Not implemented yet.");
-    }
-
-    public function testTableAlter(): void
-    {
-        self::markTestIncomplete("Not implemented yet.");
-    }
-
-    public function testSchemaCreate(): void
-    {
-        self::markTestIncomplete("Not implemented yet.");
-    }
-
-    public function testSchemaDrop(): void
-    {
-        self::markTestIncomplete("Not implemented yet.");
-    }
-
-    public function testTableDrop(): void
-    {
-        self::markTestIncomplete("Not implemented yet.");
-    }
-
-    public function testColumnAdd(): void
-    {
-        self::markTestIncomplete("Not implemented yet.");
-    }
-
-    public function testColumnRename(): void
-    {
-        self::markTestIncomplete("Not implemented yet.");
+        // @todo missing default
+        self::assertFalse($column->isNullable());
+        self::assertStringContainsString('int', $column->getValueType());
     }
 
     public function testColumnModify(): void
     {
-        self::markTestIncomplete("Not implemented yet.");
+        self::markTestIncomplete();
+        self::expectNotToPerformAssertions();
     }
 
     public function testColumnDrop(): void
     {
-        self::markTestIncomplete("Not implemented yet.");
+        self::markTestIncomplete();
+        self::expectNotToPerformAssertions();
+    }
+
+    public function testColumnRename(): void
+    {
+        self::markTestIncomplete();
+        self::expectNotToPerformAssertions();
+    }
+
+    public function testConstraintDrop(): void
+    {
+        self::markTestIncomplete();
+        self::expectNotToPerformAssertions();
+    }
+
+    public function testConstraintModify(): void
+    {
+        self::markTestIncomplete();
+        self::expectNotToPerformAssertions();
+    }
+
+    public function testConstraintRename(): void
+    {
+        self::markTestIncomplete();
+        self::expectNotToPerformAssertions();
+    }
+
+    public function testForeignKeyAdd(): void
+    {
+        $this
+            ->getSchemaManager()
+            ->modify('test_db')
+            ->foreignKeyAdd('user_address', ['org_id'], 'org', ['id'], null)
+            ->commit()
+        ;
+
+        self::expectNotToPerformAssertions();
+    }
+
+    public function testForeignKeyModify(): void
+    {
+        self::markTestIncomplete();
+        self::expectNotToPerformAssertions();
+    }
+
+    public function testForeignKeyDrop(): void
+    {
+        $this
+            ->getSchemaManager()
+            ->modify('test_db')
+            ->foreignKeyAdd('user_address', ['org_id'], 'org', ['id'], null, 'user_address_org_org_id_fk')
+            ->commit()
+        ;
+
+        $this
+            ->getSchemaManager()
+            ->modify('test_db')
+            ->foreignKeyDrop('user_address', 'user_address_org_org_id_fk')
+            ->commit()
+        ;
+
+        self::expectNotToPerformAssertions();
+    }
+
+    public function testForeignKeyRename(): void
+    {
+        self::markTestIncomplete();
+        self::expectNotToPerformAssertions();
     }
 
     public function testIndexCreate(): void
     {
-        self::markTestIncomplete("Not implemented yet.");
+        $this
+            ->getSchemaManager()
+            ->modify('test_db')
+            ->indexCreate('users', ['email'], 'users_email_idx')
+            ->commit()
+        ; 
     }
 
     public function testIndexDrop(): void
     {
-        self::markTestIncomplete("Not implemented yet.");
+        $this
+            ->getSchemaManager()
+            ->modify('test_db')
+            ->indexCreate('users', ['email'], 'users_email_idx')
+            ->commit()
+        ;
+
+        $this
+            ->getSchemaManager()
+            ->modify('test_db')
+            ->indexDrop('users', 'users_email_idx')
+            ->commit()
+        ;
+
+        self::expectNotToPerformAssertions();
+    }
+
+    public function testIndexRename(): void
+    {
+        self::markTestIncomplete();
+        self::expectNotToPerformAssertions();
+    }
+
+    public function testPrimaryKeyAdd(): void
+    {
+        self::markTestIncomplete();
+        self::expectNotToPerformAssertions();
+    }
+
+    public function testPrimaryKeyDrop(): void
+    {
+        self::markTestIncomplete();
+        self::expectNotToPerformAssertions();
+    }
+
+    public function testTableCreate(): void
+    {
+        self::markTestIncomplete();
+        self::expectNotToPerformAssertions();
+    }
+
+    public function testTableDrop(): void
+    {
+        self::markTestIncomplete();
+        self::expectNotToPerformAssertions();
+    }
+
+    public function testTableRename(): void
+    {
+        self::markTestIncomplete();
+        self::expectNotToPerformAssertions();
+    }
+
+    public function testUniqueConstraintAdd(): void
+    {
+        self::markTestIncomplete();
+        self::expectNotToPerformAssertions();
+    }
+
+    public function testUniqueConstraintDrop(): void
+    {
+        self::markTestIncomplete();
+        self::expectNotToPerformAssertions();
     }
 
     public function testListTables(): void

@@ -1,16 +1,24 @@
 <?php
 
-declare (strict_type=1);
+declare (strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Schema\Diff\Change;
 
 use MakinaCorpus\QueryBuilder\Schema\AbstractObject;
-use MakinaCorpus\QueryBuilder\Schema\Diff\Change;
+use MakinaCorpus\QueryBuilder\Schema\Diff\AbstractChange;
 
 /**
  * Modify an arbitrary constraint on a table.
+ *
+ * This code is generated using bin/generate_changes.php.
+ *
+ * It includes some manually written code, please review changes and apply
+ * manual code after each regeneration.
+ *
+ * @see \MakinaCorpus\QueryBuilder\Schema\Diff\Change\Template\Generator
+ * @see bin/generate_changes.php
  */
-class ConstraintModify extends Change
+class ConstraintModify extends AbstractChange
 {
     const INITIALLY_DEFERRED = 'deferred';
     const INITIALLY_IMMEDIATE = 'immediate';
@@ -24,8 +32,8 @@ class ConstraintModify extends Change
         private readonly string $table,
         /** @var bool */
         private readonly bool $deferrable = true,
-        /** @var mixed */
-        private readonly mixed $initially = 'deferred',
+        /** @var string */
+        private readonly string $initially = ConstraintModify::INITIALLY_DEFERRED,
     ) {
         parent::__construct(database: $database, schema: $schema);
     }
@@ -48,8 +56,8 @@ class ConstraintModify extends Change
         return $this->deferrable;
     }
 
-    /** @return mixed */
-    public function getInitially(): mixed
+    /** @return string */
+    public function getInitially(): string
     {
         return $this->initially;
     }
@@ -63,6 +71,6 @@ class ConstraintModify extends Change
     #[\Override]
     public function isModified(AbstractObject $source): bool
     {
-        throw new \Exception("Implement me");
+        throw new \Exception("Here should be the manually generated code, please revert it.");
     }
 }

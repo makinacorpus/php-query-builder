@@ -1,16 +1,24 @@
 <?php
 
-declare (strict_type=1);
+declare (strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Schema\Diff\Change;
 
 use MakinaCorpus\QueryBuilder\Schema\AbstractObject;
-use MakinaCorpus\QueryBuilder\Schema\Diff\Change;
+use MakinaCorpus\QueryBuilder\Schema\Diff\AbstractChange;
 
 /**
  * Modify a FOREIGN KEY constraint on a table.
+ *
+ * This code is generated using bin/generate_changes.php.
+ *
+ * It includes some manually written code, please review changes and apply
+ * manual code after each regeneration.
+ *
+ * @see \MakinaCorpus\QueryBuilder\Schema\Diff\Change\Template\Generator
+ * @see bin/generate_changes.php
  */
-class ForeignKeyModify extends Change
+class ForeignKeyModify extends AbstractChange
 {
     const INITIALLY_DEFERRED = 'deferred';
     const INITIALLY_IMMEDIATE = 'immediate';
@@ -32,22 +40,14 @@ class ForeignKeyModify extends Change
         string $schema,
         /** @var string */
         private readonly string $table,
-        /** @var array<string> */
-        private readonly array $columns,
         /** @var string */
-        private readonly string $foreignTable,
-        /** @var array<string> */
-        private readonly array $foreignColumns,
+        private readonly string $onDelete = ForeignKeyModify::ON_DELETE_NO_ACTION,
         /** @var string */
-        private readonly null|string $foreignSchema = null,
-        /** @var mixed */
-        private readonly mixed $onDelete = 'no action',
-        /** @var mixed */
-        private readonly mixed $onUpdate = 'no action',
+        private readonly string $onUpdate = ForeignKeyModify::ON_UPDATE_NO_ACTION,
         /** @var bool */
         private readonly bool $deferrable = true,
-        /** @var mixed */
-        private readonly mixed $initially = 'deferred',
+        /** @var string */
+        private readonly string $initially = ForeignKeyModify::INITIALLY_DEFERRED,
     ) {
         parent::__construct(database: $database, schema: $schema);
     }
@@ -58,38 +58,14 @@ class ForeignKeyModify extends Change
         return $this->table;
     }
 
-    /** @return array<string> */
-    public function getColumns(): array
-    {
-        return $this->columns;
-    }
-
     /** @return string */
-    public function getForeignTable(): string
-    {
-        return $this->foreignTable;
-    }
-
-    /** @return array<string> */
-    public function getForeignColumns(): array
-    {
-        return $this->foreignColumns;
-    }
-
-    /** @return string */
-    public function getForeignSchema(): null|string
-    {
-        return $this->foreignSchema;
-    }
-
-    /** @return mixed */
-    public function getOnDelete(): mixed
+    public function getOnDelete(): string
     {
         return $this->onDelete;
     }
 
-    /** @return mixed */
-    public function getOnUpdate(): mixed
+    /** @return string */
+    public function getOnUpdate(): string
     {
         return $this->onUpdate;
     }
@@ -100,8 +76,8 @@ class ForeignKeyModify extends Change
         return $this->deferrable;
     }
 
-    /** @return mixed */
-    public function getInitially(): mixed
+    /** @return string */
+    public function getInitially(): string
     {
         return $this->initially;
     }
@@ -115,6 +91,6 @@ class ForeignKeyModify extends Change
     #[\Override]
     public function isModified(AbstractObject $source): bool
     {
-        throw new \Exception("Implement me");
+        throw new \Exception("Here should be the manually generated code, please revert it.");
     }
 }

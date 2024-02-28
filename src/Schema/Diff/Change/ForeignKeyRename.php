@@ -1,32 +1,34 @@
 <?php
 
-declare (strict_type=1);
+declare (strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Schema\Diff\Change;
 
 use MakinaCorpus\QueryBuilder\Schema\AbstractObject;
-use MakinaCorpus\QueryBuilder\Schema\Diff\Change;
+use MakinaCorpus\QueryBuilder\Schema\Diff\AbstractChange;
 
 /**
  * Rename an arbitrary constraint.
+ *
+ * This code is generated using bin/generate_changes.php.
+ *
+ * It includes some manually written code, please review changes and apply
+ * manual code after each regeneration.
+ *
+ * @see \MakinaCorpus\QueryBuilder\Schema\Diff\Change\Template\Generator
+ * @see bin/generate_changes.php
  */
-class ForeignKeyRename extends Change
+class ForeignKeyRename extends AbstractChange
 {
     public function __construct(
         string $database,
         string $schema,
         /** @var string */
         private readonly string $table,
-        /** @var array<string> */
-        private readonly array $columns,
         /** @var string */
-        private readonly string $foreignTable,
-        /** @var array<string> */
-        private readonly array $foreignColumns,
+        private readonly string $name,
         /** @var string */
         private readonly string $newName,
-        /** @var string */
-        private readonly null|string $foreignSchema = null,
     ) {
         parent::__construct(database: $database, schema: $schema);
     }
@@ -37,28 +39,10 @@ class ForeignKeyRename extends Change
         return $this->table;
     }
 
-    /** @return array<string> */
-    public function getColumns(): array
-    {
-        return $this->columns;
-    }
-
     /** @return string */
-    public function getForeignTable(): string
+    public function getName(): string
     {
-        return $this->foreignTable;
-    }
-
-    /** @return array<string> */
-    public function getForeignColumns(): array
-    {
-        return $this->foreignColumns;
-    }
-
-    /** @return string */
-    public function getForeignSchema(): null|string
-    {
-        return $this->foreignSchema;
+        return $this->name;
     }
 
     /** @return string */
@@ -76,6 +60,6 @@ class ForeignKeyRename extends Change
     #[\Override]
     public function isModified(AbstractObject $source): bool
     {
-        throw new \Exception("Implement me");
+        throw new \Exception("Here should be the manually generated code, please revert it.");
     }
 }

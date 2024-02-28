@@ -1,16 +1,24 @@
 <?php
 
-declare (strict_type=1);
+declare (strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Schema\Diff\Change;
 
 use MakinaCorpus\QueryBuilder\Schema\AbstractObject;
-use MakinaCorpus\QueryBuilder\Schema\Diff\Change;
+use MakinaCorpus\QueryBuilder\Schema\Diff\AbstractChange;
 
 /**
  * Rename an arbitrary constraint.
+ *
+ * This code is generated using bin/generate_changes.php.
+ *
+ * It includes some manually written code, please review changes and apply
+ * manual code after each regeneration.
+ *
+ * @see \MakinaCorpus\QueryBuilder\Schema\Diff\Change\Template\Generator
+ * @see bin/generate_changes.php
  */
-class IndexRename extends Change
+class IndexRename extends AbstractChange
 {
     public function __construct(
         string $database,
@@ -18,9 +26,9 @@ class IndexRename extends Change
         /** @var string */
         private readonly string $table,
         /** @var string */
-        private readonly string $newName,
+        private readonly string $name,
         /** @var string */
-        private readonly null|string $name = null,
+        private readonly string $newName,
     ) {
         parent::__construct(database: $database, schema: $schema);
     }
@@ -32,7 +40,7 @@ class IndexRename extends Change
     }
 
     /** @return string */
-    public function getName(): null|string
+    public function getName(): string
     {
         return $this->name;
     }
@@ -52,6 +60,6 @@ class IndexRename extends Change
     #[\Override]
     public function isModified(AbstractObject $source): bool
     {
-        throw new \Exception("Implement me");
+        throw new \Exception("Here should be the manually generated code, please revert it.");
     }
 }

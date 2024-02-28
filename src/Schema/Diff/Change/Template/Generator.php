@@ -89,16 +89,16 @@ class Generator
             'foreign_key' => [
                 'properties' => [
                     'table' => 'string',
-                    'columns' => 'string[]',
-                    'foreign_table' => 'string',
-                    'foreign_columns' => 'string[]',
-                    'foreign_schema' => ['type' => 'string', 'nullable' => true],
                 ],
                 'changes' => [
                     'add' => [
                         'description' => 'Add a FOREIGN KEY constraint on a table.',
                         'creation' => true,
                         'properties' => [
+                            'columns' => 'string[]',
+                            'foreign_table' => 'string',
+                            'foreign_columns' => 'string[]',
+                            'foreign_schema' => ['type' => 'string', 'nullable' => true],
                             'name' => ['type' => 'string', 'nullable' => true],
                             'on_delete' => ['enum' => ['set null', 'cascade', 'no action', 'restrict', 'set default'], 'default' => 'no action'],
                             'on_update' => ['enum' => ['set null', 'cascade', 'no action', 'restrict', 'set default'], 'default' => 'no action'],
@@ -120,13 +120,14 @@ class Generator
                         'description' => 'Drop a FOREIGN KEY constraint from a table.',
                         'creation' => false,
                         'properties' => [
-                            'name' => ['type' => 'string', 'nullable' => true],
+                            'name' => ['type' => 'string'],
                         ],
                     ],
                     'rename' => [
                         'description' => 'Rename an arbitrary constraint.',
                         'creation' => false,
                         'properties' => [
+                            'name' => ['type' => 'string'],
                             'new_name' => ['type' => 'string'],
                         ],
                     ],
@@ -137,8 +138,8 @@ class Generator
                     'table' => 'string',
                 ],
                 'changes' => [
-                    'add' => [
-                        'description' => 'Add an INDEX on a table.',
+                    'create' => [
+                        'description' => 'Create an INDEX on a table.',
                         'creation' => true,
                         'properties' => [
                             'columns' => 'string[]',
@@ -150,14 +151,14 @@ class Generator
                         'description' => 'Drop an INDEX from a table.',
                         'creation' => false,
                         'properties' => [
-                            'name' => ['type' => 'string', 'nullable' => true],
+                            'name' => ['type' => 'string'],
                         ],
                     ],
                     'rename' => [
                         'description' => 'Rename an arbitrary constraint.',
                         'creation' => false,
                         'properties' => [
-                            'name' => ['type' => 'string', 'nullable' => true],
+                            'name' => ['type' => 'string'],
                             'new_name' => ['type' => 'string'],
                         ],
                     ],
@@ -190,7 +191,11 @@ class Generator
                         'description' => 'Create a table.',
                         'creation' => true,
                         'properties' => [
-                            'columns' => 'array[]',
+                            'columns' => ['type' => 'ColumnAdd[]', 'default' => []],
+                            'primary_key' => ['type' => 'PrimaryKeyAdd', 'nullable' => true],
+                            'foreign_keys' => ['type' => 'ForeignKeyAdd[]', 'default' => []],
+                            'unique_keys' => ['type' => 'UniqueConstraintAdd[]', 'default' => []],
+                            'indexes' => ['type' => 'IndexCreate[]', 'default' => []],
                         ],
                     ],
                     'drop' => [
@@ -219,13 +224,16 @@ class Generator
                         'creation' => true,
                         'properties' => [
                             'columns' => 'string[]',
-                            'name' => 'null|string',
+                            'name' => ['type' => 'string', 'nullable' => true],
                             'nulls_distinct' => ['type' => 'bool', 'default' => false],
                         ],
                     ],
                     'drop' => [
                         'description' => 'Drop a UNIQUE constraint from a table.',
                         'creation' => true,
+                        'properties' => [
+                            'name' => 'string',
+                        ],
                     ],
                 ],
             ],
@@ -234,9 +242,79 @@ class Generator
 
     public function generateFromFile(): void
     {
+        $additional = [];
         foreach ($this->createDefinition() as $prefix => $object) {
-            $this->objectType($prefix, $object);
+            $this->objectType($prefix, $object, $additional);
         }
+
+        $createMethodsString = \implode("\n\n", $additional['manager']['methods']);
+        $matcheCasesString = \implode("\n", $additional['manager']['matchCases']);
+
+        $forSchemaManager = <<<EOT
+            
+            {$createMethodsString}
+            
+                /**
+                 * Apply a given change in the current schema.
+                 */
+                protected function apply(Change \$change): void
+                {
+                    \$expression = match (\get_class(\$change)) {
+            {$matcheCasesString}
+                        default => throw new QueryBuilderError(\sprintf("Unsupported alteration operation: %s", \get_class(\$change))),
+                    };
+            
+                    \$this->executeChange(\$expression);
+                }
+            
+            EOT;
+
+        print $forSchemaManager;
+
+        $createMethodsString = \implode("\n\n", $additional['transaction']['methods']);
+        $useString = "\n" . \implode("\n", $additional['transaction']['use']);
+
+        $schemaTransaction = <<<EOT
+            <?php
+            
+            declare(strict_types=1);
+            
+            namespace MakinaCorpus\QueryBuilder\Schema\Diff;
+            
+            use MakinaCorpus\QueryBuilder\Schema\SchemaManager;{$useString}
+            
+            /**
+             * This code is generated using bin/generate_changes.php.
+             *
+             * Please do not modify it manually.
+             *
+             * @see \\MakinaCorpus\\QueryBuilder\\Schema\\Diff\\Change\\Template\\Generator
+             * @see bin/generate_changes.php
+             */
+            class SchemaTransaction
+            {
+                private ChangeLog \$changeLog;
+            
+                public function __construct(
+                    private readonly SchemaManager \$schemaManager,
+                    private readonly string \$database,
+                    private readonly string \$schema,
+                    private readonly \Closure \$onCommit,
+                ) {
+                    \$this->changeLog = new ChangeLog(\$schemaManager);
+                }
+                
+                public function commit(): void
+                {
+                    (\$this->onCommit)(\$this->changeLog->diff());
+                }
+            
+            {$createMethodsString}
+            
+            }
+            EOT;
+
+        \file_put_contents(\dirname(__DIR__, 2) . '/SchemaTransaction.php', $schemaTransaction);
     }
 
     private function camelize(string $input, bool $first = true): string
@@ -258,28 +336,52 @@ class Generator
         return \addcslashes($input, '\\');
     }
 
-    private function objectType(string $prefix, array $object)
+    private function objectType(string $prefix, array $object, array &$additional): array
     {
+        $ret = [];
         foreach ($object['changes'] as $suffix => $change) {
             $className = $this->camelize($prefix) . $this->camelize($suffix);
-
-            $this->objectChange($className, $object, $change);
+            $this->objectChange($className, $object, $change, $additional);
+            $ret[] = $className;
         }
+        return $ret;
     }
 
-    private function objectChange(string $className, array $object, array $change)
+    private function objectChange(string $className, array $object, array $change, array &$additional): void
     {
+        $transactionMethodName = lcfirst($className);
+        $transactionProperties = [];
+        $transactionParameters = [];
+        $transactionPropertiesWithDefault = [];
+
         $constructorProperties = [];
         $constructorPropertiesWithDefault = [];
         $propertiesGetters = [];
         $creationString = ($change['creation'] ?? false) ? 'true' : 'false';
         $classConstants = [];
 
+        $warning = <<<EOT
+             * This code is generated using bin/generate_changes.php.
+             *
+             * It includes some manually written code, please review changes and apply
+             * manual code after each regeneration.
+             *
+             * @see \\MakinaCorpus\\QueryBuilder\\Schema\\Diff\\Change\\Template\\Generator
+             * @see bin/generate_changes.php
+            EOT;
+
         if ($description = ($change['description'] ?? null)) {
             $description = <<<EOT
-                
                 /**
                  * {$description}
+                 *
+                {$warning}
+                 */
+                EOT;
+        } else {
+            $description = <<<EOT
+                /**
+                {$warning}
                  */
                 EOT;
         }
@@ -307,8 +409,8 @@ class Generator
                     $propDefault = " = '" . $this->escape($property->default) . "'";
                 } else if (['bool'] === $property->types) {
                     $propDefault = " = " . (($property->default) ? 'true' : 'false');
-                } else {
-                    $propDefault = ' = ' . $this->escape($property->default);
+                } else if ($property->isArray && [] === $property->default) {
+                    $propDefault = ' = []';
                 }
             } else if ($property->nullable) {
                 $propDefault = ' = null';
@@ -320,6 +422,9 @@ class Generator
                 foreach ($property->enumValues as $value) {
                     $enumCaseName = $this->upperize($property->name . '_' . $value);
                     $classConstants[$property->name][$enumCaseName] = "'" . $this->escape((string) $value) . "'";
+                    if ($value === $property->default) {
+                        $propDefault = ' = ' . $className . '::' . $enumCaseName;
+                    }
                 }
             }
 
@@ -351,6 +456,25 @@ class Generator
                     return \$this->{$propName};
                 }
             EOT;
+
+            /*
+             * Transaction.
+             */
+
+            $transactionPropertyString = <<<EOT
+                {$propType} \${$propName}{$propDefault},
+                EOT;
+
+            $transactionParameters[] = <<<EOT
+                {$propName}: \${$propName},
+                EOT;
+
+            // Position all properties with a default values after the others.
+            if ($propDefault) {
+                $transactionPropertiesWithDefault[] = $transactionPropertyString;
+            } else {
+                $transactionProperties[] = $transactionPropertyString;
+            }
         }
 
         // Format property getters.
@@ -386,14 +510,15 @@ class Generator
         $file = <<<EOT
         <?php
         
-        declare (strict_type=1);
+        declare (strict_types=1);
         
         namespace MakinaCorpus\\QueryBuilder\\Schema\\Diff\\Change;
         
         use MakinaCorpus\\QueryBuilder\\Schema\\AbstractObject;
-        use MakinaCorpus\\QueryBuilder\\Schema\\Diff\\Change;
+        use MakinaCorpus\\QueryBuilder\\Schema\\Diff\\AbstractChange;
+        
         {$description}
-        class {$className} extends Change
+        class {$className} extends AbstractChange
         {{$classConstantsString}
             public function __construct(
                 string \$database,
@@ -413,13 +538,66 @@ class Generator
             #[\\Override]
             public function isModified(AbstractObject \$source): bool
             {
-                throw new \Exception("Implement me");
+                throw new \Exception("Here should be the manually generated code, please revert it.");
             }
         }
         
         EOT;
 
         \file_put_contents(\dirname(__DIR__) . '/' . $className . '.php', $file);
+
+        /*
+         * Manager methods and code.
+         */
+
+        $additional['manager']['methods'][] = <<<EOT
+                /**
+                 * Override if standard SQL is not enough.
+                 */
+                protected function write{$className}(Change\\{$className} \$change): Expression
+                {
+                    throw new \Exception("Not implemented yet.");
+                }
+            EOT;
+
+        $additional['manager']['matchCases'][] = <<<EOT
+                        Change\\{$className}::class => \$this->write{$className}(\$change),
+            EOT;
+
+        /*
+         * Transaction methods and code.
+         */
+
+        $transactionPropertiesString = '';
+        if ($transactionProperties && $transactionPropertiesWithDefault) {
+            $transactionPropertiesString = \implode("\n        ", $transactionProperties);
+            $transactionPropertiesString .= "\n        " . \implode("\n        ", $transactionPropertiesWithDefault);
+        } else if ($transactionProperties) {
+            $transactionPropertiesString = \implode("\n        ", $transactionProperties);
+        } else if ($transactionPropertiesWithDefault) {
+            $transactionPropertiesString = \implode("\n        ", $transactionPropertiesWithDefault);
+        }
+
+        $transactionParametersString = \implode("\n                ", $transactionParameters);
+
+        $additional['transaction']['methods'][] = <<<EOT
+                public function {$transactionMethodName}(
+                    {$transactionPropertiesString}
+                    ?string \$schema = null,
+                ): static {
+                    \$this->changeLog->add(
+                        new {$className}(
+                            {$transactionParametersString}
+                            schema: \$schema ?? \$this->schema,
+                            database: \$this->database,
+                        ),
+                    );
+            
+                    return \$this;
+                }
+            EOT;
+
+        $additional['transaction']['use'][] = 'use MakinaCorpus\\QueryBuilder\\Schema\\Diff\\Change\\' . $className . ';';
     }
 
     private function property(string $name, string|array $property, bool $parent = false): GeneratorProperty
@@ -428,16 +606,23 @@ class Generator
             $property = ['type' => $property];
         }
         if (empty($property['type'])) {
-            $property['type'] = ['mixed'];
+            if (empty($property['enum'])) {
+                $property['type'] = ['mixed'];
+            } else {
+                $property['type'] = ['string'];
+            }
         } else if (\is_string($property['type'])) {
             $property['type'] = \explode('|', $property['type']);
         }
+
+        $isArray = false;
 
         $docTypes = [];
         foreach ($property['type'] as $key => $type) {
             if (\str_ends_with($type, '[]')) {
                 $type = \substr($type, 0, -2);
                 $docTypes[] = 'array<' . $type . '>';
+                $isArray = true;
                 $property['type'][$key] = 'array';
             } else {
                 $docTypes[] = $type;
@@ -448,6 +633,7 @@ class Generator
             default: $property['default'] ?? null,
             docType: \implode('|', $docTypes),
             enumValues: $property['enum'] ?? [],
+            isArray: $isArray,
             name: $name,
             nullable: $property['nullable'] ?? false,
             parent: $parent,
@@ -462,8 +648,9 @@ class GeneratorProperty
         public readonly string $name,
         public readonly array $types,
         public readonly string $docType,
-        public readonly null|bool|string $default = null,
+        public readonly null|bool|string|array $default = null,
         public readonly array $enumValues = [],
+        public readonly bool $isArray = false,
         public readonly bool $nullable = false,
         public readonly bool $parent = false,
     ) {}
