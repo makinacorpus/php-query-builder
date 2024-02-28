@@ -8,10 +8,8 @@ use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 
 class Table extends AbstractObject
 {
-    /** @var null|callable */
     private ?\Closure $fetchForeignKeys = null;
     private ?array $foreignKeys = null;
-    /** @var null|callable */
     private ?\Closure $fetchReverseForeignKeys = null;
     private ?array $reverseForeignKeys = null;
 

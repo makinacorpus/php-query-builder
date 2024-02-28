@@ -21,10 +21,7 @@ use MakinaCorpus\QueryBuilder\Error\ValueConversionError;
 final class ArrayRowParser
 {
     /**
-     * Parse a pgsql array return string.
-     *
-     * @return string[]
-     *   Raw SQL values.
+     * Is the given raw SQL value an array.
      */
     public static function isArray(string $string): bool
     {
