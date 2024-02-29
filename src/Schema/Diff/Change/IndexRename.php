@@ -4,7 +4,6 @@ declare (strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Schema\Diff\Change;
 
-use MakinaCorpus\QueryBuilder\Schema\AbstractObject;
 use MakinaCorpus\QueryBuilder\Schema\Diff\AbstractChange;
 
 /**
@@ -30,7 +29,10 @@ class IndexRename extends AbstractChange
         /** @var string */
         private readonly string $newName,
     ) {
-        parent::__construct(database: $database, schema: $schema);
+        parent::__construct(
+            database: $database,
+            schema: $schema,
+        );
     }
 
     /** @return string */
@@ -49,17 +51,5 @@ class IndexRename extends AbstractChange
     public function getNewName(): string
     {
         return $this->newName;
-    }
-
-    #[\Override]
-    public function isCreation(): bool
-    {
-        return false;
-    }
-
-    #[\Override]
-    public function isModified(AbstractObject $source): bool
-    {
-        throw new \Exception("Here should be the manually generated code, please revert it.");
     }
 }

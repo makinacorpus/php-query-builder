@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Schema\Diff;
 
-use MakinaCorpus\QueryBuilder\Schema\AbstractObject;
-
+/**
+ * Changes on the schema.
+ */
 abstract class AbstractChange
 {
     public function __construct(
@@ -22,14 +23,4 @@ abstract class AbstractChange
     {
         return $this->schema;
     }
-
-    /**
-     * Is this change an object creation.
-     */
-    public abstract function isCreation(): bool;
-
-    /**
-     * Check if current change actually changes the schema.
-     */
-    public abstract function isModified(AbstractObject $source): bool;
 }

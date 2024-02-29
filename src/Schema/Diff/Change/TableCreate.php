@@ -4,7 +4,6 @@ declare (strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Schema\Diff\Change;
 
-use MakinaCorpus\QueryBuilder\Schema\AbstractObject;
 use MakinaCorpus\QueryBuilder\Schema\Diff\AbstractChange;
 
 /**
@@ -35,8 +34,13 @@ class TableCreate extends AbstractChange
         private readonly array $uniqueKeys = [],
         /** @var array<IndexCreate> */
         private readonly array $indexes = [],
+        /** @var bool */
+        private readonly bool $temporary = false,
     ) {
-        parent::__construct(database: $database, schema: $schema);
+        parent::__construct(
+            database: $database,
+            schema: $schema,
+        );
     }
 
     /** @return string */
@@ -75,15 +79,9 @@ class TableCreate extends AbstractChange
         return $this->indexes;
     }
 
-    #[\Override]
-    public function isCreation(): bool
+    /** @return bool */
+    public function isTemporary(): bool
     {
-        return true;
-    }
-
-    #[\Override]
-    public function isModified(AbstractObject $source): bool
-    {
-        throw new \Exception("Here should be the manually generated code, please revert it.");
+        return $this->temporary;
     }
 }

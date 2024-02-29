@@ -4,7 +4,6 @@ declare (strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Schema\Diff\Change;
 
-use MakinaCorpus\QueryBuilder\Schema\AbstractObject;
 use MakinaCorpus\QueryBuilder\Schema\Diff\AbstractChange;
 
 /**
@@ -27,8 +26,13 @@ class PrimaryKeyAdd extends AbstractChange
         private readonly string $table,
         /** @var array<string> */
         private readonly array $columns,
+        /** @var string */
+        private readonly null|string $name = null,
     ) {
-        parent::__construct(database: $database, schema: $schema);
+        parent::__construct(
+            database: $database,
+            schema: $schema,
+        );
     }
 
     /** @return string */
@@ -37,21 +41,31 @@ class PrimaryKeyAdd extends AbstractChange
         return $this->table;
     }
 
+    /** @return string */
+    public function getName(): null|string
+    {
+        return $this->name;
+    }
+
     /** @return array<string> */
     public function getColumns(): array
     {
         return $this->columns;
     }
 
-    #[\Override]
-    public function isCreation(): bool
+    /**
+     * Used in edge cases, for example when you CREATE INDEX in MySQL,
+     * it requires you to give an index name, but this API doesn't
+     * because almost all RDBMS will generate one for you. This is not
+     * part of the API, it simply help a very few of those edge cases
+     * not breaking.
+     */
+    public function generateName(): string
     {
-        return true;
-    }
+        $pieces = [];
+        $pieces[] = $this->table;
+        $pieces = 'pkey';
 
-    #[\Override]
-    public function isModified(AbstractObject $source): bool
-    {
-        throw new \Exception("Here should be the manually generated code, please revert it.");
+        return \implode('_', \array_filter($pieces));
     }
 }

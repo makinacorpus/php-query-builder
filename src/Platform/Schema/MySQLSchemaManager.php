@@ -5,14 +5,20 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Platform\Schema;
 
 use MakinaCorpus\QueryBuilder\Expression;
+use MakinaCorpus\QueryBuilder\Error\UnsupportedFeatureError;
 use MakinaCorpus\QueryBuilder\Result\ResultRow;
 use MakinaCorpus\QueryBuilder\Schema\Column;
 use MakinaCorpus\QueryBuilder\Schema\ForeignKey;
 use MakinaCorpus\QueryBuilder\Schema\Key;
 use MakinaCorpus\QueryBuilder\Schema\SchemaManager;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\ForeignKeyAdd;
+use MakinaCorpus\QueryBuilder\Schema\Diff\Change\IndexCreate;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\IndexDrop;
-use MakinaCorpus\QueryBuilder\Error\UnsupportedFeatureError;
+use MakinaCorpus\QueryBuilder\Schema\Diff\Change\IndexRename;
+use MakinaCorpus\QueryBuilder\Schema\Diff\Change\PrimaryKeyDrop;
+use MakinaCorpus\QueryBuilder\Schema\Diff\Change\UniqueConstraintAdd;
+use MakinaCorpus\QueryBuilder\Schema\Diff\Change\UniqueConstraintDrop;
+
 
 /**
  * Please note that some functions here might use information_schema tables
@@ -23,6 +29,12 @@ class MySQLSchemaManager extends SchemaManager
 {
     #[\Override]
     public function supportsTransaction(): bool
+    {
+        return false;
+    }
+
+    #[\Override]
+    public function supportsSchema(): bool
     {
         return false;
     }
@@ -314,12 +326,6 @@ class MySQLSchemaManager extends SchemaManager
     }
 
     #[\Override]
-    protected function table(string $name, ?string $schema = null): Expression
-    {
-        return $this->expression()->table($name, null, null);
-    }
-
-    #[\Override]
     protected function writeForeignKeySpec(ForeignKeyAdd $change): Expression
     {
         if ($change->isDeferrable()) {
@@ -329,10 +335,10 @@ class MySQLSchemaManager extends SchemaManager
         return $this->writeConstraintSpec(
             $change->getName(),
             $this->raw(
-                'FOREIGN KEY (?::identifier[]) REFERENCES ? (?::identifier[])',
+                'FOREIGN KEY (?::id[]) REFERENCES ?::table (?::id[])',
                 [
                     $change->getColumns(),
-                    $this->table($change->getForeignTable(), $change->getForeignSchema()),
+                    $change->getForeignTable(),
                     $change->getForeignColumns(),
                 ],
             ),
@@ -340,14 +346,48 @@ class MySQLSchemaManager extends SchemaManager
     }
 
     #[\Override]
+    protected function writeIndexCreate(IndexCreate $change): iterable|Expression
+    {
+        // MySQL requires a name.
+        $name = $change->getName() ?? $change->generateName();
+
+        return $this->raw('CREATE INDEX ?::id ON ? (?::id[])', [$name, $this->table($change), $change->getColumns()]);
+    }
+
+    #[\Override]
     protected function writeIndexDrop(IndexDrop $change): Expression
     {
-        return $this->raw(
-            'DROP INDEX ?::identifier ON ?::identifier',
-            [
-                $change->getName(),
-                $change->getTable(),
-            ],
-        );
+        return $this->raw('DROP INDEX ?::id ON ?::table', [$change->getName(), $change->getTable()]);
+    }
+
+    #[\Override]
+    protected function writeIndexRename(IndexRename $change): iterable|Expression
+    {
+        return $this->raw('ALTER TABLE ?::table RENAME INDEX ?::id TO ?::id', [$change->getTable(), $change->getName(), $change->getNewName()]);
+    }
+
+    #[\Override]
+    protected function writePrimaryKeyDrop(PrimaryKeyDrop $change): iterable|Expression
+    {
+        return $this->raw('ALTER TABLE ?::table DROP PRIMARY KEY', [$change->getTable()]);
+    }
+
+    #[\Override]
+    protected function writeUniqueConstraintAdd(UniqueConstraintAdd $change): Expression
+    {
+        if (!$change->isNullsDistinct()) {
+            // @todo Implement this with PostgreSQL.
+            throw new UnsupportedFeatureError("UNIQUE NULLS NOT DISTINCT is not supported by this vendor.");
+        }
+        if ($name = $change->getName()) {
+            return $this->raw('ALTER TABLE ?::table ADD UNIQUE ?::id (?::id[])', [$change->getTable(), $name, $change->getColumns()]);
+        }
+        return $this->raw('ALTER TABLE ?::table ADD UNIQUE (?::id[])', [$change->getTable(), $change->getColumns()]);
+    }
+
+    #[\Override]
+    protected function writeUniqueConstraintDrop(UniqueConstraintDrop $change): Expression
+    {
+        return $this->writeConstraintDropSpec($change->getName(), $change->getTable(), $change->getSchema());
     }
 }

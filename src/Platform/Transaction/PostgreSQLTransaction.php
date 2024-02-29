@@ -33,7 +33,7 @@ class PostgreSQLTransaction extends AbstractTransaction
      */
     protected function doCreateSavepoint(string $name): void
     {
-        $this->executor->executeStatement("SAVEPOINT ?::identifier", $name);
+        $this->executor->executeStatement("SAVEPOINT ?::id", $name);
     }
 
     /**
@@ -41,7 +41,7 @@ class PostgreSQLTransaction extends AbstractTransaction
      */
     protected function doRollbackToSavepoint(string $name): void
     {
-        $this->executor->executeStatement("ROLLBACK TO SAVEPOINT ?::identifier", $name);
+        $this->executor->executeStatement("ROLLBACK TO SAVEPOINT ?::id", $name);
     }
 
     /**
@@ -65,7 +65,7 @@ class PostgreSQLTransaction extends AbstractTransaction
      */
     protected function doDeferConstraints(array $constraints): void
     {
-        $this->executor->executeStatement("SET CONSTRAINTS ?::identifier[] DEFERRED", $constraints);
+        $this->executor->executeStatement("SET CONSTRAINTS ?::id[] DEFERRED", $constraints);
     }
 
     /**
@@ -81,7 +81,7 @@ class PostgreSQLTransaction extends AbstractTransaction
      */
     protected function doImmediateConstraints(array $constraints): void
     {
-        $this->executor->executeStatement("SET CONSTRAINTS ?::identifier[] IMMEDIATE", $constraints);
+        $this->executor->executeStatement("SET CONSTRAINTS ?::id[] IMMEDIATE", $constraints);
     }
 
     /**

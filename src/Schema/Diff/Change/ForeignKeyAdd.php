@@ -4,7 +4,6 @@ declare (strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Schema\Diff\Change;
 
-use MakinaCorpus\QueryBuilder\Schema\AbstractObject;
 use MakinaCorpus\QueryBuilder\Schema\Diff\AbstractChange;
 
 /**
@@ -47,9 +46,9 @@ class ForeignKeyAdd extends AbstractChange
         /** @var array<string> */
         private readonly array $foreignColumns,
         /** @var string */
-        private readonly null|string $foreignSchema = null,
-        /** @var string */
         private readonly null|string $name = null,
+        /** @var string */
+        private readonly null|string $foreignSchema = null,
         /** @var string */
         private readonly string $onDelete = ForeignKeyAdd::ON_DELETE_NO_ACTION,
         /** @var string */
@@ -59,13 +58,22 @@ class ForeignKeyAdd extends AbstractChange
         /** @var string */
         private readonly string $initially = ForeignKeyAdd::INITIALLY_DEFERRED,
     ) {
-        parent::__construct(database: $database, schema: $schema);
+        parent::__construct(
+            database: $database,
+            schema: $schema,
+        );
     }
 
     /** @return string */
     public function getTable(): string
     {
         return $this->table;
+    }
+
+    /** @return string */
+    public function getName(): null|string
+    {
+        return $this->name;
     }
 
     /** @return array<string> */
@@ -93,12 +101,6 @@ class ForeignKeyAdd extends AbstractChange
     }
 
     /** @return string */
-    public function getName(): null|string
-    {
-        return $this->name;
-    }
-
-    /** @return string */
     public function getOnDelete(): string
     {
         return $this->onDelete;
@@ -122,15 +124,21 @@ class ForeignKeyAdd extends AbstractChange
         return $this->initially;
     }
 
-    #[\Override]
-    public function isCreation(): bool
+    /**
+     * Used in edge cases, for example when you CREATE INDEX in MySQL,
+     * it requires you to give an index name, but this API doesn't
+     * because almost all RDBMS will generate one for you. This is not
+     * part of the API, it simply help a very few of those edge cases
+     * not breaking.
+     */
+    public function generateName(): string
     {
-        return true;
-    }
+        $pieces = [];
+        $pieces[] = $this->table;
+        $pieces[] = $this->foreignTable;
+        $pieces[] = \implode('_', $this->foreignColumns);
+        $pieces = 'fk';
 
-    #[\Override]
-    public function isModified(AbstractObject $source): bool
-    {
-        throw new \Exception("Here should be the manually generated code, please revert it.");
+        return \implode('_', \array_filter($pieces));
     }
 }

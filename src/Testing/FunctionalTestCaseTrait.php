@@ -188,7 +188,7 @@ trait FunctionalTestCaseTrait
         $privBridge = $this->getPriviledgedBridge();
 
         try {
-            $privBridge->executeStatement("CREATE DATABASE ?::identifier", ['test_db']);
+            $privBridge->executeStatement("CREATE DATABASE ?::id", ['test_db']);
         } catch (\Throwable $e) {
             // Check database already exists or not.
             if (!\str_contains($e->getMessage(), 'exist')) {

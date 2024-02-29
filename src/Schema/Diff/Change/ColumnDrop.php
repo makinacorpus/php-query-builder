@@ -4,7 +4,6 @@ declare (strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Schema\Diff\Change;
 
-use MakinaCorpus\QueryBuilder\Schema\AbstractObject;
 use MakinaCorpus\QueryBuilder\Schema\Diff\AbstractChange;
 
 /**
@@ -30,7 +29,10 @@ class ColumnDrop extends AbstractChange
         /** @var bool */
         private readonly bool $cascade = false,
     ) {
-        parent::__construct(database: $database, schema: $schema);
+        parent::__construct(
+            database: $database,
+            schema: $schema,
+        );
     }
 
     /** @return string */
@@ -49,17 +51,5 @@ class ColumnDrop extends AbstractChange
     public function isCascade(): bool
     {
         return $this->cascade;
-    }
-
-    #[\Override]
-    public function isCreation(): bool
-    {
-        return false;
-    }
-
-    #[\Override]
-    public function isModified(AbstractObject $source): bool
-    {
-        throw new \Exception("Here should be the manually generated code, please revert it.");
     }
 }

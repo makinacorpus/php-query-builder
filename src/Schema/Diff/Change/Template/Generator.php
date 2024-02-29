@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Schema\Diff\Change\Template;
 
+use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
+
 /**
  * Lots of boiler plate DTO code to write, too lazy to do it as a normal
  * person would do, let's generate it instead!
@@ -21,13 +23,12 @@ class Generator
         return [
             'column' => [
                 'properties' => [
-                    'table' => 'string',
-                    'name' => 'string',
+                    'table' => ['type' => 'string'],
+                    'name' => ['type' => 'string'],
                 ],
                 'changes' => [
                     'add' => [
                         'description' => 'Add a COLUMN.',
-                        'creation' => true,
                         'properties' => [
                             'type' => 'string',
                             'nullable' => 'bool',
@@ -36,7 +37,6 @@ class Generator
                     ],
                     'modify' => [
                         'description' => 'Add a COLUMN.',
-                        'creation' => true,
                         'properties' => [
                             'type' => 'string',
                             'nullable' => 'bool',
@@ -45,14 +45,12 @@ class Generator
                     ],
                     'drop' => [
                         'description' => 'Drop a COLUMN.',
-                        'creation' => false,
                         'properties' => [
                             'cascade' => ['type' => 'bool', 'default' => false],
                         ],
                     ],
                     'rename' => [
                         'description' => 'Renames a COLUMN.',
-                        'creation' => false,
                         'properties' => [
                             'new_name' => ['type' => 'string'],
                         ],
@@ -61,26 +59,27 @@ class Generator
             ],
             'constraint' => [
                 'properties' => [
-                    'name' => 'string',
-                    'table' => 'string',
+                    'table' => ['type' => 'string'],
                 ],
                 'changes' => [
                     'drop' => [
                         'description' => 'Drop an arbitrary constraint from a table.',
-                        'creation' => false,
+                        'properties' => [
+                            'name' => ['type' => 'string'],
+                        ],
                     ],
                     'modify' => [
                         'description' => 'Modify an arbitrary constraint on a table.',
-                        'creation' => false,
                         'properties' => [
+                            'name' => ['type' => 'string'],
                             'deferrable' => ['type' => 'bool', 'default' => true],
                             'initially' => ['enum' => ['immediate', 'deferred'], 'default' => 'deferred'],
                         ],
                     ],
                     'rename' => [
                         'description' => 'Rename an arbitrary constraint.',
-                        'creation' => false,
                         'properties' => [
+                            'name' => ['type' => 'string'],
                             'new_name' => ['type' => 'string'],
                         ],
                     ],
@@ -88,18 +87,21 @@ class Generator
             ],
             'foreign_key' => [
                 'properties' => [
-                    'table' => 'string',
+                    'table' => ['type' => 'string'],
                 ],
                 'changes' => [
                     'add' => [
                         'description' => 'Add a FOREIGN KEY constraint on a table.',
-                        'creation' => true,
+                        'generate_name' => [
+                            'properties' => ['table', 'foreign_table', 'foreign_columns'],
+                            'suffix' => 'fk',
+                        ],
                         'properties' => [
+                            'name' => ['type' => 'string', 'nullable' => true],
                             'columns' => 'string[]',
                             'foreign_table' => 'string',
                             'foreign_columns' => 'string[]',
                             'foreign_schema' => ['type' => 'string', 'nullable' => true],
-                            'name' => ['type' => 'string', 'nullable' => true],
                             'on_delete' => ['enum' => ['set null', 'cascade', 'no action', 'restrict', 'set default'], 'default' => 'no action'],
                             'on_update' => ['enum' => ['set null', 'cascade', 'no action', 'restrict', 'set default'], 'default' => 'no action'],
                             'deferrable' => ['type' => 'bool', 'default' => true],
@@ -108,8 +110,8 @@ class Generator
                     ],
                     'modify' => [
                         'description' => 'Modify a FOREIGN KEY constraint on a table.',
-                        'creation' => false,
                         'properties' => [
+                            'name' => ['type' => 'string'],
                             'on_delete' => ['enum' => ['set null', 'cascade', 'no action', 'restrict', 'set default'], 'default' => 'no action'],
                             'on_update' => ['enum' => ['set null', 'cascade', 'no action', 'restrict', 'set default'], 'default' => 'no action'],
                             'deferrable' => ['type' => 'bool', 'default' => true],
@@ -118,14 +120,12 @@ class Generator
                     ],
                     'drop' => [
                         'description' => 'Drop a FOREIGN KEY constraint from a table.',
-                        'creation' => false,
                         'properties' => [
                             'name' => ['type' => 'string'],
                         ],
                     ],
                     'rename' => [
                         'description' => 'Rename an arbitrary constraint.',
-                        'creation' => false,
                         'properties' => [
                             'name' => ['type' => 'string'],
                             'new_name' => ['type' => 'string'],
@@ -135,28 +135,29 @@ class Generator
             ],
             'index' => [
                 'properties' => [
-                    'table' => 'string',
+                    'table' => ['type' => 'string'],
                 ],
                 'changes' => [
                     'create' => [
                         'description' => 'Create an INDEX on a table.',
-                        'creation' => true,
+                        'generate_name' => [
+                            'properties' => ['table', 'columns'],
+                            'suffix' => 'idx',
+                        ],
                         'properties' => [
-                            'columns' => 'string[]',
                             'name' => ['type' => 'string', 'nullable' => true],
+                            'columns' => 'string[]',
                             'type' => ['type' => 'string', 'nullable' => true],
                         ],
                     ],
                     'drop' => [
                         'description' => 'Drop an INDEX from a table.',
-                        'creation' => false,
                         'properties' => [
                             'name' => ['type' => 'string'],
                         ],
                     ],
                     'rename' => [
                         'description' => 'Rename an arbitrary constraint.',
-                        'creation' => false,
                         'properties' => [
                             'name' => ['type' => 'string'],
                             'new_name' => ['type' => 'string'],
@@ -166,48 +167,52 @@ class Generator
             ],
             'primary_key' => [
                 'properties' => [
-                    'table' => 'string',
+                    'table' => ['type' => 'string'],
                 ],
                 'changes' => [
                     'add' => [
                         'description' => 'Add the PRIMARY KEY constraint on a table.',
-                        'creation' => true,
+                        'generate_name' => [
+                            'properties' => ['table'],
+                            'suffix' => 'pkey',
+                        ],
                         'properties' => [
+                            'name' => ['type' => 'string', 'nullable' => true],
                             'columns' => 'string[]',
                         ],
                     ],
                     'drop' => [
                         'description' => 'Drop the PRIMARY KEY constraint from a table.',
-                        'creation' => false,
+                        'properties' => [
+                            'name' => ['type' => 'string'],
+                        ],
                     ],
                 ],
             ],
             'table' => [
                 'properties' => [
-                    'name' => 'string',
+                    'name' => ['type' => 'string'],
                 ],
                 'changes' => [
                     'create' => [
                         'description' => 'Create a table.',
-                        'creation' => true,
                         'properties' => [
                             'columns' => ['type' => 'ColumnAdd[]', 'default' => []],
                             'primary_key' => ['type' => 'PrimaryKeyAdd', 'nullable' => true],
                             'foreign_keys' => ['type' => 'ForeignKeyAdd[]', 'default' => []],
                             'unique_keys' => ['type' => 'UniqueConstraintAdd[]', 'default' => []],
                             'indexes' => ['type' => 'IndexCreate[]', 'default' => []],
+                            'temporary' => ['type' => 'bool', 'default' => false],
                         ],
                     ],
                     'drop' => [
                         'description' => 'Drop a table.',
-                        'creation' => false,
                         'properties' => [
                             'cascade' => ['type' => 'bool', 'default' => false],
                         ],
                     ],
                     'rename' => [
                         'description' => 'Renames a table.',
-                        'creation' => false,
                         'properties' => [
                             'new_name' => ['type' => 'string'],
                         ],
@@ -216,23 +221,25 @@ class Generator
             ],
             'unique_constraint' => [
                 'properties' => [
-                    'table' => 'string',
+                    'table' => ['type' => 'string'],
                 ],
                 'changes' => [
                     'add' => [
                         'description' => 'Create a UNIQUE constraint on a table.',
-                        'creation' => true,
+                        'generate_name' => [
+                            'properties' => ['table', 'columns'],
+                            'suffix' => 'key',
+                        ],
                         'properties' => [
-                            'columns' => 'string[]',
                             'name' => ['type' => 'string', 'nullable' => true],
-                            'nulls_distinct' => ['type' => 'bool', 'default' => false],
+                            'columns' => 'string[]',
+                            'nulls_distinct' => ['type' => 'bool', 'default' => true],
                         ],
                     ],
                     'drop' => [
                         'description' => 'Drop a UNIQUE constraint from a table.',
-                        'creation' => true,
                         'properties' => [
-                            'name' => 'string',
+                            'name' => ['type' => 'string'],
                         ],
                     ],
                 ],
@@ -243,36 +250,12 @@ class Generator
     public function generateFromFile(): void
     {
         $additional = [];
-        foreach ($this->createDefinition() as $prefix => $object) {
-            $this->objectType($prefix, $object, $additional);
+        foreach ($this->createDefinition() as $objectType => $object) {
+            $this->objectType($objectType, $object, $additional);
         }
 
-        $createMethodsString = \implode("\n\n", $additional['manager']['methods']);
-        $matcheCasesString = \implode("\n", $additional['manager']['matchCases']);
-
-        $forSchemaManager = <<<EOT
-            
-            {$createMethodsString}
-            
-                /**
-                 * Apply a given change in the current schema.
-                 */
-                protected function apply(Change \$change): void
-                {
-                    \$expression = match (\get_class(\$change)) {
-            {$matcheCasesString}
-                        default => throw new QueryBuilderError(\sprintf("Unsupported alteration operation: %s", \get_class(\$change))),
-                    };
-            
-                    \$this->executeChange(\$expression);
-                }
-            
-            EOT;
-
-        print $forSchemaManager;
-
-        $createMethodsString = \implode("\n\n", $additional['transaction']['methods']);
-        $useString = "\n" . \implode("\n", $additional['transaction']['use']);
+        $transactionMethodsString = \implode("\n\n", $additional['transaction']['methods']);
+        $transactionUse = \implode("\n", $additional['transaction']['use']);
 
         $schemaTransaction = <<<EOT
             <?php
@@ -281,7 +264,8 @@ class Generator
             
             namespace MakinaCorpus\QueryBuilder\Schema\Diff;
             
-            use MakinaCorpus\QueryBuilder\Schema\SchemaManager;{$useString}
+            {$transactionUse}
+            use MakinaCorpus\QueryBuilder\Schema\SchemaManager;
             
             /**
              * This code is generated using bin/generate_changes.php.
@@ -309,12 +293,19 @@ class Generator
                     (\$this->onCommit)(\$this->changeLog->diff());
                 }
             
-            {$createMethodsString}
+            {$transactionMethodsString}
             
+                /**
+                 * Create a table builder.
+                 */
+                public function tableBuilder(string \$name): TableBuilder
+                {
+                    return new TableBuilder(parent: \$this, database: \$this->database, name: \$name, schema: \$this->schema);
+                }
             }
             EOT;
 
-        \file_put_contents(\dirname(__DIR__, 2) . '/SchemaTransaction.php', $schemaTransaction);
+        \file_put_contents(\dirname(__DIR__, 2) . '/SchemaTransaction.php', $schemaTransaction . "\n");
     }
 
     private function camelize(string $input, bool $first = true): string
@@ -336,18 +327,18 @@ class Generator
         return \addcslashes($input, '\\');
     }
 
-    private function objectType(string $prefix, array $object, array &$additional): array
+    private function objectType(string $objectType, array $object, array &$additional): array
     {
         $ret = [];
-        foreach ($object['changes'] as $suffix => $change) {
-            $className = $this->camelize($prefix) . $this->camelize($suffix);
-            $this->objectChange($className, $object, $change, $additional);
+        foreach ($object['changes'] as $op => $change) {
+            $className = $this->camelize($objectType) . $this->camelize($op);
+            $this->objectChange($objectType, $className, $object, $change, $additional);
             $ret[] = $className;
         }
         return $ret;
     }
 
-    private function objectChange(string $className, array $object, array $change, array &$additional): void
+    private function objectChange(string $objectType, string $className, array $object, array $change, array &$additional): void
     {
         $transactionMethodName = lcfirst($className);
         $transactionProperties = [];
@@ -357,7 +348,6 @@ class Generator
         $constructorProperties = [];
         $constructorPropertiesWithDefault = [];
         $propertiesGetters = [];
-        $creationString = ($change['creation'] ?? false) ? 'true' : 'false';
         $classConstants = [];
 
         $warning = <<<EOT
@@ -386,6 +376,10 @@ class Generator
                 EOT;
         }
 
+        if (!$methodDescription = ($change['description'] ?? null)) {
+            $methodDescription = "Create a new {$className} instance.";
+        }
+
         $properties = [];
         foreach (($object['properties'] ?? []) as $name => $property) {
             $properties[] = $this->property($name, $property, true);
@@ -396,8 +390,7 @@ class Generator
 
         foreach ($properties as $property) {
             $propType = \implode('|', \array_map(fn ($value) => $this->escape($value), $property->types));
-            $propName = $this->escape($this->camelize($property->name, false));
-            $propCamelized = $this->escape($this->camelize($property->name));
+            $camelizedPropName = $this->escape($this->camelize($property->name));
             $propDocType = $property->docType;
 
             if ($property->nullable) {
@@ -411,6 +404,8 @@ class Generator
                     $propDefault = " = " . (($property->default) ? 'true' : 'false');
                 } else if ($property->isArray && [] === $property->default) {
                     $propDefault = ' = []';
+                } else {
+                    $propDefault = ''; // @handle this case.
                 }
             } else if ($property->nullable) {
                 $propDefault = ' = null';
@@ -433,7 +428,7 @@ class Generator
                 EOT;
             $constructorPropertyString .= "\n        ";
             $constructorPropertyString .= <<<EOT
-                private readonly {$propType} \${$propName}{$propDefault},
+                private readonly {$propType} \${$property->escapedPropName}{$propDefault},
                 EOT;
 
             // Position all properties with a default values after the others.
@@ -451,9 +446,9 @@ class Generator
 
             $propertiesGetters[] = <<<EOT
                 /** @return {$propDocType} */
-                public function {$getterPrefix}{$propCamelized}(): $propType
+                public function {$getterPrefix}{$camelizedPropName}(): $propType
                 {
-                    return \$this->{$propName};
+                    return \$this->{$property->escapedPropName};
                 }
             EOT;
 
@@ -462,11 +457,11 @@ class Generator
              */
 
             $transactionPropertyString = <<<EOT
-                {$propType} \${$propName}{$propDefault},
+                {$propType} \${$property->escapedPropName}{$propDefault},
                 EOT;
 
             $transactionParameters[] = <<<EOT
-                {$propName}: \${$propName},
+                {$property->escapedPropName}: \${$property->escapedPropName},
                 EOT;
 
             // Position all properties with a default values after the others.
@@ -475,6 +470,73 @@ class Generator
             } else {
                 $transactionProperties[] = $transactionPropertyString;
             }
+        }
+
+        // Generate default name method.
+        if (isset($change['generate_name'])) {
+            $generateNameBody = [];
+            if (empty($change['generate_name']['properties'])) {
+                throw new QueryBuilderError(\sprintf("%s: generate name callback requires properties.", $className));
+            }
+            if (empty($change['generate_name']['suffix'])) {
+                throw new QueryBuilderError(\sprintf("%s: generate name callback requires a suffix.", $className));
+            }
+
+            foreach ($change['generate_name']['properties'] as $propName) {
+                $found = null;
+                foreach ($properties as $property) {
+                    \assert($property instanceof GeneratorProperty);
+                    if ($property->name === $propName) {
+                        $found = $property;
+                        break;
+                    }
+                }
+                if (!$found) {
+                    throw new QueryBuilderError(\sprintf("%s: generate name callback '%s' property does not exist.", $className, $propName));
+                }
+                \assert($found instanceof GeneratorProperty);
+
+                if (['array'] === $found->types) {
+                    $generateNamePropAsString = '\implode(\'_\', $this->' . $found->escapedPropName . ')';
+                } else if (['string'] === $found->types) {
+                    $generateNamePropAsString = '$this->' . $found->escapedPropName;
+                } else {
+                    throw new QueryBuilderError(\sprintf("%s: generate name callback '%s' property type '%s' is not support.", $className, $propName, \implode('|', $found->types)));
+                }
+
+                if ($found->nullable) {
+                    $generateNameBody[] = <<<EOT
+                                if (\$this->{$found->escapedPropName}) {
+                                    \$pieces[] = {$generateNamePropAsString};
+                                }
+                        EOT;
+                } else {
+                    $generateNameBody[] = <<<EOT
+                                \$pieces[] = {$generateNamePropAsString};
+                        EOT;
+                }
+            }
+
+            $generateNameBodyAsString = \implode("\n", $generateNameBody);
+            $generateNameSuffix = $this->escape($change['generate_name']['suffix']);
+
+            $propertiesGetters[] = <<<EOT
+                    /**
+                     * Used in edge cases, for example when you CREATE INDEX in MySQL,
+                     * it requires you to give an index name, but this API doesn't
+                     * because almost all RDBMS will generate one for you. This is not
+                     * part of the API, it simply help a very few of those edge cases
+                     * not breaking.
+                     */
+                    public function generateName(): string
+                    {
+                        \$pieces = [];
+                {$generateNameBodyAsString}
+                        \$pieces = '{$generateNameSuffix}';
+                
+                        return \implode('_', \array_filter(\$pieces));
+                    }
+                EOT;
         }
 
         // Format property getters.
@@ -514,7 +576,6 @@ class Generator
         
         namespace MakinaCorpus\\QueryBuilder\\Schema\\Diff\\Change;
         
-        use MakinaCorpus\\QueryBuilder\\Schema\\AbstractObject;
         use MakinaCorpus\\QueryBuilder\\Schema\\Diff\\AbstractChange;
         
         {$description}
@@ -525,44 +586,18 @@ class Generator
                 string \$schema,
                 $constructorPropertiesString
             ) {
-                parent::__construct(database: \$database, schema: \$schema);
+                parent::__construct(
+                    database: \$database,
+                    schema: \$schema,
+                );
             }
         $propertiesGetters
-        
-            #[\\Override]
-            public function isCreation(): bool
-            {
-                return {$creationString};
-            }
-        
-            #[\\Override]
-            public function isModified(AbstractObject \$source): bool
-            {
-                throw new \Exception("Here should be the manually generated code, please revert it.");
-            }
         }
-        
         EOT;
 
-        \file_put_contents(\dirname(__DIR__) . '/' . $className . '.php', $file);
+        \file_put_contents(\dirname(__DIR__) . '/' . $className . '.php', $file . "\n");
 
-        /*
-         * Manager methods and code.
-         */
-
-        $additional['manager']['methods'][] = <<<EOT
-                /**
-                 * Override if standard SQL is not enough.
-                 */
-                protected function write{$className}(Change\\{$className} \$change): Expression
-                {
-                    throw new \Exception("Not implemented yet.");
-                }
-            EOT;
-
-        $additional['manager']['matchCases'][] = <<<EOT
-                        Change\\{$className}::class => \$this->write{$className}(\$change),
-            EOT;
+        $additional['transaction']['use'][] = 'use MakinaCorpus\\QueryBuilder\\Schema\\Diff\\Change\\' . $className . ';';
 
         /*
          * Transaction methods and code.
@@ -577,10 +612,12 @@ class Generator
         } else if ($transactionPropertiesWithDefault) {
             $transactionPropertiesString = \implode("\n        ", $transactionPropertiesWithDefault);
         }
-
         $transactionParametersString = \implode("\n                ", $transactionParameters);
 
         $additional['transaction']['methods'][] = <<<EOT
+                /**
+                 * {$methodDescription}
+                 */
                 public function {$transactionMethodName}(
                     {$transactionPropertiesString}
                     ?string \$schema = null,
@@ -590,14 +627,12 @@ class Generator
                             {$transactionParametersString}
                             schema: \$schema ?? \$this->schema,
                             database: \$this->database,
-                        ),
+                        )
                     );
             
                     return \$this;
                 }
             EOT;
-
-        $additional['transaction']['use'][] = 'use MakinaCorpus\\QueryBuilder\\Schema\\Diff\\Change\\' . $className . ';';
     }
 
     private function property(string $name, string|array $property, bool $parent = false): GeneratorProperty
@@ -633,6 +668,7 @@ class Generator
             default: $property['default'] ?? null,
             docType: \implode('|', $docTypes),
             enumValues: $property['enum'] ?? [],
+            escapedPropName: $this->escape($this->camelize($name, false)),
             isArray: $isArray,
             name: $name,
             nullable: $property['nullable'] ?? false,
@@ -646,6 +682,7 @@ class GeneratorProperty
 {
     public function __construct(
         public readonly string $name,
+        public readonly string $escapedPropName,
         public readonly array $types,
         public readonly string $docType,
         public readonly null|bool|string|array $default = null,

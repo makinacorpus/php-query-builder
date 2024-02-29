@@ -4,7 +4,6 @@ declare (strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Schema\Diff\Change;
 
-use MakinaCorpus\QueryBuilder\Schema\AbstractObject;
 use MakinaCorpus\QueryBuilder\Schema\Diff\AbstractChange;
 
 /**
@@ -41,6 +40,8 @@ class ForeignKeyModify extends AbstractChange
         /** @var string */
         private readonly string $table,
         /** @var string */
+        private readonly string $name,
+        /** @var string */
         private readonly string $onDelete = ForeignKeyModify::ON_DELETE_NO_ACTION,
         /** @var string */
         private readonly string $onUpdate = ForeignKeyModify::ON_UPDATE_NO_ACTION,
@@ -49,13 +50,22 @@ class ForeignKeyModify extends AbstractChange
         /** @var string */
         private readonly string $initially = ForeignKeyModify::INITIALLY_DEFERRED,
     ) {
-        parent::__construct(database: $database, schema: $schema);
+        parent::__construct(
+            database: $database,
+            schema: $schema,
+        );
     }
 
     /** @return string */
     public function getTable(): string
     {
         return $this->table;
+    }
+
+    /** @return string */
+    public function getName(): string
+    {
+        return $this->name;
     }
 
     /** @return string */
@@ -80,17 +90,5 @@ class ForeignKeyModify extends AbstractChange
     public function getInitially(): string
     {
         return $this->initially;
-    }
-
-    #[\Override]
-    public function isCreation(): bool
-    {
-        return false;
-    }
-
-    #[\Override]
-    public function isModified(AbstractObject $source): bool
-    {
-        throw new \Exception("Here should be the manually generated code, please revert it.");
     }
 }

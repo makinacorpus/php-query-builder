@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Platform\Schema;
 
+use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Result\Result;
 use MakinaCorpus\QueryBuilder\Result\ResultRow;
 use MakinaCorpus\QueryBuilder\Schema\Column;
+use MakinaCorpus\QueryBuilder\Schema\ForeignKey;
 use MakinaCorpus\QueryBuilder\Schema\Key;
 use MakinaCorpus\QueryBuilder\Schema\SchemaManager;
-use MakinaCorpus\QueryBuilder\Schema\ForeignKey;
+use MakinaCorpus\QueryBuilder\Schema\Diff\Change\IndexRename;
 
 /**
  * Please note that some functions here might use information_schema tables
@@ -324,5 +326,11 @@ class PostgreSQLSchemaManager extends SchemaManager
                 [$schema, $name, $name]
             )
         ;
+    }
+
+    #[\Override]
+    protected function writeIndexRename(IndexRename $change): iterable|Expression
+    {
+        return $this->raw('ALTER INDEX ?::id RENAME TO ?::id', [$change->getName(), $change->getNewName()]);
     }
 }

@@ -4,7 +4,6 @@ declare (strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Schema\Diff\Change;
 
-use MakinaCorpus\QueryBuilder\Schema\AbstractObject;
 use MakinaCorpus\QueryBuilder\Schema\Diff\AbstractChange;
 
 /**
@@ -25,8 +24,13 @@ class PrimaryKeyDrop extends AbstractChange
         string $schema,
         /** @var string */
         private readonly string $table,
+        /** @var string */
+        private readonly string $name,
     ) {
-        parent::__construct(database: $database, schema: $schema);
+        parent::__construct(
+            database: $database,
+            schema: $schema,
+        );
     }
 
     /** @return string */
@@ -35,15 +39,9 @@ class PrimaryKeyDrop extends AbstractChange
         return $this->table;
     }
 
-    #[\Override]
-    public function isCreation(): bool
+    /** @return string */
+    public function getName(): string
     {
-        return false;
-    }
-
-    #[\Override]
-    public function isModified(AbstractObject $source): bool
-    {
-        throw new \Exception("Here should be the manually generated code, please revert it.");
+        return $this->name;
     }
 }

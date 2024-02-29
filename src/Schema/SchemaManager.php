@@ -34,7 +34,6 @@ use MakinaCorpus\QueryBuilder\Schema\Diff\Change\TableRename;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\UniqueConstraintAdd;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\UniqueConstraintDrop;
 
-
 /**
  * Schema alteration SQL statements in this class are mostly standard, but not
  * quite. They basically are the lowest common denominator between PostgreSQL,
@@ -51,6 +50,16 @@ abstract class SchemaManager
      * Does this platform supports DDL transactions.
      */
     public abstract function supportsTransaction(): bool;
+
+    /**
+     * Does this platform supports schema.
+     *
+     * MySQL does not support schema (booooh).
+     */
+    public function supportsSchema(): bool
+    {
+        return true;
+    }
 
     /**
      * Does this platform supports unsigned numeric values.
@@ -182,8 +191,26 @@ abstract class SchemaManager
     /**
      * Create a table expression.
      */
-    protected function table(string $name, ?string $schema = null): Expression
+    protected function table(string|AbstractChange $name, ?string $schema = null): Expression
     {
+        if (!\is_string($name)) {
+            \assert($name instanceof AbstractChange);
+
+            $schema ??= $name->getSchema();
+
+            if ($name instanceof TableCreate || $name instanceof TableDrop || $name instanceof TableRename) {
+                $name = $name->getName();
+            } else if (\method_exists($name, 'getTable')) {
+                $name = $name->getTable();
+            } else {
+                throw new QueryBuilderError("Change is not about a table.");
+            }
+        }
+
+        if (!$this->supportsSchema()) {
+            $schema = null;
+        }
+
         return $this->expression()->table($name, null, $schema);
     }
 
@@ -219,16 +246,6 @@ abstract class SchemaManager
     /**
      * Override if standard SQL is not enough.
      *
-     * Drop any constraint behaviour.
-     */
-    protected function writeConstraintDropSpec(string $name, string $table, string $schema): Expression
-    {
-        return $this->raw('ALTER TABLE ? DROP CONSTRAINT ?::identifier', [$this->table($table, $schema), $name]);
-    }
-
-    /**
-     * Override if standard SQL is not enough.
-     *
      * Column specification.
      */
     protected function writeColumnSpec(ColumnAdd $change): Expression
@@ -239,7 +256,7 @@ abstract class SchemaManager
         if ($change->isNullable()) {
             if ($default) {
                 return $this->raw(
-                    '?::identifier ? DEFAULT ?',
+                    '?::id ? DEFAULT ?',
                     [
                         $change->getName(),
                         $this->writeColumnSpecType($type),
@@ -249,7 +266,7 @@ abstract class SchemaManager
             }
 
             return $this->raw(
-                '?::identifier ?',
+                '?::id ?',
                 [
                     $change->getName(),
                     $this->writeColumnSpecType($type),
@@ -259,7 +276,7 @@ abstract class SchemaManager
 
         if ($default) {
             return $this->raw(
-                '?::identifier ? NOT NULL DEFAULT ?',
+                '?::id ? NOT NULL DEFAULT ?',
                 [
                     $change->getName(),
                     $this->writeColumnSpecType($type),
@@ -269,7 +286,7 @@ abstract class SchemaManager
         }
 
         return $this->raw(
-            '?::identifier ? NOT NULL',
+            '?::id ? NOT NULL',
             [
                 $change->getName(),
                 $this->writeColumnSpecType($type)
@@ -280,7 +297,110 @@ abstract class SchemaManager
     /**
      * Override if standard SQL is not enough.
      *
-     * Foreign key behaviour.
+     * @return Expression|iterable<Expression>
+     */
+    protected function writeColumnAdd(ColumnAdd $change): iterable|Expression
+    {
+        return $this->raw('ALTER TABLE ? ADD COLUMN ?', [$this->table($change), $this->writeColumnSpec($change)]);
+    }
+
+    /**
+     * Override if standard SQL is not enough.
+     *
+     * @return Expression|iterable<Expression>
+     */
+    protected function writeColumnModify(ColumnModify $change): iterable|Expression
+    {
+        throw new \Exception("Not implemented yet.");
+    }
+
+    /**
+     * Override if standard SQL is not enough.
+     *
+     * PostgreSQL needs to override for CASCADE support.
+     *
+     * @return Expression|iterable<Expression>
+     */
+    protected function writeColumnDrop(ColumnDrop $change): iterable|Expression
+    {
+        if ($change->isCascade()) {
+            // @todo Implement this with PostgreSQL.
+            throw new UnsupportedFeatureError("ALTER TABLE x DROP COLUMN y CASCADE is not supported by this vendor.");
+        }
+
+        return $this->raw('ALTER TABLE ? DROP COLUMN ?::id', [$this->table($change), $change->getName()]);
+    }
+
+    /**
+     * Override if standard SQL is not enough.
+     *
+     * @see https://learn.microsoft.com/en-us/sql/relational-databases/tables/rename-columns-database-engine?view=sql-server-ver16
+     *   SQLServer will need something more complex.
+     *
+     * @return Expression|iterable<Expression>
+     */
+    protected function writeColumnRename(ColumnRename $change): iterable|Expression
+    {
+        return $this->raw('ALTER TABLE ? RENAME COLUMN ?::id TO ?::id', [$this->table($change), $change->getName(), $change->getNewName()]);
+    }
+
+    /**
+     * Override if standard SQL is not enough.
+     *
+     * Constraint specification.
+     */
+    protected function writeConstraintSpec(?string $name, Expression $spec): Expression
+    {
+        if ($name) {
+            return $this->raw('CONSTRAINT ?::id ?', [$name, $spec]);
+        }
+        return $spec;
+    }
+
+    /**
+     * Override if standard SQL is not enough.
+     *
+     * Drop any constraint behaviour.
+     *
+     * @todo SQLite does not support this and requires a table copy.
+     */
+    protected function writeConstraintDropSpec(string $name, string $table, string $schema): Expression
+    {
+        return $this->raw('ALTER TABLE ? DROP CONSTRAINT ?::id', [$this->table($table, $schema), $name]);
+    }
+
+    /**
+     * Override if standard SQL is not enough.
+     *
+     * @todo SQLite does not support this and requires a table copy.
+     */
+    protected function writeConstraintDrop(ConstraintDrop $change): iterable|Expression
+    {
+        return $this->writeConstraintDropSpec($change->getName(), $change->getTable(), $change->getSchema());
+    }
+
+    /**
+     * Override if standard SQL is not enough.
+     *
+     * @return Expression|iterable<Expression>
+     */
+    protected function writeConstraintModify(ConstraintModify $change): iterable|Expression
+    {
+        throw new UnsupportedFeatureError("Not implemented yet. For most vendors, this requires a drop/add, you can temporary workaround by dropping then adding back the constraint.");
+    }
+
+    /**
+     * Override if standard SQL is not enough.
+     *
+     * @return Expression|iterable<Expression>
+     */
+    protected function writeConstraintRename(ConstraintRename $change): iterable|Expression
+    {
+        throw new UnsupportedFeatureError("Not implemented yet. For most vendors, this requires a drop/add, you can temporary workaround by dropping then adding back the constraint.");
+    }
+
+    /**
+     * Write the "CASCADE|NO ACTION|RESTRICT|SET DEFAULT|SET NULL" FOREIGN KEY clause.
      */
     protected function writeForeignKeySpecBehavior(string $behavior): Expression
     {
@@ -294,9 +414,7 @@ abstract class SchemaManager
     }
 
     /**
-     * Override if standard SQL is not enough.
-     *
-     * Foreign key initial behaviour.
+     * Write the "INITIALLY DEFERRED|IMMEDIATE" FOREIGN KEY clause.
      */
     protected function writeForeignKeySpecInitially(string $initially): Expression
     {
@@ -307,7 +425,7 @@ abstract class SchemaManager
     }
 
     /**
-     * Override if standard SQL is not enough.
+     * Write FOREIGN KEY complete clause, without the "ADD CONSTRAINT name" prefix.
      *
      * Foreign key constraint specification.
      */
@@ -332,7 +450,7 @@ abstract class SchemaManager
         return $this->writeConstraintSpec(
             $change->getName(),
             $this->raw(
-                'FOREIGN KEY (?::identifier[]) REFERENCES ? (?::identifier[]) ' . \implode('', \array_fill(0, \count($suffix), ' ?')),
+                'FOREIGN KEY (?::id[]) REFERENCES ? (?::id[]) ' . \implode('', \array_fill(0, \count($suffix), ' ?')),
                 [
                     $change->getColumns(),
                     $this->table($change->getForeignTable(), $change->getForeignSchema() ?? $change->getSchema()),
@@ -346,242 +464,218 @@ abstract class SchemaManager
     /**
      * Override if standard SQL is not enough.
      *
-     * Constraint specification.
+     * @return Expression|iterable<Expression>
      */
-    protected function writeConstraintSpec(?string $name, Expression $spec): Expression
+    protected function writeForeignKeyAdd(ForeignKeyAdd $change): iterable|Expression
     {
-        if ($name) {
-            return $this->raw('CONSTRAINT ?::identifier ?', [$name, $spec]);
+        return $this->raw('ALTER TABLE ? ADD ?', [$this->table($change), $this->writeForeignKeySpec($change)]);
+    }
+
+    /**
+     * Override if standard SQL is not enough.
+     *
+     * @return Expression|iterable<Expression>
+     */
+    protected function writeForeignKeyModify(ForeignKeyModify $change): iterable|Expression
+    {
+        throw new UnsupportedFeatureError("Not implemented yet. For most vendors, this requires a drop/add, you can temporary workaround by dropping then adding back the constraint.");
+    }
+
+    /**
+     * Override if standard SQL is not enough.
+     *
+     * @return Expression|iterable<Expression>
+     */
+    protected function writeForeignKeyDrop(ForeignKeyDrop $change): iterable|Expression
+    {
+        return $this->writeConstraintDropSpec($change->getName(), $change->getTable(), $change->getSchema());
+    }
+
+    /**
+     * Override if standard SQL is not enough.
+     *
+     * @return Expression|iterable<Expression>
+     */
+    protected function writeForeignKeyRename(ForeignKeyRename $change): iterable|Expression
+    {
+        throw new UnsupportedFeatureError("Not implemented yet. For most vendors, this requires a drop/add, you can temporary workaround by dropping then adding back the constraint.");
+    }
+
+    /**
+     * Override if standard SQL is not enough.
+     *
+     * @return Expression|iterable<Expression>
+     */
+    protected function writeIndexCreate(IndexCreate $change): iterable|Expression
+    {
+        if ($change->getName()) {
+            return $this->raw('CREATE INDEX ?::id ON ? (?::id[])', [$change->getName(), $this->table($change), $change->getColumns()]);
         }
-        return $spec;
+        return $this->raw('CREATE INDEX ON ? (?::id[])', [$this->table($change), $change->getColumns()]);
+    }
+
+    /**
+     * Override if standard SQL is not enough.
+     *
+     * @return Expression|iterable<Expression>
+     */
+    protected function writeIndexDrop(IndexDrop $change): iterable|Expression
+    {
+        return $this->raw('DROP INDEX ?::id.?::id', [$change->getSchema(), $change->getName()]);
+    }
+
+    /**
+     * Override if standard SQL is not enough.
+     *
+     * @see https://stackoverflow.com/questions/1463363/how-do-i-rename-an-index-in-mysql
+     *   MySQL will be easy.
+     * @see https://www.postgresql.org/docs/current/sql-alterindex.html
+     *   PostgreSQL makes me happy.
+     * @see https://stackoverflow.com/questions/42530689/how-to-rename-an-index-in-sqlite
+     *   SQLite will need a DROP/ADD.
+     * @see https://learn.microsoft.com/en-us/sql/relational-databases/indexes/rename-indexes?view=sql-server-ver16
+     *   SQLServer will need some oil to do this.
+     *
+     * @return Expression|iterable<Expression>
+     */
+    protected function writeIndexRename(IndexRename $change): iterable|Expression
+    {
+        throw new UnsupportedFeatureError("No standard here, everyone has its own syntax.");
+    }
+
+    /**
+     * Override if standard SQL is not enough.
+     *
+     * @return Expression|iterable<Expression>
+     */
+    protected function writePrimaryKeyAdd(PrimaryKeyAdd $change): iterable|Expression
+    {
+        return $this->raw('ALTER TABLE ? ADD ?', [$this->table($change), $this->writePrimaryKeySpec($change)]);
+    }
+
+    /**
+     * Override if standard SQL is not enough.
+     *
+     * @todo SQLite does not support this and requires a table copy.
+     *
+     * @return Expression|iterable<Expression>
+     */
+    protected function writePrimaryKeyDrop(PrimaryKeyDrop $change): iterable|Expression
+    {
+        return $this->writeConstraintDropSpec($change->getName(), $change->getTable(), $change->getSchema());
     }
 
     /**
      * Override if standard SQL is not enough.
      */
-    protected function writeColumnAdd(ColumnAdd $change): Expression
+    protected function writePrimaryKeySpec(PrimaryKeyAdd $change): Expression
     {
-        return $this->raw(
-            'ALTER TABLE ? ADD COLUMN ?',
-            [
-                $this->table($change->getTable(), $change->getSchema()),
-                $this->writeColumnSpec($change),
-            ]
+        return $this->writeConstraintSpec(
+            $change->getName(),
+            $this->raw('PRIMARY KEY (?::id[])', [$change->getColumns()]),
         );
     }
 
     /**
      * Override if standard SQL is not enough.
      */
-    protected function writeColumnModify(ColumnModify $change): Expression
+    protected function writeTableCreateSpecUniqueConstraint(UniqueConstraintAdd $change): Expression
     {
-        throw new \Exception("Not implemented yet.");
+        if (!$change->isNullsDistinct()) {
+            // @todo Implement this with PostgreSQL.
+            throw new UnsupportedFeatureError("UNIQUE NULLS NOT DISTINCT is not supported by this vendor.");
+        }
+
+        $spec = $this->raw('UNIQUE (?::id[])', [$change->getColumns()]);
+
+        return $this->writeConstraintSpec($change->getName(), $spec);
     }
 
     /**
      * Override if standard SQL is not enough.
      *
-     * PostgreSQL needs to override for CASCADE support.
+     * @return Expression|iterable<Expression>
      */
-    protected function writeColumnDrop(ColumnDrop $change): Expression
+    protected function writeTableCreate(TableCreate $change): iterable|Expression
+    {
+        $pieces = \array_map($this->writeColumnSpec(...), $change->getColumns());
+        if ($primaryKey = $change->getPrimaryKey()) {
+            $pieces[] = $this->writePrimaryKeySpec($primaryKey);
+        }
+        foreach ($change->getUniqueKeys() as $uniqueKey) {
+            $pieces[] = $this->writeTableCreateSpecUniqueConstraint($uniqueKey);
+        }
+        foreach ($change->getForeignKeys() as $foreignKey) {
+            $pieces[] = $this->writeForeignKeySpec($foreignKey);
+        }
+
+        $placeholder = \implode(', ', \array_fill(0, \count($pieces), '?'));
+
+        if ($change->isTemporary()) {
+            yield $this->raw('CREATE TEMPORARY TABLE ? (' . $placeholder . ')', [$this->table($change), ...$pieces]);
+        } else {
+            yield $this->raw('CREATE TABLE ? (' . $placeholder . ')', [$this->table($change), ...$pieces]);
+        }
+
+        foreach ($change->getIndexes() as $index) {
+            yield $this->writeIndexCreate($index);
+        }
+    }
+
+    /**
+     * Override if standard SQL is not enough.
+     *
+     * @return Expression|iterable<Expression>
+     */
+    protected function writeTableDrop(TableDrop $change): iterable|Expression
     {
         if ($change->isCascade()) {
             // @todo Implement this with PostgreSQL.
-            throw new UnsupportedFeatureError("ALTER TABLE x DROP COLUMN y CASCADE is not supported by this vendor.");
+            throw new UnsupportedFeatureError("UNIQUE NULLS NOT DISTINCT is not supported by this vendor.");
         }
 
-        return $this->raw(
-            'ALTER TABLE ? DROP COLUMN ?::identifier',
-            [
-                $this->table($change->getTable(), $change->getSchema()),
-                $change->getName(),
-            ]
-        );
+        return $this->raw('DROP TABLE ?', $this->table($change->getName(), $change->getSchema()));
     }
 
     /**
      * Override if standard SQL is not enough.
      *
-     * SQLServer does not seem to implement RENAME COLUMN x TO y.
+     * @return Expression|iterable<Expression>
      */
-    protected function writeColumnRename(ColumnRename $change): Expression
+    protected function writeTableRename(TableRename $change): iterable|Expression
     {
-        return $this->raw(
-            'ALTER TABLE ? RENAME COLUMN ?::identifier TO ?::identifier',
-            [
-                $this->table($change->getTable(), $change->getSchema()),
-                $change->getNewName(),
-            ]
-        );
-    }
-
-    /**
-     * Override if standard SQL is not enough.
-     */
-    protected function writeConstraintDrop(ConstraintDrop $change): Expression
-    {
-        return $this->writeConstraintDropSpec($change->getName(), $change->getTable(), $change->getSchema());
-    }
-
-    /**
-     * Override if standard SQL is not enough.
-     */
-    protected function writeConstraintModify(ConstraintModify $change): Expression
-    {
-        throw new \Exception("Not implemented yet.");
-    }
-
-    /**
-     * Override if standard SQL is not enough.
-     */
-    protected function writeConstraintRename(ConstraintRename $change): Expression
-    {
-        throw new \Exception("Not implemented yet.");
-    }
-
-    /**
-     * Override if standard SQL is not enough.
-     */
-    protected function writeForeignKeyAdd(ForeignKeyAdd $change): Expression
-    {
-        return $this->raw(
-            'ALTER TABLE ? ADD ?',
-            [
-                $this->table($change->getTable(), $change->getSchema()),
-                $this->writeForeignKeySpec($change),
-            ]
-        );
-    }
-
-    /**
-     * Override if standard SQL is not enough.
-     */
-    protected function writeForeignKeyModify(ForeignKeyModify $change): Expression
-    {
-        throw new \Exception("Not implemented yet.");
-    }
-
-    /**
-     * Override if standard SQL is not enough.
-     */
-    protected function writeForeignKeyDrop(ForeignKeyDrop $change): Expression
-    {
-        return $this->writeConstraintDropSpec($change->getName(), $change->getTable(), $change->getSchema());
-    }
-
-    /**
-     * Override if standard SQL is not enough.
-     */
-    protected function writeForeignKeyRename(ForeignKeyRename $change): Expression
-    {
-        throw new \Exception("Not implemented yet.");
-    }
-
-    /**
-     * Override if standard SQL is not enough.
-     */
-    protected function writeIndexCreate(IndexCreate $change): Expression
-    {
-        if ($change->getName()) {
-            return $this->raw(
-                'CREATE INDEX ?::identifier ON ? (?::identifier[])',
-                [
-                    $change->getName(),
-                    $this->table($change->getTable(), $change->getSchema()),
-                    $change->getColumns(),
-                ]
-            );
-        }
-
-        return $this->raw(
-            'CREATE INDEX ON ? (?::identifier[])',
-            [
-                $this->table($change->getTable(), $change->getSchema()),
-                $change->getColumns(),
-            ]
-        );
+        return $this->raw('ALTER TABLE ? RENAME TO ?::id', [$this->table($change->getName(), $change->getSchema()), $change->getNewName()]);
     }
 
     /**
      * Override if standard SQL is not enough.
      *
-     * This syntax should work with:
-     *   - PostgreSQL
-     *   - SQLite
-     *   - SQLServer
+     * @return Expression|iterable<Expression>
      */
-    protected function writeIndexDrop(IndexDrop $change): Expression
+    protected function writeUniqueConstraintAdd(UniqueConstraintAdd $change): iterable|Expression
     {
-        return $this->raw(
-            'DROP INDEX ?',
-            [
-                $this->table($change->getName(), $change->getSchema()),
-            ]
-        );
+        if (!$change->isNullsDistinct()) {
+            // @todo Implement this with PostgreSQL.
+            throw new UnsupportedFeatureError("UNIQUE NULLS NOT DISTINCT is not supported by this vendor.");
+        }
+
+        if ($name = $change->getName()) {
+            return $this->raw('CREATE UNIQUE INDEX ?::id ON ? (?::id[])', [$name, $this->table($change), $change->getColumns()]);
+        }
+
+        return $this->raw('CREATE UNIQUE INDEX ON ? (?::id[])', [$this->table($change), $change->getColumns()]);
     }
 
     /**
      * Override if standard SQL is not enough.
+     *
+     * @todo SQLite does not support this and requires a table copy.
+     *
+     * @return Expression|iterable<Expression>
      */
-    protected function writeIndexRename(IndexRename $change): Expression
+    protected function writeUniqueConstraintDrop(UniqueConstraintDrop $change): iterable|Expression
     {
-        throw new \Exception("Not implemented yet.");
-    }
-
-    /**
-     * Override if standard SQL is not enough.
-     */
-    protected function writePrimaryKeyAdd(PrimaryKeyAdd $change): Expression
-    {
-        throw new \Exception("Not implemented yet.");
-    }
-
-    /**
-     * Override if standard SQL is not enough.
-     */
-    protected function writePrimaryKeyDrop(PrimaryKeyDrop $change): Expression
-    {
-        throw new \Exception("Not implemented yet.");
-    }
-
-    /**
-     * Override if standard SQL is not enough.
-     */
-    protected function writeTableCreate(TableCreate $change): Expression
-    {
-        throw new \Exception("Not implemented yet.");
-    }
-
-    /**
-     * Override if standard SQL is not enough.
-     */
-    protected function writeTableDrop(TableDrop $change): Expression
-    {
-        throw new \Exception("Not implemented yet.");
-    }
-
-    /**
-     * Override if standard SQL is not enough.
-     */
-    protected function writeTableRename(TableRename $change): Expression
-    {
-        throw new \Exception("Not implemented yet.");
-    }
-
-    /**
-     * Override if standard SQL is not enough.
-     */
-    protected function writeUniqueConstraintAdd(UniqueConstraintAdd $change): Expression
-    {
-        throw new \Exception("Not implemented yet.");
-    }
-
-    /**
-     * Override if standard SQL is not enough.
-     */
-    protected function writeUniqueConstraintDrop(UniqueConstraintDrop $change): Expression
-    {
-        return $this->writeConstraintDropSpec($change->getName(), $change->getTable(), $change->getSchema());
+        return $this->raw('DROP INDEX ?::id', [$change->getName()]);
     }
 
     /**
@@ -589,7 +683,7 @@ abstract class SchemaManager
      */
     protected function apply(AbstractChange $change): void
     {
-        $expression = match (\get_class($change)) {
+        $expressions = match (\get_class($change)) {
             ColumnAdd::class => $this->writeColumnAdd($change),
             ColumnModify::class => $this->writeColumnModify($change),
             ColumnDrop::class => $this->writeColumnDrop($change),
@@ -614,14 +708,18 @@ abstract class SchemaManager
             default => throw new QueryBuilderError(\sprintf("Unsupported alteration operation: %s", \get_class($change))),
         };
 
-        $this->executeChange($change, $expression);
+        $this->executeChange($change, $expressions);
     }
 
     /**
      * Really execute the change.
+     *
+     * @param Expression|iterable<Expression> $expressions
      */
-    protected function executeChange(AbstractChange $change, Expression $expression): void
+    protected function executeChange(AbstractChange $change, iterable|Expression $expressions): void
     {
-        $this->queryExecutor->executeStatement($expression);
+        foreach (\is_iterable($expressions) ? $expressions : [$expressions] as $expression) {
+            $this->queryExecutor->executeStatement($expression);
+        }
     }
 }

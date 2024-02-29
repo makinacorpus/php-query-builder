@@ -131,6 +131,16 @@ class Table extends AbstractObject
     }
 
     /**
+     * Get all columns name.
+     *
+     * @return string[]
+     */
+    public function getColumnNames(): array
+    {
+        return \array_map(fn (Column $column) => $column->getName(), $this->columns);
+    }
+
+    /**
      * Get all columns.
      *
      * @return Column[]

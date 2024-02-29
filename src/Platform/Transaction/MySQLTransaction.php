@@ -51,7 +51,7 @@ class MySQLTransaction extends AbstractTransaction
      */
     protected function doCreateSavepoint(string $name): void
     {
-        $this->executor->executeStatement("SAVEPOINT ?::identifier", $name);
+        $this->executor->executeStatement("SAVEPOINT ?::id", $name);
     }
 
     /**
@@ -59,7 +59,7 @@ class MySQLTransaction extends AbstractTransaction
      */
     protected function doRollbackToSavepoint(string $name): void
     {
-        $this->executor->executeStatement("ROLLBACK TO SAVEPOINT ?::identifier", $name);
+        $this->executor->executeStatement("ROLLBACK TO SAVEPOINT ?::id", $name);
     }
 
     /**

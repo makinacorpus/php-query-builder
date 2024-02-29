@@ -7,6 +7,8 @@ namespace MakinaCorpus\QueryBuilder\Tests\Platform\Schema;
 use MakinaCorpus\QueryBuilder\Platform;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Error\UnsupportedFeatureError;
+use MakinaCorpus\QueryBuilder\Error\Bridge\TableDoesNotExistError;
+use MakinaCorpus\QueryBuilder\Schema\ForeignKey;
 use MakinaCorpus\QueryBuilder\Schema\SchemaManager;
 use MakinaCorpus\QueryBuilder\Tests\FunctionalTestCase;
 
@@ -15,29 +17,24 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
     /** @before */
     protected function createSchema(): void
     {
-        try {
-            $this->getBridge()->executeStatement(
-                <<<SQL
-                DROP TABLE user_address
-                SQL
-            );
-        } catch (\Throwable) {}
-
-        try {
-            $this->getBridge()->executeStatement(
-                <<<SQL
-                DROP TABLE users
-                SQL
-            );
-        } catch (\Throwable) {}
-
-        try {
-            $this->getBridge()->executeStatement(
-                <<<SQL
-                DROP TABLE org
-                SQL
-            );
-        } catch (\Throwable) {}
+        foreach ([
+            'no_pk_table',
+            'renamed_table',
+            'renamed_table_new_name',
+            'test_table',
+            'test_table_tmp',
+            'test_table_pk',
+            'test_table_fk',
+            'test_table_uq',
+            'test_table_idx',
+            'user_address',
+            'users',
+            'org',
+        ] as $table) {
+            try {
+                $this->getBridge()->executeStatement('DROP TABLE ?::table', [$table]);
+            } catch (TableDoesNotExistError) {}
+        }
 
         switch ($this->getBridge()->getServerFlavor()) {
 
@@ -62,6 +59,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                         id int UNIQUE NOT NULL auto_increment PRIMARY KEY,
                         org_id INT DEFAULT NULL,
                         name text DEFAULT NULL,
+                        username varchar(255) DEFAULT NULL,
                         email varchar(255) UNIQUE NOT NULL,
                         date datetime DEFAULT now(),
                         CONSTRAINT users_org_id FOREIGN KEY (org_id)
@@ -81,6 +79,22 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                         CONSTRAINT user_address_user_id_fk FOREIGN KEY (user_id)
                             REFERENCES users (id)
                             ON DELETE CASCADE
+                    )
+                    SQL
+                );
+                $this->getBridge()->executeStatement(
+                    <<<SQL
+                    CREATE TABLE no_pk_table (
+                        id int UNIQUE NOT NULL,
+                        name text DEFAULT NULL
+                    )
+                    SQL
+                );
+                $this->getBridge()->executeStatement(
+                    <<<SQL
+                    CREATE TABLE renamed_table (
+                        id int UNIQUE NOT NULL,
+                        name text DEFAULT NULL
                     )
                     SQL
                 );
@@ -114,6 +128,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                         id serial UNIQUE NOT NULL PRIMARY KEY,
                         org_id INT DEFAULT NULL,
                         name text DEFAULT NULL,
+                        username varchar(255) DEFAULT NULL,
                         email varchar(255) UNIQUE NOT NULL,
                         date timestamp with time zone DEFAULT current_timestamp,
                         CONSTRAINT users_org_id FOREIGN KEY (org_id)
@@ -133,6 +148,22 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                         CONSTRAINT user_address_user_id_fk FOREIGN KEY (user_id)
                             REFERENCES users (id)
                             ON DELETE CASCADE
+                    )
+                    SQL
+                );
+                $this->getBridge()->executeStatement(
+                    <<<SQL
+                    CREATE TABLE no_pk_table (
+                        id int UNIQUE NOT NULL,
+                        name text DEFAULT NULL
+                    )
+                    SQL
+                );
+                $this->getBridge()->executeStatement(
+                    <<<SQL
+                    CREATE TABLE renamed_table (
+                        id int UNIQUE NOT NULL,
+                        name text DEFAULT NULL
                     )
                     SQL
                 );
@@ -243,8 +274,19 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
     public function testColumnRename(): void
     {
-        self::markTestIncomplete();
-        self::expectNotToPerformAssertions();
+        $this
+            ->getSchemaManager()
+            ->modify('test_db')
+            ->columnRename('user_address', 'city', 'locality')
+            ->commit()
+        ;
+
+        $table = $this
+            ->getSchemaManager()
+            ->getTable('test_db', 'user_address')
+        ;
+
+        self::assertSame(['id', 'org_id', 'user_id', 'locality', 'country'], $table->getColumnNames());
     }
 
     public function testConstraintDrop(): void
@@ -270,7 +312,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
         $this
             ->getSchemaManager()
             ->modify('test_db')
-            ->foreignKeyAdd('user_address', ['org_id'], 'org', ['id'], null)
+            ->foreignKeyAdd('user_address', ['org_id'], 'org', ['id'])
             ->commit()
         ;
 
@@ -288,7 +330,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
         $this
             ->getSchemaManager()
             ->modify('test_db')
-            ->foreignKeyAdd('user_address', ['org_id'], 'org', ['id'], null, 'user_address_org_org_id_fk')
+            ->foreignKeyAdd('user_address', ['org_id'], 'org', ['id'], 'user_address_org_org_id_fk')
             ->commit()
         ;
 
@@ -315,7 +357,9 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
             ->modify('test_db')
             ->indexCreate('users', ['email'], 'users_email_idx')
             ->commit()
-        ; 
+        ;
+
+        self::expectNotToPerformAssertions();
     }
 
     public function testIndexDrop(): void
@@ -339,23 +383,190 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
     public function testIndexRename(): void
     {
-        self::markTestIncomplete();
+        $this
+            ->getSchemaManager()
+            ->modify('test_db')
+            ->indexCreate('no_pk_table', ['id'], 'my_foo_unique_index')
+            ->commit()
+        ;
+
+        $this
+            ->getSchemaManager()
+            ->modify('test_db')
+            ->indexDrop('no_pk_table', 'my_foo_unique_index')
+            ->commit()
+        ;
+
+        // @todo Implement indexes read in schema manager.
         self::expectNotToPerformAssertions();
     }
 
     public function testPrimaryKeyAdd(): void
     {
-        self::markTestIncomplete();
-        self::expectNotToPerformAssertions();
+        $this
+            ->getSchemaManager()
+            ->modify('test_db')
+            ->primaryKeyAdd('no_pk_table', ['id'])
+            ->commit()
+        ;
+
+        $primaryKey = $this
+            ->getSchemaManager()
+            ->getTable('test_db', 'no_pk_table')
+            ->getPrimaryKey()
+        ;
+
+        self::assertSame(['id'], $primaryKey->getColumnNames());
     }
 
     public function testPrimaryKeyDrop(): void
     {
-        self::markTestIncomplete();
-        self::expectNotToPerformAssertions();
+        $this
+            ->getSchemaManager()
+            ->modify('test_db')
+            ->primaryKeyAdd('no_pk_table', ['id'], 'no_pk_table_pkey_with_name')
+            ->commit()
+        ;
+
+        $this
+            ->getSchemaManager()
+            ->modify('test_db')
+            ->primaryKeyDrop('no_pk_table', 'no_pk_table_pkey_with_name')
+            ->commit()
+        ;
+
+        $primaryKey = $this
+            ->getSchemaManager()
+            ->getTable('test_db', 'no_pk_table')
+            ->getPrimaryKey()
+        ;
+
+        self::assertNull($primaryKey);
     }
 
     public function testTableCreate(): void
+    {
+        $this
+            ->getSchemaManager()
+            ->modify('test_db')
+            ->tableBuilder('test_table')
+                ->column('foo', 'int8', false)
+                ->column('bar', 'text', true)
+            ->endTable()
+            ->commit()
+        ;
+
+        $column = $this
+            ->getSchemaManager()
+            ->getTable('test_db', 'test_table')
+            ->getColumn('bar')
+        ;
+
+        self::assertTrue($column->isNullable());
+        self::assertStringContainsString('text', $column->getValueType());
+    }
+
+    public function testTableCreateTemporary(): void
+    {
+        self::markTestIncomplete("PostgreSQL refuses to create a temporary relation in a non-temporary schema ?!");
+
+        $this
+            ->getSchemaManager()
+            ->modify('test_db')
+            ->tableBuilder('test_table_tmp')
+                ->temporary()
+                ->column('foo', 'int8', false)
+                ->column('bar', 'varchar(255)', true)
+            ->endTable()
+            ->commit()
+        ;
+
+        self::expectNotToPerformAssertions();
+    }
+
+    public function testTableCreateWithPrimaryKey(): void
+    {
+        $this
+            ->getSchemaManager()
+            ->modify('test_db')
+            ->tableBuilder('test_table_pk')
+                ->column('foo', 'int8', false)
+                ->column('bar', 'varchar(255)', true)
+                ->primaryKey(['foo', 'bar'])
+            ->endTable()
+            ->commit()
+        ;
+
+        $primaryKey = $this
+            ->getSchemaManager()
+            ->getTable('test_db', 'test_table_pk')
+            ->getPrimaryKey()
+        ;
+
+        self::assertSame(['foo', 'bar'], $primaryKey->getColumnNames());
+    }
+
+    public function testTableCreateWithForeignKey(): void
+    {
+        $this
+            ->getSchemaManager()
+            ->modify('test_db')
+            ->tableBuilder('test_table_fk')
+                ->column('foo', 'int', false)
+                ->column('bar', 'text', true)
+                ->foreignKey('org', ['foo' => 'id'])
+            ->endTable()
+            ->commit()
+        ;
+
+        $firstForeignKey = $this
+            ->getSchemaManager()
+            ->getTable('test_db', 'test_table_fk')
+            ->getForeignKeys()[0] ?? null
+        ;
+        \assert($firstForeignKey instanceof ForeignKey);
+
+        self::assertSame(['foo'], $firstForeignKey->getColumnNames());
+        self::assertSame(['id'], $firstForeignKey->getForeignColumnNames());
+    }
+
+    public function testTableCreateWithUniqueKey(): void
+    {
+        $this
+            ->getSchemaManager()
+            ->modify('test_db')
+            ->tableBuilder('test_table_fk')
+                ->column('foo', 'int', false)
+                ->column('bar', 'varchar(255)', true)
+                ->uniqueKey(['bar'])
+            ->endTable()
+            ->commit()
+        ;
+
+        // @todo We need to test this once the schema read api gets more complete.
+        self::expectNotToPerformAssertions();
+    }
+
+    public function testTableCreateWithIndex(): void
+    {
+        $this
+            ->getSchemaManager()
+            ->modify('test_db')
+            ->tableBuilder('test_table_fk')
+                ->column('foo', 'int', false)
+                ->column('bar', 'varchar(255)', true)
+                ->uniqueKey(['bar'])
+                ->index(['foo'])
+                ->index(['foo', 'bar'])
+            ->endTable()
+            ->commit()
+        ;
+
+        // @todo We need to test this once the schema read api gets more complete.
+        self::expectNotToPerformAssertions();
+    }
+
+    public function testTableCreateWithAll(): void
     {
         self::markTestIncomplete();
         self::expectNotToPerformAssertions();
@@ -363,25 +574,85 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
     public function testTableDrop(): void
     {
-        self::markTestIncomplete();
-        self::expectNotToPerformAssertions();
+        $this
+            ->getSchemaManager()
+            ->modify('test_db')
+            ->tableDrop('user_address')
+            ->commit()
+        ;
+
+        self::expectException(QueryBuilderError::class);
+        self::expectExceptionMessage("Table 'test_db.public.user_address' does not exist");
+        $this
+            ->getSchemaManager()
+            ->getTable('test_db', 'user_address')
+        ;
     }
 
     public function testTableRename(): void
     {
-        self::markTestIncomplete();
-        self::expectNotToPerformAssertions();
+        $this
+            ->getSchemaManager()
+            ->modify('test_db')
+            ->tableRename('renamed_table', 'renamed_table_new_name')
+            ->commit()
+        ;
+
+        $table = $this
+            ->getSchemaManager()
+            ->getTable('test_db', 'renamed_table_new_name')
+        ;
+
+        self::assertSame('renamed_table_new_name', $table->getName());
+
+        self::expectException(QueryBuilderError::class);
+        self::expectExceptionMessage("Table 'test_db.public.renamed_table' does not exist");
+        $this
+            ->getSchemaManager()
+            ->getTable('test_db', 'renamed_table')
+        ;
     }
 
     public function testUniqueConstraintAdd(): void
     {
-        self::markTestIncomplete();
+        $this
+            ->getSchemaManager()
+            ->modify('test_db')
+            ->uniqueConstraintAdd('users', ['username'])
+            ->commit()
+        ;
+
+        self::expectNotToPerformAssertions();
+    }
+
+    public function testUniqueConstraintAddNamed(): void
+    {
+        $this
+            ->getSchemaManager()
+            ->modify('test_db')
+            ->uniqueConstraintAdd('users', ['username'], 'users_unique_username_idx')
+            ->commit()
+        ;
+
         self::expectNotToPerformAssertions();
     }
 
     public function testUniqueConstraintDrop(): void
     {
-        self::markTestIncomplete();
+        $this
+            ->getSchemaManager()
+            ->modify('test_db')
+            ->uniqueConstraintAdd('users', ['username'], 'users_unique_username_idx')
+            ->commit()
+        ;
+
+        $this
+            ->getSchemaManager()
+            ->modify('test_db')
+            ->uniqueConstraintDrop('users', 'users_unique_username_idx')
+            ->commit()
+        ;
+
         self::expectNotToPerformAssertions();
     }
 
