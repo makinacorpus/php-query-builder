@@ -48,6 +48,8 @@ interface Bridge extends QueryExecutor, QueryBuilder
 
     /**
      * Get schema manager.
+     *
+     * @experimental
      */
     public function getSchemaManager(): SchemaManager;
 

@@ -123,6 +123,14 @@ export default defineConfig({
             items: []
           },
           {
+            text: 'Schema',
+            link: '/query/schema',
+            items: [
+              { text: 'Introspection', link: '/query/schema' },
+              { text: 'Alteration', link: '/query/schema' },
+            ]
+          },
+          {
             text: 'Data types',
             link: '/query/datatype',
             items: []
