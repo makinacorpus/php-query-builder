@@ -121,6 +121,7 @@ class PdoQueryBuilder extends AbstractBridge
         $this->dieIfClosed();
 
         $statement = $this->connection->prepare($expression, [\PDO::ATTR_CURSOR => \PDO::CURSOR_FWDONLY]);
+        $statement->setFetchMode(\PDO::FETCH_ASSOC);
         $statement->execute($arguments);
 
         $result = new IterableResult(

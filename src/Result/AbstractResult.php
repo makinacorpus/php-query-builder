@@ -429,6 +429,10 @@ abstract class AbstractResult implements Result, \IteratorAggregate
     /**
      * Get column value in row.
      *
+     * Warning: for this method to work with PDO, fetch mode must be set
+     * to \PDO::FETCH_ASSOC, other wise columns count and order may vary
+     * and cause unpredictable results.
+     *
      * @return mixed $value
      *   Whatever is the row value, or null if no value found.
      */
@@ -445,6 +449,7 @@ abstract class AbstractResult implements Result, \IteratorAggregate
             if ($name >= $this->columnCount()) {
                 throw new ResultError(\sprintf("Column with index %d does not exist in result.", $name));
             }
+
             return \array_values($row)[$name];
         }
 
