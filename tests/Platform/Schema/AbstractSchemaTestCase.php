@@ -239,6 +239,17 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
         }
     }
 
+    protected function getTestingCollation(): string
+    {
+        if ($this->ifDatabase(Platform::MYSQL)) {
+            return 'utf8_general_ci';
+        }
+        if ($this->ifDatabase(Platform::POSTGRESQL)) {
+            return 'C.UTF-8';
+        }
+        return 'utf8';
+    }
+
     public function testColumnAddNullable(): void
     {
         $this
@@ -319,10 +330,207 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
         self::assertStringContainsString('int', $column->getValueType());
     }
 
-    public function testColumnModify(): void
+    public function testColumnModifyType(): void
     {
-        self::markTestIncomplete();
-        self::expectNotToPerformAssertions();
+        $this->skipIfDatabase(Platform::SQLITE);
+
+        $this
+            ->getSchemaManager()
+            ->modify('test_db')
+                ->modifyColumn(
+                    table: 'user_address',
+                    name: 'country',
+                    type: 'text',
+                )
+            ->commit()
+        ;
+
+        $column = $this
+            ->getSchemaManager()
+            ->getTable('test_db', 'user_address')
+            ->getColumn('country')
+        ;
+
+        // This changed.
+        self::assertSame('text', $column->getValueType());
+
+        // This didn't.
+        self::assertFalse($column->isNullable());
+        //self::assertSame("'fr'", $column->getDefault()); // @todo
+        //self::assertNotSame('C', $column->getCollation()); // @todo
+        self::assertNull($column->getPrecision());
+        self::assertNull($column->getScale());
+        // self::assertSame(6, $column->getLength()); // @todo
+    }
+
+    public function testColumnModifyCollation(): void
+    {
+        $this->skipIfDatabase(Platform::SQLITE);
+
+        $collation = $this->getTestingCollation();
+
+        $this
+            ->getSchemaManager()
+            ->modify('test_db')
+                ->modifyColumn(
+                    table: 'user_address',
+                    name: 'country',
+                    collation: $collation,
+                    type: 'text'
+                )
+            ->commit()
+        ;
+
+        $column = $this
+            ->getSchemaManager()
+            ->getTable('test_db', 'user_address')
+            ->getColumn('country')
+        ;
+
+        // This changed.
+        // self::assertSame($collation, $column->getCollation()); // @todo
+
+        // This didn't.
+        self::assertFalse($column->isNullable());
+        //self::assertSame("'fr'", $column->getDefault()); // @todo
+        self::assertSame('text', $column->getValueType());
+        self::assertNull($column->getPrecision());
+        self::assertNull($column->getScale());
+        // self::assertSame(6, $column->getLength()); // @todo
+    }
+
+    public function testColumnModifyDropDefault(): void
+    {
+        $this->skipIfDatabase(Platform::SQLITE);
+
+        $this
+            ->getSchemaManager()
+            ->modify('test_db')
+                ->modifyColumn(
+                    table: 'user_address',
+                    name: 'country',
+                    dropDefault: true,
+                )
+            ->commit()
+        ;
+
+        $column = $this
+            ->getSchemaManager()
+            ->getTable('test_db', 'user_address')
+            ->getColumn('country')
+        ;
+
+        // This changed.
+        //self::assertNull($column->getDefault()); // @todo
+
+        // This didn't.
+        self::assertFalse($column->isNullable());
+        self::assertSame('varchar', $column->getValueType());
+        // self::assertNotSame('C', $column->getCollation()); // @todo
+        self::assertNull($column->getPrecision());
+        self::assertNull($column->getScale());
+        // self::assertSame(6, $column->getLength()); // @todo
+    }
+
+    public function testColumnModifyDefault(): void
+    {
+        $this->skipIfDatabase(Platform::SQLITE);
+
+        $this
+            ->getSchemaManager()
+            ->modify('test_db')
+                ->modifyColumn(
+                    table: 'user_address',
+                    name: 'country',
+                    default: "'en'",
+                )
+            ->commit()
+        ;
+
+        $column = $this
+            ->getSchemaManager()
+            ->getTable('test_db', 'user_address')
+            ->getColumn('country')
+        ;
+
+        // This changed.
+        //self::assertSame("'en'", $column->getDefault()); // @todo
+
+        // This didn't.
+        self::assertFalse($column->isNullable());
+        self::assertSame('varchar', $column->getValueType());
+        // self::assertNotSame('C', $column->getCollation()); // @todo
+        self::assertNull($column->getPrecision());
+        self::assertNull($column->getScale());
+        // self::assertSame(6, $column->getLength()); // @todo
+    }
+
+    public function testColumnModifyNullable(): void
+    {
+        $this->skipIfDatabase(Platform::SQLITE);
+
+        $this
+            ->getSchemaManager()
+            ->modify('test_db')
+                ->modifyColumn(
+                    table: 'user_address',
+                    name: 'country',
+                    nullable: true,
+                )
+            ->commit()
+        ;
+
+        $column = $this
+            ->getSchemaManager()
+            ->getTable('test_db', 'user_address')
+            ->getColumn('country')
+        ;
+
+        // This changed.
+        self::assertTrue($column->isNullable());
+
+        // This didn't.
+        self::assertSame('varchar', $column->getValueType());
+        //self::assertSame("'en'", $column->getDefault()); // @todo
+        // self::assertNotSame('C', $column->getCollation()); // @todo
+        self::assertNull($column->getPrecision());
+        self::assertNull($column->getScale());
+        // self::assertSame(6, $column->getLength()); // @todo
+    }
+
+    public function testColumnModifyEverything(): void
+    {
+        $this->skipIfDatabase(Platform::SQLITE);
+
+        $collation = $this->getTestingCollation();
+
+        $this
+            ->getSchemaManager()
+            ->modify('test_db')
+                ->modifyColumn(
+                    table: 'user_address',
+                    name: 'country',
+                    nullable: true,
+                    type: 'varchar(24)',
+                    default: "'es'",
+                    collation: $collation,
+                )
+            ->commit()
+        ;
+
+        $column = $this
+            ->getSchemaManager()
+            ->getTable('test_db', 'user_address')
+            ->getColumn('country')
+        ;
+
+        self::assertTrue($column->isNullable());
+        self::assertSame('varchar', $column->getValueType());
+        //self::assertSame("'es'", $column->getDefault()); // @todo
+        // self::assertSame($collation, $column->getCollation()); // @todo
+        self::assertNull($column->getPrecision());
+        self::assertNull($column->getScale());
+        // self::assertNull(24, $column->getLength()); // @todo
     }
 
     public function testColumnDrop(): void

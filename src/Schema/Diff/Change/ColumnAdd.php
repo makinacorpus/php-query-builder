@@ -32,6 +32,8 @@ class ColumnAdd extends AbstractChange
         private readonly bool $nullable,
         /** @var string */
         private readonly null|string $default = null,
+        /** @var string */
+        private readonly null|string $collation = null,
     ) {
         parent::__construct(
             database: $database,
@@ -67,5 +69,11 @@ class ColumnAdd extends AbstractChange
     public function getDefault(): null|string
     {
         return $this->default;
+    }
+
+    /** @return string */
+    public function getCollation(): null|string
+    {
+        return $this->collation;
     }
 }

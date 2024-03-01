@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Platform\Schema;
 
 use MakinaCorpus\QueryBuilder\Expression;
+use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Error\UnsupportedFeatureError;
 use MakinaCorpus\QueryBuilder\Result\ResultRow;
 use MakinaCorpus\QueryBuilder\Schema\Column;
 use MakinaCorpus\QueryBuilder\Schema\ForeignKey;
 use MakinaCorpus\QueryBuilder\Schema\Key;
 use MakinaCorpus\QueryBuilder\Schema\SchemaManager;
+use MakinaCorpus\QueryBuilder\Schema\Diff\Change\ColumnModify;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\ForeignKeyAdd;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\IndexCreate;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\IndexDrop;
@@ -323,6 +325,56 @@ class MySQLSchemaManager extends SchemaManager
         }
 
         return $ret;
+    }
+
+    #[\Override]
+    protected function writeColumnSpecCollation(string $collation): Expression
+    {
+        // This is very hasardous, but let's do it.
+        if ('binary' === $collation) {
+            $characterSet = 'binary';
+        } else if (\str_contains($collation, '_')) {
+            list ($characterSet,) = \explode('_', $collation, 2);
+        } else {
+            $characterSet = $collation;
+            $collation .= '_general_ci';
+        }
+
+        // @todo SQL injection possibility
+        return $this->raw('CHARACTER SET ? COLLATE ?', [$characterSet, $collation]);
+    }
+
+    #[\Override]
+    protected function writeColumnModify(ColumnModify $change): iterable|Expression
+    {
+        $name = $change->getName();
+
+        // When modifying a column in MySQL, you need to use the CHANGE COLUMN
+        // syntax if you change anything else than the DEFAULT value.
+        // That's kind of very weird, but that's it. Live with it.
+        if ($change->getType() || null !== $change->isNullable() || $change->getCollation() || $change->getType()) {
+            return $this->raw(
+                'ALTER TABLE ? MODIFY COLUMN ?',
+                [
+                    $this->table($change),
+                    $this->writeColumnSpec($this->columnModifyToAdd($change)),
+                ]
+            );
+        }
+
+        $pieces = [];
+
+        if ($change->isDropDefault()) {
+            if ($change->getDefault()) {
+                // @todo Find a way to have a "identification method" on changes.
+                throw new QueryBuilderError(\sprintf("Column '%s': you cannot drop default and set default at the same time.", $name));
+            }
+            $pieces[] = $this->raw('ALTER COLUMN ?::id DROP DEFAULT', [$name]);
+        } else if ($default = $change->getDefault()) {
+            $pieces[] = $this->raw('ALTER COLUMN ?::id SET DEFAULT ?', [$name, $this->raw($default)]);
+        }
+
+        return $this->raw('ALTER TABLE ? ' . \implode(', ', \array_fill(0, \count($pieces), '?')), [$this->table($change), ...$pieces]);
     }
 
     #[\Override]

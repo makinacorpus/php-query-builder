@@ -62,6 +62,7 @@ class SchemaTransaction
         string $type,
         bool $nullable,
         null|string $default = null,
+        null|string $collation = null,
         ?string $schema = null,
     ): static {
         $this->changeLog->add(
@@ -71,6 +72,7 @@ class SchemaTransaction
                 type: $type,
                 nullable: $nullable,
                 default: $default,
+                collation: $collation,
                 schema: $schema ?? $this->schema,
                 database: $this->database,
             )
@@ -85,9 +87,11 @@ class SchemaTransaction
     public function modifyColumn(
         string $table,
         string $name,
-        string $type,
-        bool $nullable,
+        null|string $type = null,
+        null|bool $nullable = null,
         null|string $default = null,
+        bool $dropDefault = false,
+        null|string $collation = null,
         ?string $schema = null,
     ): static {
         $this->changeLog->add(
@@ -97,6 +101,8 @@ class SchemaTransaction
                 type: $type,
                 nullable: $nullable,
                 default: $default,
+                dropDefault: $dropDefault,
+                collation: $collation,
                 schema: $schema ?? $this->schema,
                 database: $this->database,
             )

@@ -20,6 +20,7 @@ class Column extends AbstractObject
         private readonly ?int $precision = null,
         private readonly ?int $scale = null,
         private readonly bool $unsigned = false,
+        private readonly ?string $default = null,
     ) {
         parent::__construct(
             comment: $comment,
@@ -49,6 +50,26 @@ class Column extends AbstractObject
     }
 
     /**
+     * Get value type SQL expression.
+     *
+     * @todo This is a hack for column modification methods, and should probably
+     *   live in another place, right now, it works.
+     */
+    public function getValueTypeSql(): string
+    {
+        if ($this->length) {
+            return $this->valueType . '(' . $this->length . ')';
+        }
+        if ($this->precision) {
+            if ($this->scale) {
+                return $this->valueType . '(' . $this->precision . ',' . $this->scale . ')';
+            }
+            return $this->valueType . '(' . $this->precision . ')';
+        }
+        return $this->valueType;
+    }
+
+    /**
      * Is nullable.
      */
     public function isNullable(): bool
@@ -62,6 +83,14 @@ class Column extends AbstractObject
     public function getCollation(): ?string
     {
         return $this->collation;
+    }
+
+    /**
+     * Get default.
+     */
+    public function getDefault(): ?string
+    {
+        return $this->default;
     }
 
     /**

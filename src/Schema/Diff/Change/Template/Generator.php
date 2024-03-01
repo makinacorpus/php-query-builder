@@ -33,14 +33,17 @@ class Generator
                             'type' => 'string',
                             'nullable' => 'bool',
                             'default' => ['type' =>'string', 'nullable' => true],
+                            'collation' => ['type' => 'string', 'nullable' => true],
                         ],
                     ],
                     'modify' => [
                         'description' => 'Add a COLUMN.',
                         'properties' => [
-                            'type' => 'string',
-                            'nullable' => 'bool',
+                            'type' => ['type' => 'string', 'nullable' => true],
+                            'nullable' => ['type' => 'bool', 'nullable' => true],
                             'default' => ['type' =>'string', 'nullable' => true],
+                            'drop_default' => ['type' => 'bool', 'default' => false],
+                            'collation' => ['type' => 'string', 'nullable' => true],
                         ],
                     ],
                     'drop' => [

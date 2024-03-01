@@ -27,11 +27,15 @@ class ColumnModify extends AbstractChange
         /** @var string */
         private readonly string $name,
         /** @var string */
-        private readonly string $type,
+        private readonly null|string $type = null,
         /** @var bool */
-        private readonly bool $nullable,
+        private readonly null|bool $nullable = null,
         /** @var string */
         private readonly null|string $default = null,
+        /** @var bool */
+        private readonly bool $dropDefault = false,
+        /** @var string */
+        private readonly null|string $collation = null,
     ) {
         parent::__construct(
             database: $database,
@@ -52,13 +56,13 @@ class ColumnModify extends AbstractChange
     }
 
     /** @return string */
-    public function getType(): string
+    public function getType(): null|string
     {
         return $this->type;
     }
 
     /** @return bool */
-    public function isNullable(): bool
+    public function isNullable(): null|bool
     {
         return $this->nullable;
     }
@@ -67,5 +71,17 @@ class ColumnModify extends AbstractChange
     public function getDefault(): null|string
     {
         return $this->default;
+    }
+
+    /** @return bool */
+    public function isDropDefault(): bool
+    {
+        return $this->dropDefault;
+    }
+
+    /** @return string */
+    public function getCollation(): null|string
+    {
+        return $this->collation;
     }
 }

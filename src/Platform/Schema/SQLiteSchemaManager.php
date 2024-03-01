@@ -11,6 +11,7 @@ use MakinaCorpus\QueryBuilder\Schema\Column;
 use MakinaCorpus\QueryBuilder\Schema\ForeignKey;
 use MakinaCorpus\QueryBuilder\Schema\Key;
 use MakinaCorpus\QueryBuilder\Schema\SchemaManager;
+use MakinaCorpus\QueryBuilder\Schema\Diff\Change\ColumnModify;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\ConstraintDrop;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\ConstraintModify;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\ConstraintRename;
@@ -280,6 +281,12 @@ class SQLiteSchemaManager extends SchemaManager
         }
 
         return []; // @todo
+    }
+
+    #[\Override]
+    protected function writeColumnModify(ColumnModify $change): iterable|Expression
+    {
+        throw new UnsupportedFeatureError("This operation requires creating a new column, copying data, then renaming it.");
     }
 
     #[\Override]

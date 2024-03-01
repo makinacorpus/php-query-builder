@@ -215,15 +215,43 @@ abstract class SchemaManager
     }
 
     /**
-     * Give a place where specific implementations might change type.
+     * Convert a column modify to a column add statement.
+     *
+     * @todo There are great chances this will change more things than expected.
+     */
+    protected function columnModifyToAdd(ColumnModify $change): ColumnAdd
+    {
+        $existing = $this
+            ->getTable(
+                $change->getDatabase(),
+                $change->getTable(),
+                $change->getSchema(),
+            )
+            ->getColumn($change->getName())
+        ;
+
+        return new ColumnAdd(
+            // @todo Do not change collation when default...
+            collation: null, // $change->getCollation() ?? $existing->getCollation(),
+            database: $change->getDatabase(),
+            default: $change->isDropDefault() ? null : ($change->getDefault() ?? $existing->getDefault()),
+            name: $change->getName(),
+            nullable: $change->isNullable() ?? $existing->isNullable(),
+            schema: $change->getSchema(),
+            table: $change->getTable(),
+            type: $change->getType() ?? $existing->getValueTypeSql(),
+        );
+    }
+
+    /**
+     * Write the COLLATE statement.
      *
      * @todo
-     *   Here, we might want to plug over the converter in order to normalize
-     *   type depending upon the RDBMS.
+     *   Maybe later, some normalization here with characters sets.
      */
-    protected function writeColumnSpecType(string $type): Expression
+    protected function writeColumnSpecCollation(string $collation): Expression
     {
-        return $this->raw($type);
+        return $this->raw('COLLATE ?::id', $collation);
     }
 
     /**
@@ -244,53 +272,52 @@ abstract class SchemaManager
     }
 
     /**
+     * Give a place where specific implementations might change type.
+     *
+     * @todo
+     *   Here, we might want to plug over the converter in order to normalize
+     *   type depending upon the RDBMS.
+     */
+    protected function writeColumnSpecType(ColumnAdd|ColumnModify $change): Expression
+    {
+        if (!$type = $change->getType()) {
+            throw new QueryBuilderError("You cannot change collation without specifying a new type.");
+        }
+
+        // @todo Here type normalization should happen.
+        $pieces = [$this->raw($type)];
+
+        if ($collation = $change->getCollation()) {
+            $pieces[] = $this->writeColumnSpecCollation($collation);
+        }
+
+        return $this->raw(\implode(' ', \array_fill(0, \count($pieces), '?')), [...$pieces]);
+    }
+
+    /**
      * Override if standard SQL is not enough.
      *
      * Column specification.
      */
     protected function writeColumnSpec(ColumnAdd $change): Expression
     {
-        $type = $change->getType();
-        $default = $change->getDefault();
+        $pieces = [];
 
-        if ($change->isNullable()) {
-            if ($default) {
-                return $this->raw(
-                    '?::id ? DEFAULT ?',
-                    [
-                        $change->getName(),
-                        $this->writeColumnSpecType($type),
-                        $this->writeColumnSpecDefault($type, $default)
-                    ]
-                );
-            }
-
-            return $this->raw(
-                '?::id ?',
-                [
-                    $change->getName(),
-                    $this->writeColumnSpecType($type),
-                ]
-            );
+        if (!$change->isNullable()) {
+            $pieces[] = $this->raw('NOT NULL');
         }
 
-        if ($default) {
-            return $this->raw(
-                '?::id ? NOT NULL DEFAULT ?',
-                [
-                    $change->getName(),
-                    $this->writeColumnSpecType($type),
-                    $this->writeColumnSpecDefault($type, $default)
-                ]
-            );
+        if ($default = $change->getDefault()) {
+            $this->raw('DEFAULT ?', [$default]);
         }
 
         return $this->raw(
-            '?::id ? NOT NULL',
+            '?::id ? ' . \implode(' ', \array_fill(0, \count($pieces), '?')),
             [
                 $change->getName(),
-                $this->writeColumnSpecType($type)
-            ]
+                $this->writeColumnSpecType($change),
+                ...$pieces,
+            ],
         );
     }
 
@@ -307,11 +334,53 @@ abstract class SchemaManager
     /**
      * Override if standard SQL is not enough.
      *
+     * @see https://www.postgresql.org/docs/current/sql-altertable.html
+     *   PostgreSQL uses ALTER TABLE x ALTER COLUMN y
+     * @see https://learn.microsoft.com/en-us/sql/t-sql/statements/alter-table-transact-sql?view=sql-server-ver16
+     *   SQLServer uses ALTER TABLE x ALTER COLUMN y
+     * @see https://dev.mysql.com/doc/refman/8.0/en/alter-table.html
+     *   MySQL uses ALTER TABLE x ALTER COLUMN y
+     * @see https://sqlite.org/lang_altertable.html
+     * @see https://stackoverflow.com/questions/2685885/sqlite-modify-column
+     *   SQLite requires a ADD/UPDATE/DROP/RENAME algorithm for this to work.
+     *
+     * This implementation is PostgreSQL friendly, all others will have their
+     * own I guess.
+     *
      * @return Expression|iterable<Expression>
      */
     protected function writeColumnModify(ColumnModify $change): iterable|Expression
     {
-        throw new \Exception("Not implemented yet.");
+        $name = $change->getName();
+        $pieces = [];
+
+        if ($change->isDropDefault()) {
+            if ($change->getDefault()) {
+                // @todo Find a way to have a "identification method" on changes.
+                throw new QueryBuilderError(\sprintf("Column '%s': you cannot drop default and set default at the same time.", $name));
+            }
+            $pieces[] = $this->raw('ALTER COLUMN ?::id DROP DEFAULT', [$name]);
+        } else if ($default = $change->getDefault()) {
+            $pieces[] = $this->raw('ALTER COLUMN ?::id SET DEFAULT ?', [$name, $this->raw($default)]);
+        }
+
+        if ($change->getType() || $change->getCollation()) {
+            $pieces[] = $this->raw('ALTER COLUMN ?::id TYPE ?', [$name, $this->writeColumnSpecType($change)]);
+        }
+
+        if (null !== ($nullable = $change->isNullable())) {
+            if ($nullable) {
+                $pieces[] = $this->raw('ALTER COLUMN ?::id DROP NOT NULL', [$name]);
+            } else {
+                $pieces[] = $this->raw('ALTER COLUMN ?::id SET NOT NULL', [$name]);
+            }
+        }
+
+        if (!$pieces) {
+            throw new QueryBuilderError(\sprintf("Column '%s': no changes are requested.", $name));
+        }
+
+        return $this->raw('ALTER TABLE ? ' . \implode(', ', \array_fill(0, \count($pieces), '?')), [$this->table($change), ...$pieces]);
     }
 
     /**
