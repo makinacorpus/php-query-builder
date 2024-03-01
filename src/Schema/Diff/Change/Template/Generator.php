@@ -544,7 +544,7 @@ class Generator
                     {
                         \$pieces = [];
                 {$generateNameBodyAsString}
-                        \$pieces = '{$generateNameSuffix}';
+                        \$pieces[] = '{$generateNameSuffix}';
                 
                         return \implode('_', \array_filter(\$pieces));
                     }

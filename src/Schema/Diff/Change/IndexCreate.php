@@ -73,7 +73,7 @@ class IndexCreate extends AbstractChange
         $pieces = [];
         $pieces[] = $this->table;
         $pieces[] = \implode('_', $this->columns);
-        $pieces = 'idx';
+        $pieces[] = 'idx';
 
         return \implode('_', \array_filter($pieces));
     }

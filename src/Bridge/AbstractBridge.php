@@ -19,6 +19,7 @@ use MakinaCorpus\QueryBuilder\Platform\Escaper\MySQLEscaper;
 use MakinaCorpus\QueryBuilder\Platform\Escaper\StandardEscaper;
 use MakinaCorpus\QueryBuilder\Platform\Schema\MySQLSchemaManager;
 use MakinaCorpus\QueryBuilder\Platform\Schema\PostgreSQLSchemaManager;
+use MakinaCorpus\QueryBuilder\Platform\Schema\SQLiteSchemaManager;
 use MakinaCorpus\QueryBuilder\Platform\Transaction\MySQLTransaction;
 use MakinaCorpus\QueryBuilder\Platform\Transaction\PostgreSQLTransaction;
 use MakinaCorpus\QueryBuilder\Platform\Transaction\SQLiteTransaction;
@@ -436,6 +437,10 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
 
         if (Platform::MARIADB === $serverFlavor) {
             return new MySQLSchemaManager($this);
+        }
+
+        if (Platform::SQLITE === $serverFlavor) {
+            return new SQLiteSchemaManager($this);
         }
 
         throw new UnsupportedFeatureError(\sprintf("Schema reader is not implemented yet for vendor '%s'", $serverFlavor));

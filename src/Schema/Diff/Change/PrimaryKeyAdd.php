@@ -64,7 +64,7 @@ class PrimaryKeyAdd extends AbstractChange
     {
         $pieces = [];
         $pieces[] = $this->table;
-        $pieces = 'pkey';
+        $pieces[] = 'pkey';
 
         return \implode('_', \array_filter($pieces));
     }

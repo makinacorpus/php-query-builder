@@ -17,6 +17,8 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
     /** @before */
     protected function createSchema(): void
     {
+        $bridge = $this->getBridge();
+
         foreach ([
             'no_pk_table',
             'renamed_table',
@@ -32,15 +34,15 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
             'org',
         ] as $table) {
             try {
-                $this->getBridge()->executeStatement('DROP TABLE ?::table', [$table]);
+                $bridge->executeStatement('DROP TABLE ?::table', [$table]);
             } catch (TableDoesNotExistError) {}
         }
 
-        switch ($this->getBridge()->getServerFlavor()) {
+        switch ($bridge->getServerFlavor()) {
 
             case Platform::MARIADB:
             case Platform::MYSQL:
-                $this->getBridge()->executeStatement(
+                $bridge->executeStatement(
                     <<<SQL
                     CREATE TABLE org (
                         id int UNIQUE NOT NULL,
@@ -53,7 +55,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                     )
                     SQL
                 );
-                $this->getBridge()->executeStatement(
+                $bridge->executeStatement(
                     <<<SQL
                     CREATE TABLE users (
                         id int UNIQUE NOT NULL auto_increment PRIMARY KEY,
@@ -68,7 +70,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                     )
                     SQL
                 );
-                $this->getBridge()->executeStatement(
+                $bridge->executeStatement(
                     <<<SQL
                     CREATE TABLE user_address (
                         id int UNIQUE NOT NULL auto_increment PRIMARY KEY,
@@ -82,7 +84,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                     )
                     SQL
                 );
-                $this->getBridge()->executeStatement(
+                $bridge->executeStatement(
                     <<<SQL
                     CREATE TABLE no_pk_table (
                         id int UNIQUE NOT NULL,
@@ -90,7 +92,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                     )
                     SQL
                 );
-                $this->getBridge()->executeStatement(
+                $bridge->executeStatement(
                     <<<SQL
                     CREATE TABLE renamed_table (
                         id int UNIQUE NOT NULL,
@@ -105,11 +107,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                 break;
 
             case Platform::SQLITE:
-                self::markTestIncomplete();
-                break;
-
-            case Platform::POSTGRESQL:
-                $this->getBridge()->executeStatement(
+                $bridge->executeStatement(
                     <<<SQL
                     CREATE TABLE org (
                         id int UNIQUE NOT NULL,
@@ -122,7 +120,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                     )
                     SQL
                 );
-                $this->getBridge()->executeStatement(
+                $bridge->executeStatement(
                     <<<SQL
                     CREATE TABLE users (
                         id serial UNIQUE NOT NULL PRIMARY KEY,
@@ -137,7 +135,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                     )
                     SQL
                 );
-                $this->getBridge()->executeStatement(
+                $bridge->executeStatement(
                     <<<SQL
                     CREATE TABLE user_address (
                         id serial UNIQUE NOT NULL PRIMARY KEY,
@@ -151,7 +149,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                     )
                     SQL
                 );
-                $this->getBridge()->executeStatement(
+                $bridge->executeStatement(
                     <<<SQL
                     CREATE TABLE no_pk_table (
                         id int UNIQUE NOT NULL,
@@ -159,7 +157,68 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                     )
                     SQL
                 );
-                $this->getBridge()->executeStatement(
+                $bridge->executeStatement(
+                    <<<SQL
+                    CREATE TABLE renamed_table (
+                        id int UNIQUE NOT NULL,
+                        name text DEFAULT NULL
+                    )
+                    SQL
+                );
+                break;
+
+            case Platform::POSTGRESQL:
+                $bridge->executeStatement(
+                    <<<SQL
+                    CREATE TABLE org (
+                        id int UNIQUE NOT NULL,
+                        dept varchar(255) NOT NULL,
+                        role varchar(255) NOT NULL,
+                        name text DEFAULT NULL,
+                        balance decimal(10,2) NOT NULL DEFAULT 0.0,
+                        employes int NOT NULL DEFAULT 0,
+                        PRIMARY KEY (dept, role)
+                    )
+                    SQL
+                );
+                $bridge->executeStatement(
+                    <<<SQL
+                    CREATE TABLE users (
+                        id serial UNIQUE NOT NULL PRIMARY KEY,
+                        org_id INT DEFAULT NULL,
+                        name text DEFAULT NULL,
+                        username varchar(255) DEFAULT NULL,
+                        email varchar(255) UNIQUE NOT NULL,
+                        date timestamp with time zone DEFAULT current_timestamp,
+                        CONSTRAINT users_org_id FOREIGN KEY (org_id)
+                            REFERENCES org (id)
+                            ON DELETE CASCADE
+                    )
+                    SQL
+                );
+                $bridge->executeStatement(
+                    <<<SQL
+                    CREATE TABLE user_address (
+                        id serial UNIQUE NOT NULL PRIMARY KEY,
+                        org_id int DEFAULT NULL,
+                        user_id int NOT NULL,
+                        city text NOT NULL,
+                        country varchar(6) NOT NULL DEFAULT 'fr',
+                        CONSTRAINT user_address_user_id_fk FOREIGN KEY (user_id)
+                            REFERENCES users (id)
+                            ON DELETE CASCADE
+                    )
+                    SQL
+                );
+                $bridge->executeStatement(
+                    <<<SQL
+                    CREATE TABLE no_pk_table (
+                        id int UNIQUE NOT NULL,
+                        name text DEFAULT NULL
+                    )
+                    SQL
+                );
+                $bridge->executeStatement(
                     <<<SQL
                     CREATE TABLE renamed_table (
                         id int UNIQUE NOT NULL,
@@ -309,6 +368,8 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
     public function testForeignKeyAdd(): void
     {
+        $this->skipIfDatabase(Platform::SQLITE);
+
         $this
             ->getSchemaManager()
             ->modify('test_db')
@@ -321,12 +382,16 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
     public function testForeignKeyModify(): void
     {
+        $this->skipIfDatabase(Platform::SQLITE);
+
         self::markTestIncomplete();
         self::expectNotToPerformAssertions();
     }
 
     public function testForeignKeyDrop(): void
     {
+        $this->skipIfDatabase(Platform::SQLITE);
+
         $this
             ->getSchemaManager()
             ->modify('test_db')
@@ -403,6 +468,8 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
     public function testPrimaryKeyAdd(): void
     {
+        $this->skipIfDatabase(Platform::SQLITE);
+
         $this
             ->getSchemaManager()
             ->modify('test_db')
@@ -421,6 +488,8 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
     public function testPrimaryKeyDrop(): void
     {
+        $this->skipIfDatabase(Platform::SQLITE);
+
         $this
             ->getSchemaManager()
             ->modify('test_db')
@@ -745,7 +814,10 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
         self::assertSame(['dept', 'role'], $table->getPrimaryKey()?->getColumnNames());
         self::assertCount(6, $table->getColumns());
         self::assertEmpty($table->getForeignKeys());
-        self::assertCount(1, $table->getReverseForeignKeys());
+
+        if ($this->ifDatabaseNot(Platform::SQLITE)) {
+            self::assertCount(1, $table->getReverseForeignKeys());
+        }
     }
 
     public function testTableRaiseExceptionWhenNotExist(): void
@@ -772,11 +844,13 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
         self::assertSame('users', $foreignKey->getTable());
         self::assertSame('org', $foreignKey->getForeignTable());
 
-        self::assertNotNull($reverseForeignKey = ($table->getReverseForeignKeys()[0] ?? null));
-        self::assertSame(['user_id'], $reverseForeignKey->getColumnNames());
-        self::assertSame(['id'], $reverseForeignKey->getForeignColumnNames());
-        self::assertSame('user_address', $reverseForeignKey->getTable());
-        self::assertSame('users', $reverseForeignKey->getForeignTable());
+        if ($this->ifDatabaseNot(Platform::SQLITE)) {
+            self::assertNotNull($reverseForeignKey = ($table->getReverseForeignKeys()[0] ?? null));
+            self::assertSame(['user_id'], $reverseForeignKey->getColumnNames());
+            self::assertSame(['id'], $reverseForeignKey->getForeignColumnNames());
+            self::assertSame('user_address', $reverseForeignKey->getTable());
+            self::assertSame('users', $reverseForeignKey->getForeignTable());
+        }
     }
 
     public function testTableReverseForeignKeys(): void

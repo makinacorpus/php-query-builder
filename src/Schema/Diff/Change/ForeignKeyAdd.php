@@ -137,7 +137,7 @@ class ForeignKeyAdd extends AbstractChange
         $pieces[] = $this->table;
         $pieces[] = $this->foreignTable;
         $pieces[] = \implode('_', $this->foreignColumns);
-        $pieces = 'fk';
+        $pieces[] = 'fk';
 
         return \implode('_', \array_filter($pieces));
     }

@@ -521,7 +521,7 @@ abstract class SchemaManager
      */
     protected function writeIndexDrop(IndexDrop $change): iterable|Expression
     {
-        return $this->raw('DROP INDEX ?::id.?::id', [$change->getSchema(), $change->getName()]);
+        return $this->raw('DROP INDEX ?', $this->table($change->getName(), $change->getSchema()));
     }
 
     /**

@@ -73,7 +73,7 @@ class UniqueKeyAdd extends AbstractChange
         $pieces = [];
         $pieces[] = $this->table;
         $pieces[] = \implode('_', $this->columns);
-        $pieces = 'key';
+        $pieces[] = 'key';
 
         return \implode('_', \array_filter($pieces));
     }
