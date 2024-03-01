@@ -120,7 +120,7 @@ class PdoQueryBuilder extends AbstractBridge
     {
         $this->dieIfClosed();
 
-        $statement = $this->connection->prepare($expression);
+        $statement = $this->connection->prepare($expression, [\PDO::ATTR_CURSOR => \PDO::CURSOR_FWDONLY]);
         $statement->execute($arguments);
 
         $result = new IterableResult(
@@ -140,7 +140,7 @@ class PdoQueryBuilder extends AbstractBridge
     {
         $this->dieIfClosed();
 
-        $statement = $this->connection->prepare($expression);
+        $statement = $this->connection->prepare($expression, [\PDO::ATTR_CURSOR => \PDO::CURSOR_FWDONLY]);
         $statement->execute($arguments);
 
         return $statement->rowCount();
