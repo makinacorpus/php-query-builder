@@ -31,8 +31,8 @@ use MakinaCorpus\QueryBuilder\Schema\Diff\Change\PrimaryKeyDrop;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\TableCreate;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\TableDrop;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\TableRename;
-use MakinaCorpus\QueryBuilder\Schema\Diff\Change\UniqueConstraintAdd;
-use MakinaCorpus\QueryBuilder\Schema\Diff\Change\UniqueConstraintDrop;
+use MakinaCorpus\QueryBuilder\Schema\Diff\Change\UniqueKeyAdd;
+use MakinaCorpus\QueryBuilder\Schema\Diff\Change\UniqueKeyDrop;
 
 /**
  * Schema alteration SQL statements in this class are mostly standard, but not
@@ -579,7 +579,7 @@ abstract class SchemaManager
     /**
      * Override if standard SQL is not enough.
      */
-    protected function writeTableCreateSpecUniqueConstraint(UniqueConstraintAdd $change): Expression
+    protected function writeTableCreateSpecUniqueKey(UniqueKeyAdd $change): Expression
     {
         if (!$change->isNullsDistinct()) {
             // @todo Implement this with PostgreSQL.
@@ -603,7 +603,7 @@ abstract class SchemaManager
             $pieces[] = $this->writePrimaryKeySpec($primaryKey);
         }
         foreach ($change->getUniqueKeys() as $uniqueKey) {
-            $pieces[] = $this->writeTableCreateSpecUniqueConstraint($uniqueKey);
+            $pieces[] = $this->writeTableCreateSpecUniqueKey($uniqueKey);
         }
         foreach ($change->getForeignKeys() as $foreignKey) {
             $pieces[] = $this->writeForeignKeySpec($foreignKey);
@@ -652,7 +652,7 @@ abstract class SchemaManager
      *
      * @return Expression|iterable<Expression>
      */
-    protected function writeUniqueConstraintAdd(UniqueConstraintAdd $change): iterable|Expression
+    protected function writeUniqueKeyAdd(UniqueKeyAdd $change): iterable|Expression
     {
         if (!$change->isNullsDistinct()) {
             // @todo Implement this with PostgreSQL.
@@ -673,7 +673,7 @@ abstract class SchemaManager
      *
      * @return Expression|iterable<Expression>
      */
-    protected function writeUniqueConstraintDrop(UniqueConstraintDrop $change): iterable|Expression
+    protected function writeUniqueKeyDrop(UniqueKeyDrop $change): iterable|Expression
     {
         return $this->raw('DROP INDEX ?::id', [$change->getName()]);
     }
@@ -703,8 +703,8 @@ abstract class SchemaManager
             TableCreate::class => $this->writeTableCreate($change),
             TableDrop::class => $this->writeTableDrop($change),
             TableRename::class => $this->writeTableRename($change),
-            UniqueConstraintAdd::class => $this->writeUniqueConstraintAdd($change),
-            UniqueConstraintDrop::class => $this->writeUniqueConstraintDrop($change),
+            UniqueKeyAdd::class => $this->writeUniqueKeyAdd($change),
+            UniqueKeyDrop::class => $this->writeUniqueKeyDrop($change),
             default => throw new QueryBuilderError(\sprintf("Unsupported alteration operation: %s", \get_class($change))),
         };
 

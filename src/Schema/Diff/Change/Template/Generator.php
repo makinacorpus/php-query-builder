@@ -200,7 +200,7 @@ class Generator
                             'columns' => ['type' => 'ColumnAdd[]', 'default' => []],
                             'primary_key' => ['type' => 'PrimaryKeyAdd', 'nullable' => true],
                             'foreign_keys' => ['type' => 'ForeignKeyAdd[]', 'default' => []],
-                            'unique_keys' => ['type' => 'UniqueConstraintAdd[]', 'default' => []],
+                            'unique_keys' => ['type' => 'UniqueKeyAdd[]', 'default' => []],
                             'indexes' => ['type' => 'IndexCreate[]', 'default' => []],
                             'temporary' => ['type' => 'bool', 'default' => false],
                         ],
@@ -219,7 +219,7 @@ class Generator
                     ],
                 ],
             ],
-            'unique_constraint' => [
+            'unique_key' => [
                 'properties' => [
                     'table' => ['type' => 'string'],
                 ],
@@ -265,6 +265,7 @@ class Generator
             namespace MakinaCorpus\QueryBuilder\Schema\Diff;
             
             {$transactionUse}
+            use MakinaCorpus\QueryBuilder\Schema\Diff\AbstractChange;
             use MakinaCorpus\QueryBuilder\Schema\SchemaManager;
             
             /**
@@ -298,9 +299,20 @@ class Generator
                 /**
                  * Create a table builder.
                  */
-                public function tableBuilder(string \$name): TableBuilder
+                public function createTable(string \$name): TableBuilder
                 {
                     return new TableBuilder(parent: \$this, database: \$this->database, name: \$name, schema: \$this->schema);
+                }
+            
+                /**
+                 * Add new arbitrary change.
+                 *
+                 * @internal
+                 *   For builders use only.
+                 */
+                public function logChange(AbstractChange \$change): void
+                {
+                    \$this->changeLog->add(\$change);
                 }
             }
             EOT;
@@ -330,17 +342,17 @@ class Generator
     private function objectType(string $objectType, array $object, array &$additional): array
     {
         $ret = [];
-        foreach ($object['changes'] as $op => $change) {
-            $className = $this->camelize($objectType) . $this->camelize($op);
-            $this->objectChange($objectType, $className, $object, $change, $additional);
-            $ret[] = $className;
+        foreach ($object['changes'] as $operation => $change) {
+            $ret[] = $this->objectChange($objectType, $operation, $object, $change, $additional);
         }
         return $ret;
     }
 
-    private function objectChange(string $objectType, string $className, array $object, array $change, array &$additional): void
+    private function objectChange(string $objectType, string $operation, array $object, array $change, array &$additional): string
     {
-        $transactionMethodName = lcfirst($className);
+        $className = $this->camelize($objectType) . $this->camelize($operation);
+
+        $transactionMethodName = $this->camelize($operation, false) . $this->camelize($objectType);
         $transactionProperties = [];
         $transactionParameters = [];
         $transactionPropertiesWithDefault = [];
@@ -597,42 +609,48 @@ class Generator
 
         \file_put_contents(\dirname(__DIR__) . '/' . $className . '.php', $file . "\n");
 
-        $additional['transaction']['use'][] = 'use MakinaCorpus\\QueryBuilder\\Schema\\Diff\\Change\\' . $className . ';';
-
         /*
          * Transaction methods and code.
          */
 
-        $transactionPropertiesString = '';
-        if ($transactionProperties && $transactionPropertiesWithDefault) {
-            $transactionPropertiesString = \implode("\n        ", $transactionProperties);
-            $transactionPropertiesString .= "\n        " . \implode("\n        ", $transactionPropertiesWithDefault);
-        } else if ($transactionProperties) {
-            $transactionPropertiesString = \implode("\n        ", $transactionProperties);
-        } else if ($transactionPropertiesWithDefault) {
-            $transactionPropertiesString = \implode("\n        ", $transactionPropertiesWithDefault);
-        }
-        $transactionParametersString = \implode("\n                ", $transactionParameters);
+        // Table has its own builder, so this cannot be added as a method.
+        if ('table' !== $objectType || 'create' !== $operation) {
 
-        $additional['transaction']['methods'][] = <<<EOT
-                /**
-                 * {$methodDescription}
-                 */
-                public function {$transactionMethodName}(
-                    {$transactionPropertiesString}
-                    ?string \$schema = null,
-                ): static {
-                    \$this->changeLog->add(
-                        new {$className}(
-                            {$transactionParametersString}
-                            schema: \$schema ?? \$this->schema,
-                            database: \$this->database,
-                        )
-                    );
-            
-                    return \$this;
-                }
-            EOT;
+            $transactionPropertiesString = '';
+            if ($transactionProperties && $transactionPropertiesWithDefault) {
+                $transactionPropertiesString = \implode("\n        ", $transactionProperties);
+                $transactionPropertiesString .= "\n        " . \implode("\n        ", $transactionPropertiesWithDefault);
+            } else if ($transactionProperties) {
+                $transactionPropertiesString = \implode("\n        ", $transactionProperties);
+            } else if ($transactionPropertiesWithDefault) {
+                $transactionPropertiesString = \implode("\n        ", $transactionPropertiesWithDefault);
+            }
+            $transactionParametersString = \implode("\n                ", $transactionParameters);
+
+            $additional['transaction']['use'][] = 'use MakinaCorpus\\QueryBuilder\\Schema\\Diff\\Change\\' . $className . ';';
+
+            $additional['transaction']['methods'][] = <<<EOT
+                    /**
+                     * {$methodDescription}
+                     */
+                    public function {$transactionMethodName}(
+                        {$transactionPropertiesString}
+                        ?string \$schema = null,
+                    ): static {
+                        \$this->changeLog->add(
+                            new {$className}(
+                                {$transactionParametersString}
+                                schema: \$schema ?? \$this->schema,
+                                database: \$this->database,
+                            )
+                        );
+                
+                        return \$this;
+                    }
+                EOT;
+        }
+
+        return $className;
     }
 
     private function property(string $name, string|array $property, bool $parent = false): GeneratorProperty

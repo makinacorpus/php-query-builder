@@ -117,75 +117,105 @@ $schemaManager
     // you are going to do.
     ->modify(database: 'my_database')
 
-    // Create a "user" table
-    ->tableCreate(name: 'user')
-        // Create an "id" column with the "serial" type.
-        // Types are arbitrary, and will be propagated to the database
-        // as raw SQL, you can write anything here.
-        ->column(
-            name: 'id',
-            type: 'serial',
-            nullable: false,
-        )
-        // Primary key is not mandatory, and may contain more than one
-        // columns, in case you'd ask.
-        ->primaryKey(['id'])
+        // Create a "user" table
+        ->createTable(name: 'user')
+            // Create an "id" column with the "serial" type.
+            // Types are arbitrary, and will be propagated to the database
+            // as raw SQL, you can write anything here.
+            ->column(
+                name: 'id',
+                type: 'serial',
+                nullable: false,
+            )
+            // Primary key is not mandatory, and may contain more than one
+            // columns, in case you'd ask.
+            ->primaryKey(['id'])
 
-        // Another column, with a default value. Same as types here,
-        // the default value will be propagated as raw SQL, in order to
-        // allow you write complex statements, use function calls, etc...
-        // This later will change, and give some level of normalization
-        // but until this is designed, the API is voluntarily tolerant
-        // with your input.
-        ->column(
-            name: 'enabled',
-            type: 'bool',
-            nullable: false,
-            default: 'false',
-        )
+            // Another column, with a default value. Same as types here,
+            // the default value will be propagated as raw SQL, in order to
+            // allow you write complex statements, use function calls, etc...
+            // This later will change, and give some level of normalization
+            // but until this is designed, the API is voluntarily tolerant
+            // with your input.
+            ->column(
+                name: 'enabled',
+                type: 'bool',
+                nullable: false,
+                default: 'false',
+            )
 
-        // Now let's add a column with a unique key index over it.
-        // Let's make it nullable for fun.
-        ->column('email', 'text', true)
-        // Pretty much like primary key, multiple columns are allowed.
-        ->uniqueKey(['email'])
+            // Now let's add a column with a unique key index over it.
+            // Let's make it nullable for fun.
+            ->column('email', 'text', true)
+            // Pretty much like primary key, multiple columns are allowed.
+            ->uniqueKey(['email'])
 
-        // This index probably be created implicitely by your database
-        // but let's create one for the sake of example. Multiple columns
-        // are allowed too.
-        ->index(['email'])
+            // This index probably be created implicitely by your database
+            // but let's create one for the sake of example. Multiple columns
+            // are allowed too.
+            ->index(['email'])
 
-    // Back to the transaction.
-    ->endTable()
+        // Back to the transaction.
+        ->endTable()
 
-    ->tableCreate('user_role')
-        ->column('user_id', 'int', false)
-        ->column('role', 'text', false)
-        ->primaryKey(['user_id', 'role'])
+        ->createTable('user_role')
+            ->column('user_id', 'int', false)
+            ->column('role', 'text', false)
+            ->primaryKey(['user_id', 'role'])
 
-        // And now a foreign key (mutiple columns allowed too):
-        ->foreignKey(
-            foreignTable: 'user',
-            columns: [
-                'user_id' => 'id',
-            ],
+            // And now a foreign key (mutiple columns allowed too):
+            ->foreignKey(
+                foreignTable: 'user',
+                columns: [
+                    'user_id' => 'id',
+                ],
 
-            // All constraints and indexes can be explicitely be named.
-            name: 'user_role_user_id_fk',
+                // All constraints and indexes can be explicitely be named.
+                name: 'user_role_user_id_fk',
 
-            // And you may target another schema as well:
-            foreignSchema: 'public',
+                // And you may target another schema as well:
+                foreignSchema: 'public',
 
-            // "ON DELETE" and "ON UPDATE" behaviors will always be "NO ACTION"
-            // per default, in order to avoid accidental data deletion.
-            onDelete: ForeignKeyAdd::ON_DELETE_NO_ACTION,
-            onUpdate: ForeignKeyAdd::ON_UPDATE_NO_ACTION,
+                // "ON DELETE" and "ON UPDATE" behaviors will always be "NO ACTION"
+                // per default, in order to avoid accidental data deletion.
+                onDelete: ForeignKeyAdd::ON_DELETE_NO_ACTION,
+                onUpdate: ForeignKeyAdd::ON_UPDATE_NO_ACTION,
 
-            // And all constraints are deferrable per default.
-            deferrable: true,
-            initially: ForeignKeyAdd::INITIALLY_DEFERRED,
-        )
-    ->endTable()
+                // And all constraints are deferrable per default.
+                deferrable: true,
+                initially: ForeignKeyAdd::INITIALLY_DEFERRED,
+            )
+        ->endTable()
+
+        // All methods exist outside of table as well
+
+        ->addColumn(/* ... */)
+        ->dropColumn(/* ... */)
+        ->modifyColumn(/* ... */)
+        ->renameColumn(/* ... */)
+
+        ->dropConstraint(/* ... */)
+        ->modifyConstraint(/* ... */)
+        ->renameConstraint(/* ... */)
+
+        ->addForeignKey(/* ... */)
+        ->modifyForeignKey(/* ... */)
+        ->dropForeignKey(/* ... */)
+        ->renameForeignKey(/* ... */)
+
+        ->createIndex(/* ... */)
+        ->dropIndex(/* ... */)
+        ->renameIndex(/* ... */)
+
+        ->addPrimaryKey(/* ... */)
+        ->dropPrimaryKey(/* ... */)
+
+        ->dropTable(/* ... */)
+        ->renameTable(/* ... */)
+
+        ->addUniqueKey(/* ... */)
+        ->dropUniqueKey(/* ... */)
+
 
     // This method call begins the real database transaction, apply each changes
     // you asked for, in the same order you asked, then commit the transaction.

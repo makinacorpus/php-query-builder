@@ -126,8 +126,8 @@ export default defineConfig({
             text: 'Schema',
             link: '/query/schema',
             items: [
-              { text: 'Introspection', link: '/query/schema' },
-              { text: 'Alteration', link: '/query/schema' },
+              { text: 'Introspection', link: '/query/schema#schema-introspection' },
+              { text: 'Alteration', link: '/query/schema#schema-alteration' },
             ]
           },
           {

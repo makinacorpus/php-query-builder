@@ -20,11 +20,11 @@ use MakinaCorpus\QueryBuilder\Schema\Diff\Change\IndexDrop;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\IndexRename;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\PrimaryKeyAdd;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\PrimaryKeyDrop;
-use MakinaCorpus\QueryBuilder\Schema\Diff\Change\TableCreate;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\TableDrop;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\TableRename;
-use MakinaCorpus\QueryBuilder\Schema\Diff\Change\UniqueConstraintAdd;
-use MakinaCorpus\QueryBuilder\Schema\Diff\Change\UniqueConstraintDrop;
+use MakinaCorpus\QueryBuilder\Schema\Diff\Change\UniqueKeyAdd;
+use MakinaCorpus\QueryBuilder\Schema\Diff\Change\UniqueKeyDrop;
+use MakinaCorpus\QueryBuilder\Schema\Diff\AbstractChange;
 use MakinaCorpus\QueryBuilder\Schema\SchemaManager;
 
 /**
@@ -56,7 +56,7 @@ class SchemaTransaction
     /**
      * Add a COLUMN.
      */
-    public function columnAdd(
+    public function addColumn(
         string $table,
         string $name,
         string $type,
@@ -82,7 +82,7 @@ class SchemaTransaction
     /**
      * Add a COLUMN.
      */
-    public function columnModify(
+    public function modifyColumn(
         string $table,
         string $name,
         string $type,
@@ -108,7 +108,7 @@ class SchemaTransaction
     /**
      * Drop a COLUMN.
      */
-    public function columnDrop(
+    public function dropColumn(
         string $table,
         string $name,
         bool $cascade = false,
@@ -130,7 +130,7 @@ class SchemaTransaction
     /**
      * Renames a COLUMN.
      */
-    public function columnRename(
+    public function renameColumn(
         string $table,
         string $name,
         string $newName,
@@ -152,7 +152,7 @@ class SchemaTransaction
     /**
      * Drop an arbitrary constraint from a table.
      */
-    public function constraintDrop(
+    public function dropConstraint(
         string $table,
         string $name,
         ?string $schema = null,
@@ -172,7 +172,7 @@ class SchemaTransaction
     /**
      * Modify an arbitrary constraint on a table.
      */
-    public function constraintModify(
+    public function modifyConstraint(
         string $table,
         string $name,
         bool $deferrable = true,
@@ -196,7 +196,7 @@ class SchemaTransaction
     /**
      * Rename an arbitrary constraint.
      */
-    public function constraintRename(
+    public function renameConstraint(
         string $table,
         string $name,
         string $newName,
@@ -218,7 +218,7 @@ class SchemaTransaction
     /**
      * Add a FOREIGN KEY constraint on a table.
      */
-    public function foreignKeyAdd(
+    public function addForeignKey(
         string $table,
         array $columns,
         string $foreignTable,
@@ -254,7 +254,7 @@ class SchemaTransaction
     /**
      * Modify a FOREIGN KEY constraint on a table.
      */
-    public function foreignKeyModify(
+    public function modifyForeignKey(
         string $table,
         string $name,
         string $onDelete = ForeignKeyModify::ON_DELETE_NO_ACTION,
@@ -282,7 +282,7 @@ class SchemaTransaction
     /**
      * Drop a FOREIGN KEY constraint from a table.
      */
-    public function foreignKeyDrop(
+    public function dropForeignKey(
         string $table,
         string $name,
         ?string $schema = null,
@@ -302,7 +302,7 @@ class SchemaTransaction
     /**
      * Rename an arbitrary constraint.
      */
-    public function foreignKeyRename(
+    public function renameForeignKey(
         string $table,
         string $name,
         string $newName,
@@ -324,7 +324,7 @@ class SchemaTransaction
     /**
      * Create an INDEX on a table.
      */
-    public function indexCreate(
+    public function createIndex(
         string $table,
         array $columns,
         null|string $name = null,
@@ -348,7 +348,7 @@ class SchemaTransaction
     /**
      * Drop an INDEX from a table.
      */
-    public function indexDrop(
+    public function dropIndex(
         string $table,
         string $name,
         ?string $schema = null,
@@ -368,7 +368,7 @@ class SchemaTransaction
     /**
      * Rename an arbitrary constraint.
      */
-    public function indexRename(
+    public function renameIndex(
         string $table,
         string $name,
         string $newName,
@@ -390,7 +390,7 @@ class SchemaTransaction
     /**
      * Add the PRIMARY KEY constraint on a table.
      */
-    public function primaryKeyAdd(
+    public function addPrimaryKey(
         string $table,
         array $columns,
         null|string $name = null,
@@ -412,7 +412,7 @@ class SchemaTransaction
     /**
      * Drop the PRIMARY KEY constraint from a table.
      */
-    public function primaryKeyDrop(
+    public function dropPrimaryKey(
         string $table,
         string $name,
         ?string $schema = null,
@@ -430,39 +430,9 @@ class SchemaTransaction
     }
 
     /**
-     * Create a table.
-     */
-    public function tableCreate(
-        string $name,
-        array $columns = [],
-        null|PrimaryKeyAdd $primaryKey = null,
-        array $foreignKeys = [],
-        array $uniqueKeys = [],
-        array $indexes = [],
-        bool $temporary = false,
-        ?string $schema = null,
-    ): static {
-        $this->changeLog->add(
-            new TableCreate(
-                name: $name,
-                columns: $columns,
-                primaryKey: $primaryKey,
-                foreignKeys: $foreignKeys,
-                uniqueKeys: $uniqueKeys,
-                indexes: $indexes,
-                temporary: $temporary,
-                schema: $schema ?? $this->schema,
-                database: $this->database,
-            )
-        );
-
-        return $this;
-    }
-
-    /**
      * Drop a table.
      */
-    public function tableDrop(
+    public function dropTable(
         string $name,
         bool $cascade = false,
         ?string $schema = null,
@@ -482,7 +452,7 @@ class SchemaTransaction
     /**
      * Renames a table.
      */
-    public function tableRename(
+    public function renameTable(
         string $name,
         string $newName,
         ?string $schema = null,
@@ -502,7 +472,7 @@ class SchemaTransaction
     /**
      * Create a UNIQUE constraint on a table.
      */
-    public function uniqueConstraintAdd(
+    public function addUniqueKey(
         string $table,
         array $columns,
         null|string $name = null,
@@ -510,7 +480,7 @@ class SchemaTransaction
         ?string $schema = null,
     ): static {
         $this->changeLog->add(
-            new UniqueConstraintAdd(
+            new UniqueKeyAdd(
                 table: $table,
                 name: $name,
                 columns: $columns,
@@ -526,13 +496,13 @@ class SchemaTransaction
     /**
      * Drop a UNIQUE constraint from a table.
      */
-    public function uniqueConstraintDrop(
+    public function dropUniqueKey(
         string $table,
         string $name,
         ?string $schema = null,
     ): static {
         $this->changeLog->add(
-            new UniqueConstraintDrop(
+            new UniqueKeyDrop(
                 table: $table,
                 name: $name,
                 schema: $schema ?? $this->schema,
@@ -546,8 +516,19 @@ class SchemaTransaction
     /**
      * Create a table builder.
      */
-    public function tableBuilder(string $name): TableBuilder
+    public function createTable(string $name): TableBuilder
     {
         return new TableBuilder(parent: $this, database: $this->database, name: $name, schema: $this->schema);
+    }
+
+    /**
+     * Add new arbitrary change.
+     *
+     * @internal
+     *   For builders use only.
+     */
+    public function logChange(AbstractChange $change): void
+    {
+        $this->changeLog->add($change);
     }
 }

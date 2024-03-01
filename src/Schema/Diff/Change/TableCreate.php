@@ -30,7 +30,7 @@ class TableCreate extends AbstractChange
         private readonly null|PrimaryKeyAdd $primaryKey = null,
         /** @var array<ForeignKeyAdd> */
         private readonly array $foreignKeys = [],
-        /** @var array<UniqueConstraintAdd> */
+        /** @var array<UniqueKeyAdd> */
         private readonly array $uniqueKeys = [],
         /** @var array<IndexCreate> */
         private readonly array $indexes = [],
@@ -67,7 +67,7 @@ class TableCreate extends AbstractChange
         return $this->foreignKeys;
     }
 
-    /** @return array<UniqueConstraintAdd> */
+    /** @return array<UniqueKeyAdd> */
     public function getUniqueKeys(): array
     {
         return $this->uniqueKeys;

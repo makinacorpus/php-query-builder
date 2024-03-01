@@ -8,7 +8,8 @@ use MakinaCorpus\QueryBuilder\Schema\Diff\Change\ColumnAdd;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\ForeignKeyAdd;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\IndexCreate;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\PrimaryKeyAdd;
-use MakinaCorpus\QueryBuilder\Schema\Diff\Change\UniqueConstraintAdd;
+use MakinaCorpus\QueryBuilder\Schema\Diff\Change\UniqueKeyAdd;
+use MakinaCorpus\QueryBuilder\Schema\Diff\Change\TableCreate;
 
 /**
  * Table builder, for chaining calls with schema transaction.
@@ -20,7 +21,7 @@ class TableBuilder
     private null|PrimaryKeyAdd $primaryKey = null;
     /** @var ForeignKeyAdd[] */
     private array $foreignKeys = [];
-    /** @var UniqueConstraintAdd[] */
+    /** @var UniqueKeyAdd[] */
     private array $uniqueKeys = [];
     /** @var IndexCreate[] */
     private array $indexes = [];
@@ -129,7 +130,7 @@ class TableBuilder
      */
     public function uniqueKey(array $columns, ?string $name = null, bool $nullsDistinct = true): static
     {
-        $this->uniqueKeys[] = new UniqueConstraintAdd(
+        $this->uniqueKeys[] = new UniqueKeyAdd(
             columns: $columns,
             database: $this->database,
             name: $name,
@@ -165,15 +166,20 @@ class TableBuilder
      */
     public function endTable(): SchemaTransaction
     {
-        return $this->parent->tableCreate(
-            columns: $this->columns,
-            foreignKeys: $this->foreignKeys,
-            indexes: $this->indexes,
-            name: $this->name,
-            primaryKey: $this->primaryKey,
-            schema: $this->schema,
-            temporary: $this->temporary,
-            uniqueKeys: $this->uniqueKeys,
+        $this->parent->logChange(
+            new TableCreate(
+                columns: $this->columns,
+                database: $this->database,
+                foreignKeys: $this->foreignKeys,
+                indexes: $this->indexes,
+                name: $this->name,
+                primaryKey: $this->primaryKey,
+                schema: $this->schema,
+                temporary: $this->temporary,
+                uniqueKeys: $this->uniqueKeys,
+            ),
         );
+
+        return $this->parent;
     }
 }

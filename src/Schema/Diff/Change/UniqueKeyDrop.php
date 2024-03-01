@@ -17,7 +17,7 @@ use MakinaCorpus\QueryBuilder\Schema\Diff\AbstractChange;
  * @see \MakinaCorpus\QueryBuilder\Schema\Diff\Change\Template\Generator
  * @see bin/generate_changes.php
  */
-class UniqueConstraintDrop extends AbstractChange
+class UniqueKeyDrop extends AbstractChange
 {
     public function __construct(
         string $database,

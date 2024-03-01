@@ -16,8 +16,8 @@ use MakinaCorpus\QueryBuilder\Schema\Diff\Change\IndexCreate;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\IndexDrop;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\IndexRename;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\PrimaryKeyDrop;
-use MakinaCorpus\QueryBuilder\Schema\Diff\Change\UniqueConstraintAdd;
-use MakinaCorpus\QueryBuilder\Schema\Diff\Change\UniqueConstraintDrop;
+use MakinaCorpus\QueryBuilder\Schema\Diff\Change\UniqueKeyAdd;
+use MakinaCorpus\QueryBuilder\Schema\Diff\Change\UniqueKeyDrop;
 
 
 /**
@@ -373,7 +373,7 @@ class MySQLSchemaManager extends SchemaManager
     }
 
     #[\Override]
-    protected function writeUniqueConstraintAdd(UniqueConstraintAdd $change): Expression
+    protected function writeUniqueKeyAdd(UniqueKeyAdd $change): Expression
     {
         if (!$change->isNullsDistinct()) {
             // @todo Implement this with PostgreSQL.
@@ -386,7 +386,7 @@ class MySQLSchemaManager extends SchemaManager
     }
 
     #[\Override]
-    protected function writeUniqueConstraintDrop(UniqueConstraintDrop $change): Expression
+    protected function writeUniqueKeyDrop(UniqueKeyDrop $change): Expression
     {
         return $this->writeConstraintDropSpec($change->getName(), $change->getTable(), $change->getSchema());
     }
