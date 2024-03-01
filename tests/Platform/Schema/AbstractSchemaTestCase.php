@@ -245,7 +245,9 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
             return 'utf8_general_ci';
         }
         if ($this->ifDatabase(Platform::POSTGRESQL)) {
-            return 'C.UTF-8';
+            // Arbitrary taken from: "SELECT collname FROM pg_collation" and
+            // existing in all tested containers.
+            return 'fr-FR-x-icu';
         }
         return 'utf8';
     }
