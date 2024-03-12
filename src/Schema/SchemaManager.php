@@ -67,6 +67,8 @@ use Psr\Log\NullLogger;
  * There are a few exceptions, documented along the way, sometime all vendors
  * have their own dialect, in this case, we almost always prefere PostgreSQL
  * in this class.
+ *
+ * @experimental
  */
 abstract class SchemaManager implements LoggerAwareInterface
 {
@@ -884,15 +886,15 @@ abstract class SchemaManager implements LoggerAwareInterface
         $expressions = match (\get_class($change)) {
             CallbackChange::class => $this->executeCallbackChange($change),
             ColumnAdd::class => $this->writeColumnAdd($change),
-            ColumnModify::class => $this->writeColumnModify($change),
             ColumnDrop::class => $this->writeColumnDrop($change),
+            ColumnModify::class => $this->writeColumnModify($change),
             ColumnRename::class => $this->writeColumnRename($change),
             ConstraintDrop::class => $this->writeConstraintDrop($change),
             ConstraintModify::class => $this->writeConstraintModify($change),
             ConstraintRename::class => $this->writeConstraintRename($change),
             ForeignKeyAdd::class => $this->writeForeignKeyAdd($change),
-            ForeignKeyModify::class => $this->writeForeignKeyModify($change),
             ForeignKeyDrop::class => $this->writeForeignKeyDrop($change),
+            ForeignKeyModify::class => $this->writeForeignKeyModify($change),
             ForeignKeyRename::class => $this->writeForeignKeyRename($change),
             IndexCreate::class => $this->writeIndexCreate($change),
             IndexDrop::class => $this->writeIndexDrop($change),

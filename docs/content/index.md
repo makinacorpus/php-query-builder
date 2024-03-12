@@ -17,7 +17,7 @@ hero:
       link: /introduction/features
     - theme: alt
       text: View on GitHub
-      link: https://github.com/makinacorpus/query-builder
+      link: https://github.com/makinacorpus/php-query-builder
 
 features:
   - title: Easy and readable

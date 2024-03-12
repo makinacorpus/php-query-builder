@@ -421,7 +421,7 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
     }
 
     /**
-     * Create default writer based upon server name and version.
+     * Create default schema manager based upon server name and version.
      */
     protected function createSchemaManager(): SchemaManager
     {
@@ -443,7 +443,7 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
             return new SQLiteSchemaManager($this, $this);
         }
 
-        throw new UnsupportedFeatureError(\sprintf("Schema reader is not implemented yet for vendor '%s'", $serverFlavor));
+        throw new UnsupportedFeatureError(\sprintf("Schema manager is not implemented yet for vendor '%s'", $serverFlavor));
     }
 
     /**

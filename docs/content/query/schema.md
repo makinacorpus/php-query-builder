@@ -25,17 +25,17 @@ $schemaManager = $bridge->getSchemaManager();
 
 The schema manager allows reading the current schema:
 
- - read table data,
+ - read table definitions,
  - read table columns data,
  - read table foreign key and reverse foreign key data.
 
 Other implementations will come later.
 
 :::warning
-When possible, this API uses the `information_schema` tables, nevertheless each database vendor
-has its own dialect, even when considering the information schema. Please be aware that each
+When possible, this API uses the `information_schema` tables. Nevertheless each database vendor
+has its own dialect, even when considering the information schema. Keep in mind that each
 vendor will apply its own access control over information it gives back when reading those
-catalogs, and result may vary depending upon the current user access rights.
+catalogs. Result may vary depending upon the current user access rights.
 :::
 
 First, you may want to list databases:
@@ -53,7 +53,7 @@ $schemas = $schemaManager->listSchemas('my_database');
 ```
 
 :::info
-All schema manager methods takes a mandatory `$database` parameter, and an optional
+All schema manager methods take a mandatory `$database` parameter, and an optional
 `$schema` parameter: schemas are namespaces inside a database and are not isolated
 from each other, you can work with the full database at once.
 
@@ -62,11 +62,11 @@ least PostgreSQL when you create a database from scratch.
 :::
 
 :::warning
-MySQL doesn't not support schemas, this parameter will always be ignored when working
+MySQL doesn't support schemas, this parameter will always be ignored when working
 with it, and `listSchemas()` will always return a single value which is `public`.
 :::
 
-Then fetch some table list:
+Then fetch table list for a particular database/schema:
 
 ```php
 foreach ($schemaManager->listTables('my_database', 'my_schema') as $tableName) {
@@ -82,7 +82,7 @@ $table = $schemaManager->getTable('my_database', 'my_table', 'my_schema');
 // $table is now an instance of MakinaCorpus\QueryBuilder\Schema\Table
 ```
 
-This API is still experimental, and currently work only with MySQL and derivatives
+This API is still experimental, and currently works only with MySQL and derivatives
 and PostgreSQL. Your IDE and browsing the code will give you all methods that you
 should know of easily. More documentation will come later.
 
@@ -103,6 +103,11 @@ A single transaction can only work in a single database.
 Vendors that don't support DDL statements in transaction won't have a real
 transaction started. For now, only PostgreSQL will benefit from a real database
 transaction.
+:::
+
+:::tip
+Please read the [feature matrix](../introduction/features#schema-alteration-experimental)
+for current feature status.
 :::
 
 ### Basic transaction
@@ -260,7 +265,7 @@ More detailed documentation will be written later, but here is an example of usa
 ```php
 $schemaManager
     // Create the transaction object, no transaction will be started at this
-    // point, but a in-memory changelog is created for recording all changes
+    // point, but an in-memory changelog is created for recording all changes
     // you are going to do.
     ->modify(database: 'my_database')
 
@@ -275,7 +280,7 @@ $schemaManager
                 nullable: false,
             )
             // Primary key is not mandatory, and may contain more than one
-            // columns, in case you'd ask.
+            // column, in case you'd ask.
             ->primaryKey(['id'])
 
             // Another column, with a default value. Same as types here,
@@ -317,7 +322,7 @@ $schemaManager
                     'user_id' => 'id',
                 ],
 
-                // All constraints and indexes can be explicitely be named.
+                // All constraints and indexes can be explicitly named.
                 name: 'user_role_user_id_fk',
 
                 // And you may target another schema as well:
@@ -334,7 +339,7 @@ $schemaManager
             )
         ->endTable()
 
-        // All methods exist outside of table as well
+        // All methods exist outside the table builder as well:
 
         ->addColumn(/* ... */)
         ->dropColumn(/* ... */)
@@ -369,7 +374,7 @@ $schemaManager
     ->commit()
 ```
 
-There's much more you can do, but beware that for now, most rename actions are
+There's much more you can do, but beware that for now, most renaming actions are
 not implemented yet, because generally each vendor has its own syntax regarding
 those alteration. For now, it requires you to first drop then recreate for most
 things (except for columns and tables which can be renamed). You may also drop
