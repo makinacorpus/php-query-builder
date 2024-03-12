@@ -144,7 +144,7 @@ $schemaManager
     ->commit()
 ```
 
-:::note
+:::info
 Table creation requires you to use the `createTable()` method nesting.
 :::
 
@@ -171,17 +171,84 @@ $schemaManager
     ->commit()
 ```
 
-:::note
+:::info
 There is no `else()` statement yet, it might be implemented in in the future.
 :::
 
 ### Arbitrary SQL queries
 
-@todo
+There are use cases where you would want to execute custom SQL during a schema
+update procedure, for example when populating a column after creation.
+
+Let's consider the following scenario:
+
+ - your `user` table `name` column is required to be lowercased,
+ - it must be renamed as `username`.
+
+:::info
+This very simple scenario could be done using one single `ALTER TABLE`
+SQL query on most vendors, but for the sake of example we are decomposing it.
+:::
+
+We may write it this way:
+
+```php
+$schemaManager
+    ->modify(database: 'my_database')
+        ->ifColumnNotExists('user', 'username')
+            ->addColumn('user', 'username', 'varchar(64)', false)
+            ->query(
+                fn (QueryBuilder $builder) => $builder
+                    ->update('user')
+                    ->set(
+                        'username',
+                        $builder->expr()->raw('LOWER(name)')
+                    )
+                    ->executeStatement()
+            )
+            ->dropColumn('user', 'name')
+        ->endIf()
+    ->commit()
+```
+
+:::info
+Callback first and only argument will always be an instance of
+`MakinaCorpus\QueryBuilder\QueryBuilder`. You may or may not use it.
+:::
+
+:::info
+Callback return will be ignored.
+:::
 
 ### Using arbitrary SQL as condition
 
-@todo
+You may want to execute a schema change given some arbitrary conditions,
+or if you need an unsupported schema manager operation. In this case,
+you may use an arbitrary callback as a condition:
+
+```php
+$schemaManager
+    ->modify(database: 'my_database')
+        ->ifCallback(
+            fn (QueryBuilder $builder) => $builder
+                ->select()
+                ->columnRaw('true')
+                ->executeQuery()
+                ->fetchOne()
+        )
+            ->dropColumn('user', 'name')
+        ->endIf()
+    ->commit()
+```
+
+:::info
+Callback first and only argument will always be an instance of
+`MakinaCorpus\QueryBuilder\QueryBuilder`. You may or may not use it.
+:::
+
+:::info
+Callback return will be casted to `bool`.
+:::
 
 ### Self-documenting example
 

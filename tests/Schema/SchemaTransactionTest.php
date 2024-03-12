@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Tests\Schema;
 
+use MakinaCorpus\QueryBuilder\QueryBuilder;
+use MakinaCorpus\QueryBuilder\Schema\Diff\SchemaTransaction;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Browser\ChangeLogBrowser;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Browser\ChangeLogVisitor;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\AbstractChange;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Condition\AbstractCondition;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Condition\ColumnExists;
-use MakinaCorpus\QueryBuilder\Schema\Diff\SchemaTransaction;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Transaction\AbstractNestedSchemaTransaction;
 use PHPUnit\Framework\TestCase;
 
@@ -25,16 +26,22 @@ class SchemaTransactionTest extends TestCase
                     ->column('id', 'serial', false)
                     ->primaryKey(['id'])
                 ->endTable()
+                ->query(fn (QueryBuilder $queryBuilder) => true)
+            ->endIf()
+            ->ifCallback(fn (QueryBuilder $queryBuilder) => true)
+                ->dropTable('foo')
             ->endIf()
             ->ifColumnNotExists('users', 'email')
                 ->ifColumnNotExists('users', 'email')
                     ->addColumn('users', 'email', 'text', true)
+                    ->query(fn (QueryBuilder $queryBuilder) => true)
                 ->endIf()
                 ->ifColumnExists('users', 'skip')
                     ->addColumn('users', 'email', 'text', true)
                 ->endIf()
                 ->addUniqueKey('users', ['email'])
             ->endIf()
+            ->query(fn (QueryBuilder $queryBuilder) => null)
             ->addColumn('users', 'name', 'text', false)
             ->commit()
         ;
@@ -91,14 +98,20 @@ class SchemaTransactionTest extends TestCase
             <<<EOT
             Entering level 1
             Applying MakinaCorpus\QueryBuilder\Schema\Diff\Change\TableCreate
+            Applying MakinaCorpus\QueryBuilder\Schema\Diff\Change\CallbackChange
+            Exiting level 1
+            Entering level 1
+            Applying MakinaCorpus\QueryBuilder\Schema\Diff\Change\TableDrop
             Exiting level 1
             Entering level 1
             Entering level 2
             Applying MakinaCorpus\QueryBuilder\Schema\Diff\Change\ColumnAdd
+            Applying MakinaCorpus\QueryBuilder\Schema\Diff\Change\CallbackChange
             Exiting level 2
             Skipping level 2
             Applying MakinaCorpus\QueryBuilder\Schema\Diff\Change\UniqueKeyAdd
             Exiting level 1
+            Applying MakinaCorpus\QueryBuilder\Schema\Diff\Change\CallbackChange
             Applying MakinaCorpus\QueryBuilder\Schema\Diff\Change\ColumnAdd
             EOT,
         );

@@ -4,12 +4,17 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Schema\Diff;
 
+use MakinaCorpus\QueryBuilder\QueryBuilder;
+use MakinaCorpus\QueryBuilder\Schema\Diff\Condition\CallbackCondition;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Condition\ColumnExists;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Condition\IndexExists;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Condition\TableExists;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Transaction\AbstractSchemaTransaction;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Transaction\NestedSchemaTransaction;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Transaction\TableBuilder;
+
+// @todo IDE bug.
+\class_exists(QueryBuilder::class);
 
 class SchemaTransaction extends AbstractSchemaTransaction
 {
@@ -34,6 +39,16 @@ class SchemaTransaction extends AbstractSchemaTransaction
     public function createTable(string $name): TableBuilder
     {
         return new TableBuilder(parent: $this, database: $this->database, name: $name, schema: $this->schema);
+    }
+
+    /**
+     * Execute a user callback and use its result as a condition.
+     *
+     * @param (callable(QueryBuilder):bool) $callback
+     */
+    public function ifCallback(callable $callback): NestedSchemaTransaction
+    {
+        return $this->nestWithCondition(new CallbackCondition($this->database, $this->schema, $callback));
     }
 
     /**

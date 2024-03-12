@@ -8,6 +8,7 @@ use MakinaCorpus\QueryBuilder\Error\Bridge\TableDoesNotExistError;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Error\UnsupportedFeatureError;
 use MakinaCorpus\QueryBuilder\Platform;
+use MakinaCorpus\QueryBuilder\QueryBuilder;
 use MakinaCorpus\QueryBuilder\Schema\Read\ForeignKey;
 use MakinaCorpus\QueryBuilder\Schema\SchemaManager;
 use MakinaCorpus\QueryBuilder\Tests\FunctionalTestCase;
@@ -250,6 +251,59 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
             return 'fr-FR-x-icu';
         }
         return 'utf8';
+    }
+
+    public function testCallbackChange(): void
+    {
+        $this
+            ->getSchemaManager()
+            ->modify('test_db')
+                ->query(
+                    fn (QueryBuilder $queryBuilder) => $queryBuilder
+                        ->select()
+                        ->columnRaw('1')
+                        ->executeStatement()
+                )
+            ->commit()
+        ;
+
+        self::expectNotToPerformAssertions();
+    }
+
+    public function testCallbackCondition(): void
+    {
+        $this
+            ->getSchemaManager()
+            ->modify('test_db')
+                ->ifCallback(
+                    fn (QueryBuilder $queryBuilder) => (bool) $queryBuilder
+                        ->select()
+                        ->columnRaw('1')
+                        ->executeQuery()
+                        ->fetchOne()
+                )
+                    ->addColumn('org', 'if_callback_added', 'text', true)
+                ->endIf()
+                ->ifCallback(
+                    fn (QueryBuilder $queryBuilder) => (bool) $queryBuilder
+                        ->select()
+                        ->columnRaw('null')
+                        ->executeQuery()
+                        ->fetchOne()
+                )
+                    ->addColumn('org', 'if_callback_added_not', 'text', true)
+                ->endIf()
+            ->commit()
+        ;
+
+        $columnNames = $this
+            ->getSchemaManager()
+            ->getTable('test_db', 'org')
+            ->getColumnNames()
+        ;
+
+        self::assertContains('if_callback_added', $columnNames);
+        self::assertNotContains('if_callback_added_not', $columnNames);
     }
 
     public function testColumnAddNullable(): void

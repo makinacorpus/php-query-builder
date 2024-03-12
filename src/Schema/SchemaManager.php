@@ -9,10 +9,12 @@ use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Error\UnsupportedFeatureError;
 use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\ExpressionFactory;
+use MakinaCorpus\QueryBuilder\QueryBuilder;
 use MakinaCorpus\QueryBuilder\QueryExecutor;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Browser\ChangeLogBrowser;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Browser\SchemaWriterLogVisitor;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\AbstractChange;
+use MakinaCorpus\QueryBuilder\Schema\Diff\Change\CallbackChange;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\ColumnAdd;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\ColumnDrop;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\ColumnModify;
@@ -35,6 +37,7 @@ use MakinaCorpus\QueryBuilder\Schema\Diff\Change\TableRename;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\UniqueKeyAdd;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\UniqueKeyDrop;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Condition\AbstractCondition;
+use MakinaCorpus\QueryBuilder\Schema\Diff\Condition\CallbackCondition;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Condition\ColumnExists;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Condition\IndexExists;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Condition\TableExists;
@@ -70,9 +73,22 @@ abstract class SchemaManager implements LoggerAwareInterface
     use LoggerAwareTrait;
 
     public function __construct(
+        protected readonly QueryBuilder $queryBuilder,
         protected readonly QueryExecutor $queryExecutor,
     ) {
         $this->setLogger(new NullLogger());
+    }
+
+    /**
+     * Get instance query builder.
+     *
+     * @internal
+     *   In most cases, you should not use this, it will servce for some edge
+     *   cases, such as transaction handling in the schema writer visitor.
+     */
+    public function getQueryBuilder(): QueryBuilder
+    {
+        return $this->queryBuilder;
     }
 
     /**
@@ -774,6 +790,14 @@ abstract class SchemaManager implements LoggerAwareInterface
     }
 
     /**
+     * There is nothing to override here.
+     */
+    protected function executeCallbackChange(CallbackChange $change): void
+    {
+        ($change->getCallback())($this->getQueryBuilder());
+    }
+
+    /**
      * Override if standard SQL is not enough.
      *
      * @todo SQLite does not support this and requires a table copy.
@@ -783,6 +807,14 @@ abstract class SchemaManager implements LoggerAwareInterface
     protected function writeUniqueKeyDrop(UniqueKeyDrop $change): iterable|Expression
     {
         return $this->raw('DROP INDEX ?::id', [$change->getName()]);
+    }
+
+    /**
+     * There is nothing to override here.
+     */
+    protected function evaluateConditionCallbackCondition(CallbackCondition $condition): bool
+    {
+        return (bool) ($condition->getCallback())($this->getQueryBuilder());
     }
 
     /**
@@ -831,6 +863,7 @@ abstract class SchemaManager implements LoggerAwareInterface
     public function evaluateCondition(AbstractCondition $condition): bool
     {
         $matches = (bool) match (\get_class($condition)) {
+            CallbackCondition::class => $this->evaluateConditionCallbackCondition($condition),
             ColumnExists::class => $this->evaluateConditionColumnExists($condition),
             IndexExists::class => $this->evaluateConditionIndexExists($condition),
             TableExists::class => $this->evaluateConditionTableExists($condition),
@@ -849,6 +882,7 @@ abstract class SchemaManager implements LoggerAwareInterface
     public function applyChange(AbstractChange $change): void
     {
         $expressions = match (\get_class($change)) {
+            CallbackChange::class => $this->executeCallbackChange($change),
             ColumnAdd::class => $this->writeColumnAdd($change),
             ColumnModify::class => $this->writeColumnModify($change),
             ColumnDrop::class => $this->writeColumnDrop($change),
@@ -873,8 +907,10 @@ abstract class SchemaManager implements LoggerAwareInterface
             default => throw new QueryBuilderError(\sprintf("Unsupported alteration operation: %s", \get_class($change))),
         };
 
-        foreach (\is_iterable($expressions) ? $expressions : [$expressions] as $expression) {
-            $this->queryExecutor->executeStatement($expression);
+        if ($expressions) {
+            foreach (\is_iterable($expressions) ? $expressions : [$expressions] as $expression) {
+                $this->queryExecutor->executeStatement($expression);
+            }
         }
     }
 }

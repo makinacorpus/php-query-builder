@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Schema\Diff\Transaction;
 
+use MakinaCorpus\QueryBuilder\QueryBuilder;
+use MakinaCorpus\QueryBuilder\Schema\Diff\Change\CallbackChange;
 use MakinaCorpus\QueryBuilder\Schema\Diff\ChangeLog;
 use MakinaCorpus\QueryBuilder\Schema\Diff\ChangeLogItem;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Condition\AbstractCondition;
+
+// @todo IDE bug.
+\class_exists(QueryBuilder::class);
 
 /**
  * @internal
@@ -31,6 +36,19 @@ abstract class AbstractSchemaTransaction extends GeneratedAbstractTransaction
     public function getChangeLog(): ChangeLog
     {
         return $this->changeLog;
+    }
+
+    /**
+     * Execute a user callback.
+     *
+     * @param (callable(QueryBuilder):mixed) $callback
+     *   Callback result will be ignored.
+     */
+    public function query(callable $callback): static
+    {
+        $this->logChange(new CallbackChange($this->database, $this->schema, $callback));
+
+        return $this;
     }
 
     /**

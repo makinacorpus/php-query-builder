@@ -4,10 +4,15 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Schema\Diff\Transaction;
 
+use MakinaCorpus\QueryBuilder\QueryBuilder;
 use MakinaCorpus\QueryBuilder\Schema\Diff\ChangeLogItem;
+use MakinaCorpus\QueryBuilder\Schema\Diff\Condition\CallbackCondition;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Condition\ColumnExists;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Condition\IndexExists;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Condition\TableExists;
+
+// @todo IDE bug.
+\class_exists(QueryBuilder::class);
 
 /**
  * @internal
@@ -33,6 +38,16 @@ abstract class AbstractNestedSchemaTransaction extends AbstractSchemaTransaction
     public function getSchema(): string
     {
         return $this->schema;
+    }
+
+    /**
+     * Execute a user callback and use its result as a condition.
+     *
+     * @param (callable(QueryBuilder):bool) $callback
+     */
+    public function ifCallback(callable $callback): DeepNestedSchemaTransaction
+    {
+        return $this->nestWithCondition(new CallbackCondition($this->database, $this->schema, $callback));
     }
 
     /**

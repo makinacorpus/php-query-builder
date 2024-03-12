@@ -428,19 +428,19 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
         $serverFlavor = $this->getServerFlavor();
 
         if (Platform::POSTGRESQL === $serverFlavor) {
-            return new PostgreSQLSchemaManager($this);
+            return new PostgreSQLSchemaManager($this, $this);
         }
 
         if (Platform::MYSQL === $serverFlavor) {
-            return new MySQLSchemaManager($this);
+            return new MySQLSchemaManager($this, $this);
         }
 
         if (Platform::MARIADB === $serverFlavor) {
-            return new MySQLSchemaManager($this);
+            return new MySQLSchemaManager($this, $this);
         }
 
         if (Platform::SQLITE === $serverFlavor) {
-            return new SQLiteSchemaManager($this);
+            return new SQLiteSchemaManager($this, $this);
         }
 
         throw new UnsupportedFeatureError(\sprintf("Schema reader is not implemented yet for vendor '%s'", $serverFlavor));
