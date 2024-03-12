@@ -77,8 +77,25 @@ abstract class SchemaManager implements LoggerAwareInterface
     public function __construct(
         protected readonly QueryBuilder $queryBuilder,
         protected readonly QueryExecutor $queryExecutor,
+        protected readonly ?string $defaultSchema = null,
     ) {
         $this->setLogger(new NullLogger());
+    }
+
+    /**
+     * Get default schema configured by user.
+     */
+    public function getDefaultSchema(): string
+    {
+        return $this->defaultSchema ?? $this->getVendorDefaultSchema();
+    }
+
+    /**
+     * Get vendor-specific default schema.
+     */
+    protected function getVendorDefaultSchema(): string
+    {
+        return 'public';
     }
 
     /**
@@ -147,66 +164,94 @@ abstract class SchemaManager implements LoggerAwareInterface
 
     /**
      * List all tables in given database and schema.
+     *
+     * If no schema given, use the default schema name.
      */
-    public abstract function listTables(string $database, string $schema = 'public'): array;
+    public function listTables(string $database, ?string $schema = null): array
+    {
+        $schema ??= $this->getDefaultSchema();
+
+        return $this->doListTables($database, $schema);
+    }
 
     /**
      * Does table exist.
+     *
+     * If no schema given, use the default schema name.
      */
-    public abstract function tableExists(string $database, string $name, string $schema = 'public'): bool;
+    public function tableExists(string $database, string $name, ?string $schema = null): bool
+    {
+        list($schema, $name) = $this->detectSchema($name, $schema);
+
+        return $this->doTableExists($database, $schema, $name);
+    }
 
     /**
      * Get table information.
+     *
+     * If no schema given, use the default schema name.
      */
-    public function getTable(string $database, string $name, string $schema = 'public'): Table
+    public function getTable(string $database, string $name, ?string $schema = null): Table
     {
+        list($schema, $name) = $this->detectSchema($name, $schema);
+
         if (!$this->tableExists($database, $name, $schema)) {
             throw new QueryBuilderError(\sprintf("Table '%s.%s.%s' does not exist", $database, $schema, $name));
         }
 
         return new Table(
-            columns: $this->getTableColumns($database, $name, $schema),
-            comment: $this->getTableComment($database, $name, $schema),
+            columns: $this->getTableColumns($database, $schema, $name),
+            comment: $this->getTableComment($database, $schema, $name),
             database: $database,
-            foreignKeys: $this->getTableForeignKeys($database, $name, $schema),
+            foreignKeys: $this->getTableForeignKeys($database, $schema, $name),
             name: $name,
             options: [],
-            primaryKey: $this->getTablePrimaryKey($database, $name, $schema),
-            reverseForeignKeys: $this->getTableReverseForeignKeys($database, $name, $schema),
+            primaryKey: $this->getTablePrimaryKey($database, $schema, $name),
+            reverseForeignKeys: $this->getTableReverseForeignKeys($database, $schema, $name),
             schema: $schema,
         );
     }
 
     /**
+     * List all tables in given database and schema.
+     */
+    protected abstract function doListTables(string $database, string $schema): array;
+
+    /**
+     * Does table exist.
+     */
+    protected abstract function doTableExists(string $database, string $schema, string $name): bool;
+
+    /**
      * Get table comment.
      */
-    protected abstract function getTableComment(string $database, string $name, string $schema = 'public'): ?string;
+    protected abstract function getTableComment(string $database, string $schema, string $name): ?string;
 
     /**
      * Get table columns.
      *
      * @return Column[]
      */
-    protected abstract function getTableColumns(string $database, string $name, string $schema = 'public'): array;
+    protected abstract function getTableColumns(string $database, string $schema, string $name): array;
 
     /**
      * Get table primary key.
      */
-    protected abstract function getTablePrimaryKey(string $database, string $name, string $schema = 'public'): ?Key;
+    protected abstract function getTablePrimaryKey(string $database, string $schema, string $name): ?Key;
 
     /**
      * Get table foreign keys.
      *
      * @return ForeignKey[]
      */
-    protected abstract function getTableForeignKeys(string $database, string $name, string $schema = 'public'): array;
+    protected abstract function getTableForeignKeys(string $database, string $schema, string $name): array;
 
     /**
      * Get table reverse foreign keys.
      *
      * @return ForeignKey[]
      */
-    protected abstract function getTableReverseForeignKeys(string $database, string $name, string $schema = 'public'): array;
+    protected abstract function getTableReverseForeignKeys(string $database, string $schema, string $name): array;
 
     /**
      * Start a transaction for schema manipulation.
@@ -215,17 +260,34 @@ abstract class SchemaManager implements LoggerAwareInterface
      * If the database vendor doesn't support DDL statements transactions
      * then no transactions will be done at all.
      */
-    public function modify(string $database, string $schema = 'public'): SchemaTransaction
+    public function modify(string $database, ?string $schema = null): SchemaTransaction
     {
         return new SchemaTransaction(
             $database,
-            $schema,
+            $schema ?? $this->getDefaultSchema(),
             function (SchemaTransaction $transaction) {
                 $browser = new ChangeLogBrowser();
                 $browser->addVisitor(new SchemaWriterLogVisitor($this));
                 $browser->browse($transaction);
             },
         );
+    }
+
+    /**
+     * Extract schema name from identifier.
+     *
+     * @return string[]
+     *   First value is schema name, second is stripped identifier if it contained schema name.
+     */
+    protected function detectSchema(string $name, ?string $schema): array
+    {
+        if (null !== $schema) {
+            return [$schema, $name];
+        }
+        if (false !== ($index = \strpos($name, '.'))) {
+            return [\substr($name, 0, $index - 1), \substr($name, $index)];
+        }
+        return [$this->getDefaultSchema(), $name];
     }
 
     /**
@@ -263,7 +325,11 @@ abstract class SchemaManager implements LoggerAwareInterface
             }
         }
 
-        if (!$this->supportsSchema()) {
+        if ($this->supportsSchema()) {
+            if (null === $schema) {
+                list($schema, $name) = $this->detectSchema($name, $schema);
+            }
+        } else {
             $schema = null;
         }
 

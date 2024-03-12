@@ -67,7 +67,7 @@ class MySQLSchemaManager extends SchemaManager
     }
 
     #[\Override]
-    public function listTables(string $database, string $schema = 'public'): array
+    protected function doListTables(string $database, string $schema): array
     {
         if ('public' !== $schema) {
             return [];
@@ -92,7 +92,7 @@ class MySQLSchemaManager extends SchemaManager
     }
 
     #[\Override]
-    public function tableExists(string $database, string $name, string $schema = 'public'): bool
+    protected function doTableExists(string $database, string $schema, string $name): bool
     {
         if ('public' !== $schema) {
             return false;
@@ -118,7 +118,7 @@ class MySQLSchemaManager extends SchemaManager
     }
 
     #[\Override]
-    protected function getTableComment(string $database, string $name, string $schema = 'public'): ?string
+    protected function getTableComment(string $database, string $schema, string $name): ?string
     {
         return $this
             ->queryExecutor
@@ -139,7 +139,7 @@ class MySQLSchemaManager extends SchemaManager
     }
 
     #[\Override]
-    protected function getTableColumns(string $database, string $name, string $schema = 'public'): array
+    protected function getTableColumns(string $database, string $schema, string $name): array
     {
         /*
         $defaultCollation = $this
@@ -204,7 +204,7 @@ class MySQLSchemaManager extends SchemaManager
     }
 
     #[\Override]
-    protected function getTablePrimaryKey(string $database, string $name, string $schema = 'public'): ?Key
+    protected function getTablePrimaryKey(string $database, string $schema, string $name): ?Key
     {
         $primaryKeyColumns = $this
             ->queryExecutor
@@ -240,19 +240,19 @@ class MySQLSchemaManager extends SchemaManager
     }
 
     #[\Override]
-    protected function getTableForeignKeys(string $database, string $name, string $schema = 'public'): array
+    protected function getTableForeignKeys(string $database, string $schema, string $name): array
     {
         return \array_values(\array_filter(
-            $this->getAllTableKeysInfo($database, $name, $schema),
+            $this->getAllTableKeysInfo($database, $schema, $name),
             fn (ForeignKey $key) => ($key->getTable() === $name && $key->getSchema() === $schema),
         ));
     }
 
     #[\Override]
-    protected function getTableReverseForeignKeys(string $database, string $name, string $schema = 'public'): array
+    protected function getTableReverseForeignKeys(string $database, string $schema, string $name): array
     {
         return \array_values(\array_filter(
-            $this->getAllTableKeysInfo($database, $name, $schema),
+            $this->getAllTableKeysInfo($database, $schema, $name),
             fn (ForeignKey $key) => ($key->getForeignTable() === $name && $key->getForeignSchema() === $schema),
         ));
     }
@@ -268,7 +268,7 @@ class MySQLSchemaManager extends SchemaManager
      *
      * @return ForeignKey[]
      */
-    private function getAllTableKeysInfo(string $database, string $name, string $schema = 'public'): array
+    private function getAllTableKeysInfo(string $database, string $schema, string $name): array
     {
         $ret = [];
 
@@ -333,7 +333,7 @@ class MySQLSchemaManager extends SchemaManager
         if ('binary' === $collation) {
             $characterSet = 'binary';
         } else if (\str_contains($collation, '_')) {
-            list ($characterSet,) = \explode('_', $collation, 2);
+            list($characterSet,) = \explode('_', $collation, 2);
         } else {
             $characterSet = $collation;
             $collation .= '_general_ci';

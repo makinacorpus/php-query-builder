@@ -19,9 +19,9 @@ class ObjectId
         private readonly string $database,
         private readonly string $type,
         private readonly string $name,
+        private readonly string $schema,
         /** For a column, for example, the table name. */
         private readonly ?string $namespace = null,
-        private readonly ?string $schema = 'public',
     ) {}
 
     /**

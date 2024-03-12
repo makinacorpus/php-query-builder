@@ -65,7 +65,7 @@ class PostgreSQLSchemaManager extends SchemaManager
     }
 
     #[\Override]
-    public function listTables(string $database, string $schema = 'public'): array
+    protected function doListTables(string $database, string $schema): array
     {
         return $this
             ->queryExecutor
@@ -89,7 +89,7 @@ class PostgreSQLSchemaManager extends SchemaManager
     }
 
     #[\Override]
-    public function tableExists(string $database, string $name, string $schema = 'public'): bool
+    protected function doTableExists(string $database, string $schema, string $name): bool
     {
         return (bool) $this
             ->queryExecutor
@@ -111,7 +111,7 @@ class PostgreSQLSchemaManager extends SchemaManager
     }
 
     #[\Override]
-    protected function getTableComment(string $database, string $name, string $schema = 'public'): ?string
+    protected function getTableComment(string $database, string $schema, string $name): ?string
     {
         return $this
             ->queryExecutor
@@ -134,7 +134,7 @@ class PostgreSQLSchemaManager extends SchemaManager
     }
 
     #[\Override]
-    protected function getTableColumns(string $database, string $name, string $schema = 'public'): array
+    protected function getTableColumns(string $database, string $schema, string $name): array
     {
         $defaultCollation = $this
             ->queryExecutor
@@ -191,9 +191,9 @@ class PostgreSQLSchemaManager extends SchemaManager
     }
 
     #[\Override]
-    protected function getTablePrimaryKey(string $database, string $name, string $schema = 'public'): ?Key
+    protected function getTablePrimaryKey(string $database, string $schema, string $name): ?Key
     {
-        $result = $this->getAllTableKeysInfo($database, $name, $schema);
+        $result = $this->getAllTableKeysInfo($database, $schema, $name);
 
         while ($row = $result->fetchRow()) {
             if ($row->get('type') === 'p') {
@@ -213,10 +213,10 @@ class PostgreSQLSchemaManager extends SchemaManager
     }
 
     #[\Override]
-    protected function getTableForeignKeys(string $database, string $name, string $schema = 'public'): array
+    protected function getTableForeignKeys(string $database, string $schema, string $name): array
     {
         $ret = [];
-        $result = $this->getAllTableKeysInfo($database, $name, $schema);
+        $result = $this->getAllTableKeysInfo($database, $schema, $name);
 
         while ($row = $result->fetchRow()) {
             if ($row->get('type') === 'f' && $row->get('table_source', 'string') === $name) {
@@ -239,10 +239,10 @@ class PostgreSQLSchemaManager extends SchemaManager
     }
 
     #[\Override]
-    protected function getTableReverseForeignKeys(string $database, string $name, string $schema = 'public'): array
+    protected function getTableReverseForeignKeys(string $database, string $schema, string $name): array
     {
         $ret = [];
-        $result = $this->getAllTableKeysInfo($database, $name, $schema);
+        $result = $this->getAllTableKeysInfo($database, $schema, $name);
 
         while ($row = $result->fetchRow()) {
             if ($row->get('type') === 'f' && $row->get('table_source', 'string') !== $name) {
@@ -273,7 +273,7 @@ class PostgreSQLSchemaManager extends SchemaManager
      * Since this is querying the catalog, it will be fast no matter how
      * much result this yields.
      */
-    private function getAllTableKeysInfo(string $database, string $name, string $schema = 'public'): Result
+    private function getAllTableKeysInfo(string $database, string $schema, string $name): Result
     {
         return $this
             ->queryExecutor

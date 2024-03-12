@@ -60,7 +60,7 @@ class SQLiteSchemaManager extends SchemaManager
     }
 
     #[\Override]
-    public function listTables(string $database, string $schema = 'public'): array
+    protected function doListTables(string $database, string $schema): array
     {
         if ('public' !== $schema) {
             return [];
@@ -92,13 +92,13 @@ class SQLiteSchemaManager extends SchemaManager
     }
 
     #[\Override]
-    public function tableExists(string $database, string $name, string $schema = 'public'): bool
+    protected function doTableExists(string $database, string $schema, string $name): bool
     {
         return \in_array($name, $this->listTables($database, $schema));
     }
 
     #[\Override]
-    protected function getTableComment(string $database, string $name, string $schema = 'public'): ?string
+    protected function getTableComment(string $database, string $schema, string $name): ?string
     {
         if ('public' !== $schema) {
             return null;
@@ -109,7 +109,7 @@ class SQLiteSchemaManager extends SchemaManager
     }
 
     #[\Override]
-    protected function getTableColumns(string $database, string $name, string $schema = 'public'): array
+    protected function getTableColumns(string $database, string $schema, string $name): array
     {
         if ('public' !== $schema) {
             return [];
@@ -175,7 +175,7 @@ class SQLiteSchemaManager extends SchemaManager
     }
 
     #[\Override]
-    protected function getTablePrimaryKey(string $database, string $name, string $schema = 'public'): ?Key
+    protected function getTablePrimaryKey(string $database, string $schema, string $name): ?Key
     {
         if ('public' !== $schema) {
             return null;
@@ -231,7 +231,7 @@ class SQLiteSchemaManager extends SchemaManager
     }
 
     #[\Override]
-    protected function getTableForeignKeys(string $database, string $name, string $schema = 'public'): array
+    protected function getTableForeignKeys(string $database, string $schema, string $name): array
     {
         if ('public' !== $schema) {
             return [];
@@ -274,7 +274,7 @@ class SQLiteSchemaManager extends SchemaManager
     }
 
     #[\Override]
-    protected function getTableReverseForeignKeys(string $database, string $name, string $schema = 'public'): array
+    protected function getTableReverseForeignKeys(string $database, string $schema, string $name): array
     {
         if ('public' !== $schema) {
             return [];
