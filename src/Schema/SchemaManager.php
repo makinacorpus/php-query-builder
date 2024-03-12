@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Schema;
 
+use MakinaCorpus\QueryBuilder\Error\Bridge\TableDoesNotExistError;
+use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
+use MakinaCorpus\QueryBuilder\Error\UnsupportedFeatureError;
 use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\ExpressionFactory;
 use MakinaCorpus\QueryBuilder\QueryExecutor;
-use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
-use MakinaCorpus\QueryBuilder\Error\UnsupportedFeatureError;
-use MakinaCorpus\QueryBuilder\Schema\Diff\AbstractChange;
-use MakinaCorpus\QueryBuilder\Schema\Diff\ChangeLog;
-use MakinaCorpus\QueryBuilder\Schema\Diff\SchemaTransaction;
+use MakinaCorpus\QueryBuilder\Schema\Diff\Browser\ChangeLogBrowser;
+use MakinaCorpus\QueryBuilder\Schema\Diff\Browser\SchemaWriterLogVisitor;
+use MakinaCorpus\QueryBuilder\Schema\Diff\Change\AbstractChange;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\ColumnAdd;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\ColumnDrop;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\ColumnModify;
@@ -33,18 +34,58 @@ use MakinaCorpus\QueryBuilder\Schema\Diff\Change\TableDrop;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\TableRename;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\UniqueKeyAdd;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\UniqueKeyDrop;
+use MakinaCorpus\QueryBuilder\Schema\Diff\Condition\AbstractCondition;
+use MakinaCorpus\QueryBuilder\Schema\Diff\Condition\ColumnExists;
+use MakinaCorpus\QueryBuilder\Schema\Diff\Condition\IndexExists;
+use MakinaCorpus\QueryBuilder\Schema\Diff\Condition\TableExists;
+use MakinaCorpus\QueryBuilder\Schema\Diff\SchemaTransaction;
+use MakinaCorpus\QueryBuilder\Schema\Read\Column;
+use MakinaCorpus\QueryBuilder\Schema\Read\ForeignKey;
+use MakinaCorpus\QueryBuilder\Schema\Read\Key;
+use MakinaCorpus\QueryBuilder\Schema\Read\Table;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
+use Psr\Log\NullLogger;
+
+// @todo Because IDE bug, sorry.
+\class_exists(Column::class);
+\class_exists(ForeignKey::class);
 
 /**
- * Schema alteration SQL statements in this class are mostly standard, but not
- * quite. They basically are the lowest common denominator between PostgreSQL,
- * SQLite and SQLServer. All three are very conservative with SQL standard so
- * basically, the intersection of three is what we have closest to it.
+ * Most SQL here tries to be the closest possible to SQL standard.
+ *
+ * Sadly when it comes to schema introspection, SCHEMATA standard deviates
+ * for every vendor, so there is no real standard here, implementations will
+ * use it for reading because it will at least be resilient against different
+ * versions of the same vendor.
+ *
+ * For writing, most implementations come closer to standard than for schema
+ * introspection, so we can write almost standard SQL in this implementation.
+ * There are a few exceptions, documented along the way, sometime all vendors
+ * have their own dialect, in this case, we almost always prefere PostgreSQL
+ * in this class.
  */
-abstract class SchemaManager
+abstract class SchemaManager implements LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
     public function __construct(
         protected readonly QueryExecutor $queryExecutor,
-    ) {}
+    ) {
+        $this->setLogger(new NullLogger());
+    }
+
+    /**
+     * Get instance query executor.
+     *
+     * @internal
+     *   In most cases, you should not use this, it will servce for some edge
+     *   cases, such as transaction handling in the schema writer visitor.
+     */
+    public function getQueryExecutor(): QueryExecutor
+    {
+        return $this->queryExecutor;
+    }
 
     /**
      * Does this platform supports DDL transactions.
@@ -159,16 +200,13 @@ abstract class SchemaManager
     public function modify(string $database, string $schema = 'public'): SchemaTransaction
     {
         return new SchemaTransaction(
-            $this,
             $database,
             $schema,
-            function (ChangeLog $changeLog) {
-                // @todo start transaction
-                foreach ($changeLog->getAll() as $change) {
-                    $this->apply($change);
-                }
-                // @todo end transaction
-            }
+            function (SchemaTransaction $transaction) {
+                $browser = new ChangeLogBrowser();
+                $browser->addVisitor(new SchemaWriterLogVisitor($this));
+                $browser->browse($transaction);
+            },
         );
     }
 
@@ -249,7 +287,7 @@ abstract class SchemaManager
      * @todo
      *   Maybe later, some normalization here with characters sets.
      */
-    protected function writeColumnSpecCollation(string $collation): Expression
+    protected function doWriteColumnCollation(string $collation): Expression
     {
         return $this->raw('COLLATE ?::id', $collation);
     }
@@ -264,7 +302,7 @@ abstract class SchemaManager
      *     - but there might be constants (such as CURRENT_TIME for example),
      *     - or function calls!
      */
-    protected function writeColumnSpecDefault(string $type, string $default): Expression
+    protected function doWriteColumnDefault(string $type, string $default): Expression
     {
         return match ($type) {
             default => $this->raw($default),
@@ -278,7 +316,7 @@ abstract class SchemaManager
      *   Here, we might want to plug over the converter in order to normalize
      *   type depending upon the RDBMS.
      */
-    protected function writeColumnSpecType(ColumnAdd|ColumnModify $change): Expression
+    protected function doWriteColumnType(ColumnAdd|ColumnModify $change): Expression
     {
         if (!$type = $change->getType()) {
             throw new QueryBuilderError("You cannot change collation without specifying a new type.");
@@ -288,7 +326,7 @@ abstract class SchemaManager
         $pieces = [$this->raw($type)];
 
         if ($collation = $change->getCollation()) {
-            $pieces[] = $this->writeColumnSpecCollation($collation);
+            $pieces[] = $this->doWriteColumnCollation($collation);
         }
 
         return $this->raw(\implode(' ', \array_fill(0, \count($pieces), '?')), [...$pieces]);
@@ -299,7 +337,7 @@ abstract class SchemaManager
      *
      * Column specification.
      */
-    protected function writeColumnSpec(ColumnAdd $change): Expression
+    protected function doWriteColumn(ColumnAdd $change): Expression
     {
         $pieces = [];
 
@@ -308,14 +346,14 @@ abstract class SchemaManager
         }
 
         if ($default = $change->getDefault()) {
-            $this->raw('DEFAULT ?', [$default]);
+            $this->raw('DEFAULT ?', [$this->doWriteColumnDefault($change->getType(), $default)]);
         }
 
         return $this->raw(
             '?::id ? ' . \implode(' ', \array_fill(0, \count($pieces), '?')),
             [
                 $change->getName(),
-                $this->writeColumnSpecType($change),
+                $this->doWriteColumnType($change),
                 ...$pieces,
             ],
         );
@@ -328,7 +366,7 @@ abstract class SchemaManager
      */
     protected function writeColumnAdd(ColumnAdd $change): iterable|Expression
     {
-        return $this->raw('ALTER TABLE ? ADD COLUMN ?', [$this->table($change), $this->writeColumnSpec($change)]);
+        return $this->raw('ALTER TABLE ? ADD COLUMN ?', [$this->table($change), $this->doWriteColumn($change)]);
     }
 
     /**
@@ -365,7 +403,7 @@ abstract class SchemaManager
         }
 
         if ($change->getType() || $change->getCollation()) {
-            $pieces[] = $this->raw('ALTER COLUMN ?::id TYPE ?', [$name, $this->writeColumnSpecType($change)]);
+            $pieces[] = $this->raw('ALTER COLUMN ?::id TYPE ?', [$name, $this->doWriteColumnType($change)]);
         }
 
         if (null !== ($nullable = $change->isNullable())) {
@@ -418,7 +456,7 @@ abstract class SchemaManager
      *
      * Constraint specification.
      */
-    protected function writeConstraintSpec(?string $name, Expression $spec): Expression
+    protected function doWriteConstraint(?string $name, Expression $spec): Expression
     {
         if ($name) {
             return $this->raw('CONSTRAINT ?::id ?', [$name, $spec]);
@@ -433,7 +471,7 @@ abstract class SchemaManager
      *
      * @todo SQLite does not support this and requires a table copy.
      */
-    protected function writeConstraintDropSpec(string $name, string $table, string $schema): Expression
+    protected function doWriteConstraintDrop(string $name, string $table, string $schema): Expression
     {
         return $this->raw('ALTER TABLE ? DROP CONSTRAINT ?::id', [$this->table($table, $schema), $name]);
     }
@@ -445,7 +483,7 @@ abstract class SchemaManager
      */
     protected function writeConstraintDrop(ConstraintDrop $change): iterable|Expression
     {
-        return $this->writeConstraintDropSpec($change->getName(), $change->getTable(), $change->getSchema());
+        return $this->doWriteConstraintDrop($change->getName(), $change->getTable(), $change->getSchema());
     }
 
     /**
@@ -471,7 +509,7 @@ abstract class SchemaManager
     /**
      * Write the "CASCADE|NO ACTION|RESTRICT|SET DEFAULT|SET NULL" FOREIGN KEY clause.
      */
-    protected function writeForeignKeySpecBehavior(string $behavior): Expression
+    protected function doWriteForeignKeyBehavior(string $behavior): Expression
     {
         return match ($behavior) {
             ForeignKeyAdd::ON_DELETE_CASCADE, ForeignKeyAdd::ON_UPDATE_CASCADE => $this->raw('CASCADE'),
@@ -485,7 +523,7 @@ abstract class SchemaManager
     /**
      * Write the "INITIALLY DEFERRED|IMMEDIATE" FOREIGN KEY clause.
      */
-    protected function writeForeignKeySpecInitially(string $initially): Expression
+    protected function doWriteForeignKeyInitially(string $initially): Expression
     {
         return match ($initially) {
             ForeignKeyAdd::INITIALLY_DEFERRED, ForeignKeyAdd::INITIALLY_DEFERRED => $this->raw('INITIALLY DEFERRED'),
@@ -498,14 +536,14 @@ abstract class SchemaManager
      *
      * Foreign key constraint specification.
      */
-    protected function writeForeignKeySpec(ForeignKeyAdd $change): Expression
+    protected function doWriteForeignKey(ForeignKeyAdd $change): Expression
     {
         $suffix = [];
         if ($deleteBehaviour = $change->getOnDelete()) {
-            $suffix[] = $this->raw('ON DELETE ?', $this->writeForeignKeySpecBehavior($deleteBehaviour));
+            $suffix[] = $this->raw('ON DELETE ?', $this->doWriteForeignKeyBehavior($deleteBehaviour));
         }
         if ($updateBehaviour = $change->getOnUpdate()) {
-            $suffix[] = $this->raw('ON UPDATE ?', $this->writeForeignKeySpecBehavior($updateBehaviour));
+            $suffix[] = $this->raw('ON UPDATE ?', $this->doWriteForeignKeyBehavior($updateBehaviour));
         }
         if ($change->isDeferrable()) {
             $suffix[] = $this->raw('DEFERRABLE');
@@ -513,10 +551,10 @@ abstract class SchemaManager
             $suffix[] = $this->raw('NOT DEFERRABLE');
         }
         if ($initially = $change->getInitially()) {
-            $suffix[] = $this->writeForeignKeySpecInitially($initially);
+            $suffix[] = $this->doWriteForeignKeyInitially($initially);
         }
 
-        return $this->writeConstraintSpec(
+        return $this->doWriteConstraint(
             $change->getName(),
             $this->raw(
                 'FOREIGN KEY (?::id[]) REFERENCES ? (?::id[]) ' . \implode('', \array_fill(0, \count($suffix), ' ?')),
@@ -537,7 +575,7 @@ abstract class SchemaManager
      */
     protected function writeForeignKeyAdd(ForeignKeyAdd $change): iterable|Expression
     {
-        return $this->raw('ALTER TABLE ? ADD ?', [$this->table($change), $this->writeForeignKeySpec($change)]);
+        return $this->raw('ALTER TABLE ? ADD ?', [$this->table($change), $this->doWriteForeignKey($change)]);
     }
 
     /**
@@ -557,7 +595,7 @@ abstract class SchemaManager
      */
     protected function writeForeignKeyDrop(ForeignKeyDrop $change): iterable|Expression
     {
-        return $this->writeConstraintDropSpec($change->getName(), $change->getTable(), $change->getSchema());
+        return $this->doWriteConstraintDrop($change->getName(), $change->getTable(), $change->getSchema());
     }
 
     /**
@@ -619,7 +657,7 @@ abstract class SchemaManager
      */
     protected function writePrimaryKeyAdd(PrimaryKeyAdd $change): iterable|Expression
     {
-        return $this->raw('ALTER TABLE ? ADD ?', [$this->table($change), $this->writePrimaryKeySpec($change)]);
+        return $this->raw('ALTER TABLE ? ADD ?', [$this->table($change), $this->doWritePrimaryKey($change)]);
     }
 
     /**
@@ -631,15 +669,15 @@ abstract class SchemaManager
      */
     protected function writePrimaryKeyDrop(PrimaryKeyDrop $change): iterable|Expression
     {
-        return $this->writeConstraintDropSpec($change->getName(), $change->getTable(), $change->getSchema());
+        return $this->doWriteConstraintDrop($change->getName(), $change->getTable(), $change->getSchema());
     }
 
     /**
      * Override if standard SQL is not enough.
      */
-    protected function writePrimaryKeySpec(PrimaryKeyAdd $change): Expression
+    protected function doWritePrimaryKey(PrimaryKeyAdd $change): Expression
     {
-        return $this->writeConstraintSpec(
+        return $this->doWriteConstraint(
             $change->getName(),
             $this->raw('PRIMARY KEY (?::id[])', [$change->getColumns()]),
         );
@@ -648,7 +686,7 @@ abstract class SchemaManager
     /**
      * Override if standard SQL is not enough.
      */
-    protected function writeTableCreateSpecUniqueKey(UniqueKeyAdd $change): Expression
+    protected function doWriteTableCreateUniqueKey(UniqueKeyAdd $change): Expression
     {
         if (!$change->isNullsDistinct()) {
             // @todo Implement this with PostgreSQL.
@@ -657,7 +695,7 @@ abstract class SchemaManager
 
         $spec = $this->raw('UNIQUE (?::id[])', [$change->getColumns()]);
 
-        return $this->writeConstraintSpec($change->getName(), $spec);
+        return $this->doWriteConstraint($change->getName(), $spec);
     }
 
     /**
@@ -667,15 +705,15 @@ abstract class SchemaManager
      */
     protected function writeTableCreate(TableCreate $change): iterable|Expression
     {
-        $pieces = \array_map($this->writeColumnSpec(...), $change->getColumns());
+        $pieces = \array_map($this->doWriteColumn(...), $change->getColumns());
         if ($primaryKey = $change->getPrimaryKey()) {
-            $pieces[] = $this->writePrimaryKeySpec($primaryKey);
+            $pieces[] = $this->doWritePrimaryKey($primaryKey);
         }
         foreach ($change->getUniqueKeys() as $uniqueKey) {
-            $pieces[] = $this->writeTableCreateSpecUniqueKey($uniqueKey);
+            $pieces[] = $this->doWriteTableCreateUniqueKey($uniqueKey);
         }
         foreach ($change->getForeignKeys() as $foreignKey) {
-            $pieces[] = $this->writeForeignKeySpec($foreignKey);
+            $pieces[] = $this->doWriteForeignKey($foreignKey);
         }
 
         $placeholder = \implode(', ', \array_fill(0, \count($pieces), '?'));
@@ -748,9 +786,67 @@ abstract class SchemaManager
     }
 
     /**
-     * Apply a given change in the current schema.
+     * Override if standard SQL is not enough.
      */
-    protected function apply(AbstractChange $change): void
+    protected function evaluateConditionColumnExists(ColumnExists $condition): bool
+    {
+        try {
+            return \in_array(
+                $condition->getColumn(),
+                $this
+                    ->getTable(
+                        $condition->getDatabase(),
+                        $condition->getTable(),
+                        $condition->getSchema()
+                    )
+                    ->getColumnNames()
+            );
+        } catch (TableDoesNotExistError) {
+            return false;
+        }
+    }
+
+    /**
+     * Override if standard SQL is not enough.
+     */
+    protected function evaluateConditionIndexExists(IndexExists $condition): bool
+    {
+        throw new UnsupportedFeatureError("Not implemented yet.");
+    }
+
+    /**
+     * Override if standard SQL is not enough.
+     */
+    protected function evaluateConditionTableExists(TableExists $condition): bool
+    {
+        return $this->tableExists($condition->getDatabase(), $condition->getTable(), $condition->getSchema());
+    }
+
+    /**
+     * Condition evualation.
+     *
+     * @internal
+     *   For SchemaWriterLogVisitor usage only.
+     */
+    public function evaluateCondition(AbstractCondition $condition): bool
+    {
+        $matches = (bool) match (\get_class($condition)) {
+            ColumnExists::class => $this->evaluateConditionColumnExists($condition),
+            IndexExists::class => $this->evaluateConditionIndexExists($condition),
+            TableExists::class => $this->evaluateConditionTableExists($condition),
+            default => throw new QueryBuilderError(\sprintf("Unsupported condition: %s", \get_class($condition))),
+        };
+
+        return $condition->isNegation() ? !$matches : $matches;
+    }
+
+    /**
+     * Apply a given change in the current schema.
+     *
+     * @internal
+     *   For SchemaWriterLogVisitor usage only.
+     */
+    public function applyChange(AbstractChange $change): void
     {
         $expressions = match (\get_class($change)) {
             ColumnAdd::class => $this->writeColumnAdd($change),
@@ -777,16 +873,6 @@ abstract class SchemaManager
             default => throw new QueryBuilderError(\sprintf("Unsupported alteration operation: %s", \get_class($change))),
         };
 
-        $this->executeChange($change, $expressions);
-    }
-
-    /**
-     * Really execute the change.
-     *
-     * @param Expression|iterable<Expression> $expressions
-     */
-    protected function executeChange(AbstractChange $change, iterable|Expression $expressions): void
-    {
         foreach (\is_iterable($expressions) ? $expressions : [$expressions] as $expression) {
             $this->queryExecutor->executeStatement($expression);
         }

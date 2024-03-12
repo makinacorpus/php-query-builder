@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Tests\Platform\Schema;
 
-use MakinaCorpus\QueryBuilder\Platform;
+use MakinaCorpus\QueryBuilder\Error\Bridge\TableDoesNotExistError;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Error\UnsupportedFeatureError;
-use MakinaCorpus\QueryBuilder\Error\Bridge\TableDoesNotExistError;
-use MakinaCorpus\QueryBuilder\Schema\ForeignKey;
+use MakinaCorpus\QueryBuilder\Platform;
+use MakinaCorpus\QueryBuilder\Schema\Read\ForeignKey;
 use MakinaCorpus\QueryBuilder\Schema\SchemaManager;
 use MakinaCorpus\QueryBuilder\Tests\FunctionalTestCase;
 
@@ -933,6 +933,62 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
         ;
 
         self::expectNotToPerformAssertions();
+    }
+
+    public function testIfTableExists(): void
+    {
+        $this
+            ->getSchemaManager()
+            ->modify('test_db')
+                ->ifTableExists('org')
+                    ->addColumn('org', 'if_added_col', 'text', true)
+                ->endIf()
+                ->ifTableNotExists('org')
+                    ->addColumn('org', 'if_not_added_col', 'text', true)
+                ->endIf()
+            ->commit()
+        ;
+
+        $columnNames = $this
+            ->getSchemaManager()
+            ->getTable('test_db', 'org')
+            ->getColumnNames()
+        ;
+
+        self::assertContains('if_added_col', $columnNames);
+        self::assertNotContains('if_not_added_col', $columnNames);
+    }
+
+    public function testIfColumnExists(): void
+    {
+        $this
+            ->getSchemaManager()
+            ->modify('test_db')
+                ->ifColumnExists('org', 'role')
+                    ->addColumn('org', 'if_added_col_2', 'text', true)
+                ->endIf()
+                ->ifColumnNotExists('org', 'role')
+                    ->addColumn('org', 'if_not_added_col_2', 'text', true)
+                ->endIf()
+                ->ifColumnExists('org', 'role_nope')
+                    ->addColumn('org', 'if_added_col_3', 'text', true)
+                ->endIf()
+                ->ifColumnNotExists('org', 'role_nope')
+                    ->addColumn('org', 'if_not_added_col_3', 'text', true)
+                ->endIf()
+            ->commit()
+        ;
+
+        $columnNames = $this
+            ->getSchemaManager()
+            ->getTable('test_db', 'org')
+            ->getColumnNames()
+        ;
+
+        self::assertContains('if_added_col_2', $columnNames);
+        self::assertNotContains('if_not_added_col_2', $columnNames);
+        self::assertNotContains('if_added_col_3', $columnNames);
+        self::assertContains('if_not_added_col_3', $columnNames);
     }
 
     public function testListTables(): void

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace MakinaCorpus\QueryBuilder\Schema\Diff\Change\Template;
+namespace MakinaCorpus\QueryBuilder\Schema\Diff\Generator;
 
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 
@@ -260,16 +260,15 @@ class Generator
         $transactionMethodsString = \implode("\n\n", $additional['transaction']['methods']);
         $transactionUse = \implode("\n", $additional['transaction']['use']);
 
-        $schemaTransaction = <<<EOT
+        $changeLogBuilder = <<<EOT
             <?php
             
             declare(strict_types=1);
             
-            namespace MakinaCorpus\QueryBuilder\Schema\Diff;
+            namespace MakinaCorpus\QueryBuilder\Schema\Diff\Transaction;
             
+            use MakinaCorpus\QueryBuilder\Schema\Diff\ChangeLogItem;
             {$transactionUse}
-            use MakinaCorpus\QueryBuilder\Schema\Diff\AbstractChange;
-            use MakinaCorpus\QueryBuilder\Schema\SchemaManager;
             
             /**
              * This code is generated using bin/generate_changes.php.
@@ -279,33 +278,12 @@ class Generator
              * @see \\MakinaCorpus\\QueryBuilder\\Schema\\Diff\\Change\\Template\\Generator
              * @see bin/generate_changes.php
              */
-            class SchemaTransaction
+            abstract class GeneratedAbstractTransaction
             {
-                private ChangeLog \$changeLog;
-            
                 public function __construct(
-                    private readonly SchemaManager \$schemaManager,
-                    private readonly string \$database,
-                    private readonly string \$schema,
-                    private readonly \Closure \$onCommit,
-                ) {
-                    \$this->changeLog = new ChangeLog(\$schemaManager);
-                }
-                
-                public function commit(): void
-                {
-                    (\$this->onCommit)(\$this->changeLog->diff());
-                }
-            
-            {$transactionMethodsString}
-            
-                /**
-                 * Create a table builder.
-                 */
-                public function createTable(string \$name): TableBuilder
-                {
-                    return new TableBuilder(parent: \$this, database: \$this->database, name: \$name, schema: \$this->schema);
-                }
+                    protected readonly string \$database,
+                    protected readonly string \$schema,
+                ) {}
             
                 /**
                  * Add new arbitrary change.
@@ -313,14 +291,13 @@ class Generator
                  * @internal
                  *   For builders use only.
                  */
-                public function logChange(AbstractChange \$change): void
-                {
-                    \$this->changeLog->add(\$change);
-                }
+                public abstract function logChange(ChangeLogItem \$change): void;
+            
+            {$transactionMethodsString}
             }
             EOT;
 
-        \file_put_contents(\dirname(__DIR__, 2) . '/SchemaTransaction.php', $schemaTransaction . "\n");
+        \file_put_contents(\dirname(__DIR__) . '/Transaction/GeneratedAbstractTransaction.php', $changeLogBuilder . "\n");
     }
 
     private function camelize(string $input, bool $first = true): string
@@ -591,8 +568,6 @@ class Generator
         
         namespace MakinaCorpus\\QueryBuilder\\Schema\\Diff\\Change;
         
-        use MakinaCorpus\\QueryBuilder\\Schema\\Diff\\AbstractChange;
-        
         {$description}
         class {$className} extends AbstractChange
         {{$classConstantsString}
@@ -610,7 +585,7 @@ class Generator
         }
         EOT;
 
-        \file_put_contents(\dirname(__DIR__) . '/' . $className . '.php', $file . "\n");
+        \file_put_contents(\dirname(__DIR__) . '/Change/' . $className . '.php', $file . "\n");
 
         /*
          * Transaction methods and code.
@@ -640,7 +615,7 @@ class Generator
                         {$transactionPropertiesString}
                         ?string \$schema = null,
                     ): static {
-                        \$this->changeLog->add(
+                        \$this->logChange(
                             new {$className}(
                                 {$transactionParametersString}
                                 schema: \$schema ?? \$this->schema,

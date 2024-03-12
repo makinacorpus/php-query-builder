@@ -4,34 +4,23 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Schema\Diff;
 
-use MakinaCorpus\QueryBuilder\Schema\SchemaManager;
-
 class ChangeLog
 {
     public function __construct(
-        private readonly SchemaManager $schemaManager,
-        /** @var AbstractChange[] */
+        /** @var ChangeLogItem[] */
         private array $changes = [],
     ) {}
 
-    public function add(AbstractChange $change): void
+    public function add(ChangeLogItem $change): void
     {
         $this->changes[] = $change;
     }
 
+    /**
+     * @return ChangeLogItem[]
+     */
     public function getAll(): iterable
     {
         return $this->changes;
-    }
-
-    public function diff(): ChangeLog
-    {
-        foreach ($this->changes as $change) {
-            // load target object
-            // run has modified
-        }
-
-        // @todo fix this
-        return $this;
     }
 }

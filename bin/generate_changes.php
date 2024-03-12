@@ -1,6 +1,6 @@
 <?php
 
-use MakinaCorpus\QueryBuilder\Schema\Diff\Change\Template\Generator;
+use MakinaCorpus\QueryBuilder\Schema\Diff\Generator\Generator;
 
 require_once \dirname(__DIR__) . '/vendor/autoload.php';
 

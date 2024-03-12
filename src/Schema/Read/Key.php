@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace MakinaCorpus\QueryBuilder\Schema;
+namespace MakinaCorpus\QueryBuilder\Schema\Read;
 
 class Key extends AbstractObject
 {

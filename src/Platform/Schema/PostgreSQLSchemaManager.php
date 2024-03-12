@@ -7,11 +7,11 @@ namespace MakinaCorpus\QueryBuilder\Platform\Schema;
 use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Result\Result;
 use MakinaCorpus\QueryBuilder\Result\ResultRow;
-use MakinaCorpus\QueryBuilder\Schema\Column;
-use MakinaCorpus\QueryBuilder\Schema\ForeignKey;
-use MakinaCorpus\QueryBuilder\Schema\Key;
-use MakinaCorpus\QueryBuilder\Schema\SchemaManager;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\IndexRename;
+use MakinaCorpus\QueryBuilder\Schema\Read\Column;
+use MakinaCorpus\QueryBuilder\Schema\Read\ForeignKey;
+use MakinaCorpus\QueryBuilder\Schema\Read\Key;
+use MakinaCorpus\QueryBuilder\Schema\SchemaManager;
 
 /**
  * Please note that some functions here might use information_schema tables

@@ -2,19 +2,20 @@
 
 declare(strict_types=1);
 
-namespace MakinaCorpus\QueryBuilder\Schema\Diff;
+namespace MakinaCorpus\QueryBuilder\Schema\Diff\Transaction;
 
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\ColumnAdd;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\ForeignKeyAdd;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\IndexCreate;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\PrimaryKeyAdd;
-use MakinaCorpus\QueryBuilder\Schema\Diff\Change\UniqueKeyAdd;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\TableCreate;
+use MakinaCorpus\QueryBuilder\Schema\Diff\Change\UniqueKeyAdd;
 
 /**
- * Table builder, for chaining calls with schema transaction.
+ * @internal
+ *   Exists because PHP has no genericity.
  */
-class TableBuilder
+abstract class AbstractTableBuilder
 {
     /** @var ColumnAdd[] */
     private array $columns = [];
@@ -28,7 +29,7 @@ class TableBuilder
     private bool $temporary = false;
 
     public function __construct(
-        private readonly SchemaTransaction $parent,
+        private readonly GeneratedAbstractTransaction $parent,
         private readonly string $database,
         private readonly string $name,
         private string $schema,
@@ -162,9 +163,9 @@ class TableBuilder
     }
 
     /**
-     * Table is done.
+     * Create and log table.
      */
-    public function endTable(): SchemaTransaction
+    protected function createAndLogTable(): void
     {
         $this->parent->logChange(
             new TableCreate(
@@ -179,7 +180,5 @@ class TableBuilder
                 uniqueKeys: $this->uniqueKeys,
             ),
         );
-
-        return $this->parent;
     }
 }

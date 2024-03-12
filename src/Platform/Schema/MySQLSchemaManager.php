@@ -4,14 +4,10 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Platform\Schema;
 
-use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Error\UnsupportedFeatureError;
+use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Result\ResultRow;
-use MakinaCorpus\QueryBuilder\Schema\Column;
-use MakinaCorpus\QueryBuilder\Schema\ForeignKey;
-use MakinaCorpus\QueryBuilder\Schema\Key;
-use MakinaCorpus\QueryBuilder\Schema\SchemaManager;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\ColumnModify;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\ForeignKeyAdd;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\IndexCreate;
@@ -20,7 +16,10 @@ use MakinaCorpus\QueryBuilder\Schema\Diff\Change\IndexRename;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\PrimaryKeyDrop;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\UniqueKeyAdd;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\UniqueKeyDrop;
-
+use MakinaCorpus\QueryBuilder\Schema\Read\Column;
+use MakinaCorpus\QueryBuilder\Schema\Read\ForeignKey;
+use MakinaCorpus\QueryBuilder\Schema\Read\Key;
+use MakinaCorpus\QueryBuilder\Schema\SchemaManager;
 
 /**
  * Please note that some functions here might use information_schema tables
@@ -328,7 +327,7 @@ class MySQLSchemaManager extends SchemaManager
     }
 
     #[\Override]
-    protected function writeColumnSpecCollation(string $collation): Expression
+    protected function doWriteColumnCollation(string $collation): Expression
     {
         // This is very hasardous, but let's do it.
         if ('binary' === $collation) {
@@ -348,16 +347,17 @@ class MySQLSchemaManager extends SchemaManager
     protected function writeColumnModify(ColumnModify $change): iterable|Expression
     {
         $name = $change->getName();
+        $type = $change->getType();
 
         // When modifying a column in MySQL, you need to use the CHANGE COLUMN
         // syntax if you change anything else than the DEFAULT value.
         // That's kind of very weird, but that's it. Live with it.
-        if ($change->getType() || null !== $change->isNullable() || $change->getCollation() || $change->getType()) {
+        if ($type || null !== $change->isNullable() || $change->getCollation()) {
             return $this->raw(
                 'ALTER TABLE ? MODIFY COLUMN ?',
                 [
                     $this->table($change),
-                    $this->writeColumnSpec($this->columnModifyToAdd($change)),
+                    $this->doWriteColumn($this->columnModifyToAdd($change)),
                 ]
             );
         }
@@ -371,20 +371,21 @@ class MySQLSchemaManager extends SchemaManager
             }
             $pieces[] = $this->raw('ALTER COLUMN ?::id DROP DEFAULT', [$name]);
         } else if ($default = $change->getDefault()) {
-            $pieces[] = $this->raw('ALTER COLUMN ?::id SET DEFAULT ?', [$name, $this->raw($default)]);
+            // @todo
+            $pieces[] = $this->raw('ALTER COLUMN ?::id SET DEFAULT ?', [$name, $this->doWriteColumnDefault($type ?? 'unknown', $default)]);
         }
 
         return $this->raw('ALTER TABLE ? ' . \implode(', ', \array_fill(0, \count($pieces), '?')), [$this->table($change), ...$pieces]);
     }
 
     #[\Override]
-    protected function writeForeignKeySpec(ForeignKeyAdd $change): Expression
+    protected function doWriteForeignKey(ForeignKeyAdd $change): Expression
     {
         if ($change->isDeferrable()) {
             // @todo log that MySQL doesn't support deferring?
         }
 
-        return $this->writeConstraintSpec(
+        return $this->doWriteConstraint(
             $change->getName(),
             $this->raw(
                 'FOREIGN KEY (?::id[]) REFERENCES ?::table (?::id[])',
@@ -440,6 +441,6 @@ class MySQLSchemaManager extends SchemaManager
     #[\Override]
     protected function writeUniqueKeyDrop(UniqueKeyDrop $change): Expression
     {
-        return $this->writeConstraintDropSpec($change->getName(), $change->getTable(), $change->getSchema());
+        return $this->doWriteConstraintDrop($change->getName(), $change->getTable(), $change->getSchema());
     }
 }

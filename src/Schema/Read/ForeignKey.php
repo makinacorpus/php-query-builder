@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace MakinaCorpus\QueryBuilder\Schema;
+namespace MakinaCorpus\QueryBuilder\Schema\Read;
 
 final class ForeignKey extends AbstractObject
 {

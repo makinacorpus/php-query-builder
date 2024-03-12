@@ -4,8 +4,6 @@ declare (strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Schema\Diff\Change;
 
-use MakinaCorpus\QueryBuilder\Schema\Diff\AbstractChange;
-
 /**
  * Create a UNIQUE constraint on a table.
  *

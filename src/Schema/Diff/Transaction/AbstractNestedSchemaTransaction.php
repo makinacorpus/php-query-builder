@@ -2,44 +2,43 @@
 
 declare(strict_types=1);
 
-namespace MakinaCorpus\QueryBuilder\Schema\Diff;
+namespace MakinaCorpus\QueryBuilder\Schema\Diff\Transaction;
 
+use MakinaCorpus\QueryBuilder\Schema\Diff\ChangeLogItem;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Condition\ColumnExists;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Condition\IndexExists;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Condition\TableExists;
-use MakinaCorpus\QueryBuilder\Schema\Diff\Transaction\AbstractSchemaTransaction;
-use MakinaCorpus\QueryBuilder\Schema\Diff\Transaction\NestedSchemaTransaction;
-use MakinaCorpus\QueryBuilder\Schema\Diff\Transaction\TableBuilder;
 
-class SchemaTransaction extends AbstractSchemaTransaction
+/**
+ * @internal
+ *   Exists because PHP has no genericity.
+ */
+abstract class AbstractNestedSchemaTransaction extends AbstractSchemaTransaction implements ChangeLogItem
 {
-    private ChangeLog $changeLog;
-
     public function __construct(
         string $database,
         string $schema,
-        private readonly \Closure $onCommit,
+        private readonly array $conditions = [],
     ) {
         parent::__construct($database, $schema);
     }
 
-    public function commit(): void
+    #[\Override]
+    public function getDatabase(): string
     {
-        ($this->onCommit)($this);
+        return $this->database;
     }
 
-    /**
-     * Create a table builder.
-     */
-    public function createTable(string $name): TableBuilder
+    #[\Override]
+    public function getSchema(): string
     {
-        return new TableBuilder(parent: $this, database: $this->database, name: $name, schema: $this->schema);
+        return $this->schema;
     }
 
     /**
      * If table exists then.
      */
-    public function ifTableExists(string $table): NestedSchemaTransaction
+    public function ifTableExists(string $table): DeepNestedSchemaTransaction
     {
         return $this->nestWithCondition(new TableExists($this->database, $this->schema, $table));
     }
@@ -47,7 +46,7 @@ class SchemaTransaction extends AbstractSchemaTransaction
     /**
      * If table does not exist then.
      */
-    public function ifTableNotExists(string $table): NestedSchemaTransaction
+    public function ifTableNotExists(string $table): DeepNestedSchemaTransaction
     {
         return $this->nestWithCondition(new TableExists($this->database, $this->schema, $table, true));
     }
@@ -55,7 +54,7 @@ class SchemaTransaction extends AbstractSchemaTransaction
     /**
      * If column exists then.
      */
-    public function ifColumnExists(string $table, string $column): NestedSchemaTransaction
+    public function ifColumnExists(string $table, string $column): DeepNestedSchemaTransaction
     {
         return $this->nestWithCondition(new ColumnExists($this->database, $this->schema, $table, $column));
     }
@@ -63,7 +62,7 @@ class SchemaTransaction extends AbstractSchemaTransaction
     /**
      * If column does not exist then.
      */
-    public function ifColumnNotExists(string $table, string $column): NestedSchemaTransaction
+    public function ifColumnNotExists(string $table, string $column): DeepNestedSchemaTransaction
     {
         return $this->nestWithCondition(new ColumnExists($this->database, $this->schema, $table, $column, true));
     }
@@ -71,7 +70,7 @@ class SchemaTransaction extends AbstractSchemaTransaction
     /**
      * If index exists then.
      */
-    public function ifIndexExists(string $table, array $columns): NestedSchemaTransaction
+    public function ifIndexExists(string $table, array $columns): DeepNestedSchemaTransaction
     {
         return $this->nestWithCondition(new IndexExists($this->database, $this->schema, $table, $columns));
     }
@@ -79,8 +78,16 @@ class SchemaTransaction extends AbstractSchemaTransaction
     /**
      * If index does not exist then.
      */
-    public function ifIndexNotExists(string $table, array $columns): NestedSchemaTransaction
+    public function ifIndexNotExists(string $table, array $columns): DeepNestedSchemaTransaction
     {
         return $this->nestWithCondition(new IndexExists($this->database, $this->schema, $table, $columns, true));
+    }
+
+    /**
+     * Get all conditions. No conditions means always execute.
+     */
+    public function getConditions(): array
+    {
+        return $this->conditions;
     }
 }

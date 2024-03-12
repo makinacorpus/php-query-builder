@@ -105,6 +105,86 @@ transaction started. For now, only PostgreSQL will benefit from a real database
 transaction.
 :::
 
+### Basic transaction
+
+Considering the API is fluent and all methods can be chained, here is an example
+of a simple table creation:
+
+```php
+$schemaManager
+    ->modify(database: 'my_database')
+        ->createTable(name: 'user')
+            ->column(name: 'id', type: 'serial', nullable: false)
+            ->primaryKey(['id'])
+            ->column(name: 'enabled', type: 'bool', nullable: false, default: 'false')
+            ->column('email', 'text', true)
+            ->uniqueKey(columns: ['email'])
+            ->index(columns: ['email'])
+        ->endTable()
+    ->commit()
+```
+
+:::warning
+Because API may evolve and add new parameters to builder functions, it is recommended
+to use argument naming when using the builder.
+:::
+
+You may also simply issue direct statements, considering the manipulated table already
+exists in your schema:
+
+```php
+$schemaManager
+    ->modify(database: 'my_database')
+        ->column(table: 'user', name: 'id', type: 'serial', nullable: false)
+        ->primaryKey(table: 'user', ['id'])
+        ->column(table: 'user', name: 'enabled', type: 'bool', nullable: false, default: 'false')
+        ->column(table: 'user', 'email', 'text', true)
+        ->uniqueKey(table: 'user', columns: ['email'])
+        ->index(table: 'user', columns: ['email'])
+    ->commit()
+```
+
+:::note
+Table creation requires you to use the `createTable()` method nesting.
+:::
+
+### Conditions and branches
+
+You may write re-entrant schema alteration procedures by using conditional branches
+in the code, consider the previous example:
+
+```php
+$schemaManager
+    ->modify(database: 'my_database')
+        ->ifTableNotExists(table: 'user')
+            ->createTable(name: 'user')
+                ->column(name: 'id', type: 'serial', nullable: false)
+                ->primaryKey(['id'])
+                ->column(name: 'enabled', type: 'bool', nullable: false, default: 'false')
+            ->endTable()
+        ->endIf()
+        ->ifColumnNotExists(table: 'user', column: 'email')
+            ->column(table: 'user', 'email', 'text', true)
+            ->uniqueKey(table: 'user', columns: ['email'])
+            ->index(table: 'user', columns: ['email'])
+        ->endIf()
+    ->commit()
+```
+
+:::note
+There is no `else()` statement yet, it might be implemented in in the future.
+:::
+
+### Arbitrary SQL queries
+
+@todo
+
+### Using arbitrary SQL as condition
+
+@todo
+
+### Self-documenting example
+
 The `$transaction` object is an instance of `MakinaCorpus\QueryBuilder\Schema\Diff\SchemaTransaction`
 implementing the builder pattern, i.e. allowing method chaining.
 
