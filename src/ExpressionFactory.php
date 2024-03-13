@@ -12,9 +12,12 @@ use MakinaCorpus\QueryBuilder\Expression\ColumnName;
 use MakinaCorpus\QueryBuilder\Expression\Concat;
 use MakinaCorpus\QueryBuilder\Expression\ConstantTable;
 use MakinaCorpus\QueryBuilder\Expression\CurrentTimestamp;
+use MakinaCorpus\QueryBuilder\Expression\DateAdd;
+use MakinaCorpus\QueryBuilder\Expression\DateSub;
 use MakinaCorpus\QueryBuilder\Expression\FunctionCall;
 use MakinaCorpus\QueryBuilder\Expression\Identifier;
 use MakinaCorpus\QueryBuilder\Expression\IfThen;
+use MakinaCorpus\QueryBuilder\Expression\DateInterval;
 use MakinaCorpus\QueryBuilder\Expression\Lpad;
 use MakinaCorpus\QueryBuilder\Expression\Modulo;
 use MakinaCorpus\QueryBuilder\Expression\Not;
@@ -99,6 +102,30 @@ class ExpressionFactory
     public static function currentTimestamp(): CurrentTimestamp
     {
         return new CurrentTimestamp();
+    }
+
+    /**
+     * Create an "INTERVAL value unit" expression.
+     */
+    public static function interval(\DateInterval|array $values): DateInterval
+    {
+        return new DateInterval($values);
+    }
+
+    /**
+     * Create an date and interval addition expression.
+     */
+    public static function dateAdd(mixed $date, mixed $interval): DateAdd
+    {
+        return new DateAdd($date, $interval);
+    }
+
+    /**
+     * Create an date and interval substraction expression.
+     */
+    public static function dateSub(mixed $date, mixed $interval): DateSub
+    {
+        return new DateSub($date, $interval);
     }
 
     /**

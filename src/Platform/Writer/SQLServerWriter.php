@@ -4,14 +4,19 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Platform\Writer;
 
+use MakinaCorpus\QueryBuilder\Error\UnsupportedFeatureError;
 use MakinaCorpus\QueryBuilder\Expression\Aggregate;
 use MakinaCorpus\QueryBuilder\Expression\Cast;
 use MakinaCorpus\QueryBuilder\Expression\Concat;
 use MakinaCorpus\QueryBuilder\Expression\CurrentTimestamp;
+use MakinaCorpus\QueryBuilder\Expression\DateAdd;
+use MakinaCorpus\QueryBuilder\Expression\DateInterval;
+use MakinaCorpus\QueryBuilder\Expression\DateSub;
 use MakinaCorpus\QueryBuilder\Expression\Lpad;
 use MakinaCorpus\QueryBuilder\Expression\Random;
 use MakinaCorpus\QueryBuilder\Expression\StringHash;
 use MakinaCorpus\QueryBuilder\Expression\TableName;
+use MakinaCorpus\QueryBuilder\Expression\Value;
 use MakinaCorpus\QueryBuilder\Writer\Writer;
 use MakinaCorpus\QueryBuilder\Writer\WriterContext;
 
@@ -102,6 +107,48 @@ class SQLServerWriter extends Writer
         $value = new Cast($expression->getValue(), 'nvarchar');
 
         return 'lower(convert(nvarchar(32), hashbytes(' . $escapedAlgo  . ', ' . $this->format($value, $context) . '), 2))';
+    }
+
+    #[\Override]
+    protected function formatDateAdd(DateAdd $expression, WriterContext $context): string
+    {
+        $interval = $expression->getInterval();
+
+        if ($interval instanceof DateInterval) {
+            $ret = $this->format($expression->getDate(), $context);
+
+            foreach ($interval->getValues() as $unit => $value) {
+                $ret = 'dateadd(' . $unit . ', ' . $this->format(new Value($value, 'bigint'), $context) . ', ' . $ret . ')';
+            }
+        } else {
+            throw new UnsupportedFeatureError("SQLServer does not support DATEADD(expr,expr).");
+        }
+
+        return $ret;
+    }
+
+    #[\Override]
+    protected function formatDateSub(DateSub $expression, WriterContext $context): string
+    {
+        $interval = $expression->getInterval();
+
+        if ($interval instanceof DateInterval) {
+            $ret = $this->format($expression->getDate(), $context);
+
+            foreach ($interval->getValues() as $unit => $value) {
+                $ret = 'dateadd(' . $unit . ', ' . $this->format(new Value($value, 'bigint'), $context) . ', ' . $ret . ')';
+            }
+        } else {
+            throw new UnsupportedFeatureError("SQLServer does not support DATEADD(expr,expr).");
+        }
+
+        return $ret;
+    }
+
+    #[\Override]
+    protected function formatDateInterval(DateInterval $expression, WriterContext $context): string
+    {
+        throw new UnsupportedFeatureError('SQLServer does not know the interval type.');
     }
 
     #[\Override]

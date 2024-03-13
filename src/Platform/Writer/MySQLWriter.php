@@ -7,13 +7,18 @@ namespace MakinaCorpus\QueryBuilder\Platform\Writer;
 use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Converter\Converter;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
+use MakinaCorpus\QueryBuilder\Error\UnsupportedFeatureError;
 use MakinaCorpus\QueryBuilder\Expression\Aggregate;
 use MakinaCorpus\QueryBuilder\Expression\Concat;
 use MakinaCorpus\QueryBuilder\Expression\ConstantTable;
 use MakinaCorpus\QueryBuilder\Expression\CurrentTimestamp;
+use MakinaCorpus\QueryBuilder\Expression\DateAdd;
+use MakinaCorpus\QueryBuilder\Expression\DateInterval;
+use MakinaCorpus\QueryBuilder\Expression\DateSub;
 use MakinaCorpus\QueryBuilder\Expression\Random;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\Expression\StringHash;
+use MakinaCorpus\QueryBuilder\Expression\Value;
 use MakinaCorpus\QueryBuilder\Platform\Converter\MySQLConverter;
 use MakinaCorpus\QueryBuilder\Query\Delete;
 use MakinaCorpus\QueryBuilder\Query\Merge;
@@ -60,6 +65,52 @@ class MySQLWriter extends Writer
             'sha2' => 'sha2(' . $this->format($value, $context) . ')',
             default => throw new QueryBuilderError("Unsupported arbitrary user given algorithm for MySQL."),
         };
+    }
+
+    #[\Override]
+    protected function formatDateAdd(DateAdd $expression, WriterContext $context): string
+    {
+        $interval = $expression->getInterval();
+
+        if ($interval instanceof DateInterval) {
+            $ret = $this->format($expression->getDate(), $context);
+
+            foreach ($interval->getValues() as $unit => $value) {
+                $intervalStr = $this->doFormatDateIntervalSingleUnit($value, $unit);
+
+                $ret = 'date_add(' . $ret . ', interval ' . $intervalStr . ')';
+            }
+        } else {
+            $ret = 'date_add(' . $this->format($expression->getDate(), $context) . ', ' . $this->format($expression->getInterval(), $context) . ')';
+        }
+
+        return $ret;
+    }
+
+    #[\Override]
+    protected function formatDateSub(DateSub $expression, WriterContext $context): string
+    {
+        $interval = $expression->getInterval();
+
+        if ($interval instanceof DateInterval) {
+            $ret = $this->format($expression->getDate(), $context);
+
+            foreach ($interval->getValues() as $unit => $value) {
+                $intervalStr = $this->doFormatDateIntervalSingleUnit($value, $unit);
+
+                $ret = 'date_sub(' . $ret . ', interval ' . $intervalStr . ')';
+            }
+        } else {
+            $ret = 'date_sub(' . $this->format($expression->getDate(), $context) . ', ' . $this->format($expression->getInterval(), $context) . ')';
+        }
+
+        return $ret;
+    }
+
+    #[\Override]
+    protected function formatDateInterval(DateInterval $expression, WriterContext $context): string
+    {
+        throw new UnsupportedFeatureError('MySQL does not know the interval type.');
     }
 
     /**
