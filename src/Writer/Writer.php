@@ -4,13 +4,11 @@ declare (strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Writer;
 
-use MakinaCorpus\QueryBuilder\Expression;
-use MakinaCorpus\QueryBuilder\SqlString;
-use MakinaCorpus\QueryBuilder\Where;
 use MakinaCorpus\QueryBuilder\Converter\Converter;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Error\UnsupportedExpressionError;
 use MakinaCorpus\QueryBuilder\Escaper\Escaper;
+use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Expression\Aggregate;
 use MakinaCorpus\QueryBuilder\Expression\Aliased;
 use MakinaCorpus\QueryBuilder\Expression\ArrayValue;
@@ -23,6 +21,9 @@ use MakinaCorpus\QueryBuilder\Expression\Comparison;
 use MakinaCorpus\QueryBuilder\Expression\Concat;
 use MakinaCorpus\QueryBuilder\Expression\ConstantTable;
 use MakinaCorpus\QueryBuilder\Expression\CurrentTimestamp;
+use MakinaCorpus\QueryBuilder\Expression\DateAdd;
+use MakinaCorpus\QueryBuilder\Expression\DateInterval;
+use MakinaCorpus\QueryBuilder\Expression\DateSub;
 use MakinaCorpus\QueryBuilder\Expression\FunctionCall;
 use MakinaCorpus\QueryBuilder\Expression\Identifier;
 use MakinaCorpus\QueryBuilder\Expression\IfThen;
@@ -46,14 +47,16 @@ use MakinaCorpus\QueryBuilder\Platform\Escaper\StandardEscaper;
 use MakinaCorpus\QueryBuilder\Query\Delete;
 use MakinaCorpus\QueryBuilder\Query\Insert;
 use MakinaCorpus\QueryBuilder\Query\Merge;
-use MakinaCorpus\QueryBuilder\Query\Query;
-use MakinaCorpus\QueryBuilder\Query\RawQuery;
-use MakinaCorpus\QueryBuilder\Query\Select;
-use MakinaCorpus\QueryBuilder\Query\Update;
 use MakinaCorpus\QueryBuilder\Query\Partial\JoinStatement;
 use MakinaCorpus\QueryBuilder\Query\Partial\OrderByStatement;
 use MakinaCorpus\QueryBuilder\Query\Partial\SelectColumn;
 use MakinaCorpus\QueryBuilder\Query\Partial\WithStatement;
+use MakinaCorpus\QueryBuilder\Query\Query;
+use MakinaCorpus\QueryBuilder\Query\RawQuery;
+use MakinaCorpus\QueryBuilder\Query\Select;
+use MakinaCorpus\QueryBuilder\Query\Update;
+use MakinaCorpus\QueryBuilder\SqlString;
+use MakinaCorpus\QueryBuilder\Where;
 
 /**
  * Standard SQL query formatter: this implementation conforms as much as it
@@ -138,6 +141,14 @@ class Writer
     }
 
     /**
+     * Is text date, datetime, timestamp, ....
+     */
+    protected function isTypeDate(?string $type): bool
+    {
+        return null !== $type && (\str_contains($type, 'date') || \str_contains($type, 'timestamp'));
+    }
+
+    /**
      * Guess type of expression.
      */
     protected function guessTypeOf(Expression $expression): ?string
@@ -164,11 +175,14 @@ class Writer
      *
      * This function does this for text values.
      */
-    protected function toText(Expression $expression, WriterContext $context, bool $forceCastIfValue = false): Expression
+    protected function toText(Expression $expression, WriterContext $context, bool $forceCastIfValue = false, bool $ignoreRawAndColumn = true): Expression
     {
         // @todo Allow option to disable this on a per-query basis.
         if ($forceCastIfValue && $expression instanceof Value) {
             return new Cast($expression, 'varchar');
+        }
+        if ($ignoreRawAndColumn && ($expression instanceof ColumnName || $expression instanceof Raw)) {
+            return $expression;
         }
         if ($this->isTypeText($this->guessTypeOf($expression))) {
             return $expression;
@@ -182,16 +196,40 @@ class Writer
      *
      * This function does this for numeric values.
      */
-    protected function toInt(Expression $expression, WriterContext $context, bool $forceCastIfValue = false): Expression
+    protected function toInt(Expression $expression, WriterContext $context, bool $forceCastIfValue = false, bool $ignoreRawAndColumn = true): Expression
     {
         // @todo Allow option to disable this on a per-query basis.
         if ($forceCastIfValue && $expression instanceof Value) {
             return new Cast($expression, 'int');
         }
+        if ($ignoreRawAndColumn && ($expression instanceof ColumnName || $expression instanceof Raw)) {
+            return $expression;
+        }
         if ($this->isTypeNumeric($this->guessTypeOf($expression))) {
             return $expression;
         }
         return new Cast($expression, 'int');
+    }
+
+    /**
+     * In numerous cases, this API will add explicit CAST() calls in order to
+     * bypass some wrong type guess due to parameters usage when querying.
+     *
+     * This function does this for date/datetime/timestamp values.
+     */
+    protected function toDate(Expression $expression, WriterContext $context, bool $forceCastIfValue = false, bool $ignoreRawAndColumn = true): Expression
+    {
+        // @todo Allow option to disable this on a per-query basis.
+        if ($forceCastIfValue && $expression instanceof Value) {
+            return new Cast($expression, 'timestamp');
+        }
+        if ($ignoreRawAndColumn && ($expression instanceof ColumnName || $expression instanceof Raw)) {
+            return $expression;
+        }
+        if ($this->isTypeDate($this->guessTypeOf($expression))) {
+            return $expression;
+        }
+        return new Cast($expression, 'timestamp');
     }
 
     /**
@@ -233,6 +271,9 @@ class Writer
                     Concat::class => $this->formatConcat($expression, $context),
                     ConstantTable::class => $this->formatConstantTable($expression, $context),
                     CurrentTimestamp::class => $this->formatCurrentTimestamp($expression, $context),
+                    DateAdd::class => $this->formatDateAdd($expression, $context),
+                    DateInterval::class => $this->formatDateInterval($expression, $context),
+                    DateSub::class => $this->formatDateSub($expression, $context),
                     Identifier::class => $this->formatIdentifier($expression, $context),
                     IfThen::class => $this->formatIfThen($expression, $context),
                     LikePattern::class => $this->formatLikePattern($expression, $context),
@@ -920,12 +961,56 @@ class Writer
         return $this->format($column, $context) . ' between ' . $this->format($from, $context) . ' and ' . $this->format($to, $context);
     }
 
+    /**
+     * Format date addition.
+     */
+    protected function formatDateAdd(DateAdd $expression, WriterContext $context): string
+    {
+        return $this->format($this->toDate($expression->getDate(), $context, true), $context) . ' + ' . $this->format($expression->getInterval(), $context);
+    }
+
+    /**
+     * Format date substraction.
+     */
+    protected function formatDateSub(DateSub $expression, WriterContext $context): string
+    {
+        return $this->format($this->toDate($expression->getDate(), $context, true), $context) . ' - ' . $this->format($expression->getInterval(), $context);
+    }
+
+    /**
+     * Format a single date interval unit.
+     */
+    protected function doFormatDateIntervalSingleUnit(int|string $value, string $unit): string
+    {
+        return $value . ' ' . $unit;
+    }
+
+    /**
+     * Format date interval.
+     */
+    protected function formatDateInterval(DateInterval $expression, WriterContext $context): string
+    {
+        $interval = '';
+
+        $first = true;
+        foreach ($expression->getValues() as $unit => $value) {
+            if ($first) {
+                $first = false;
+            } else {
+                $interval .= ' ';
+            }
+            $interval .= $this->doFormatDateIntervalSingleUnit($value, $unit);
+        }
+
+        return 'cast(' . $this->format(new Value($interval), $context) . ' as interval)';
+    }
+
     protected function doGetPadArguments(Lpad $expression, WriterContext $context): array
     {
         return [
-            $this->toText($expression->getValue(), $context),
-            $this->toInt($expression->getSize(), $context),
-            $this->toText($expression->getFill(), $context),
+            $this->toText($expression->getValue(), $context, false, false),
+            $this->toInt($expression->getSize(), $context, false, false),
+            $this->toText($expression->getFill(), $context, false, false),
         ];
     }
 

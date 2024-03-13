@@ -7,6 +7,7 @@ namespace MakinaCorpus\QueryBuilder;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Expression\ArrayValue;
 use MakinaCorpus\QueryBuilder\Expression\ColumnName;
+use MakinaCorpus\QueryBuilder\Expression\DateInterval;
 use MakinaCorpus\QueryBuilder\Expression\NullValue;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\Expression\Row;
@@ -255,6 +256,87 @@ final class ExpressionHelper
             "Table expression must be a %s",
             TableExpression::class,
         ));
+    }
+
+    /**
+     * Normalize input to be a value.
+     */
+    public static function interval(mixed $expression): Expression
+    {
+        $expression = self::callable($expression);
+
+        if (null === $expression) {
+            return new NullValue();
+        }
+
+        if ($expression instanceof Expression) {
+            if (!$expression->returns()) {
+                throw new QueryBuilderError("Expression must return a value");
+            }
+            return $expression;
+        }
+
+        if ($expression instanceof \DateInterval || \is_array($expression)) {
+            return new DateInterval($expression);
+        }
+
+        throw new QueryBuilderError("Interval expression must be a \\DateInterval instance or an array<string,int>");
+    }
+
+    /**
+     * Normalize input to be a value.
+     */
+    public static function date(mixed $expression): Expression
+    {
+        $expression = self::callable($expression);
+
+        if (null === $expression) {
+            return new NullValue();
+        }
+
+        if ($expression instanceof Expression) {
+            if (!$expression->returns()) {
+                throw new QueryBuilderError("Expression must return a value");
+            }
+            return $expression;
+        }
+
+        if ($expression instanceof \DateTimeInterface) {
+            return new Value($expression, 'timestamp');
+        }
+
+        if (\is_string($expression)) {
+            try {
+                return new Value(new \DateTimeImmutable($expression), 'timestamp');
+            } catch (\Throwable) {}
+        }
+
+        throw new QueryBuilderError("Interval expression must be a \\DateTimeInterface instance or parsable date string");
+    }
+
+    /**
+     * Normalize input to be a value.
+     */
+    public static function integer(mixed $expression): Expression
+    {
+        $expression = self::callable($expression);
+
+        if (null === $expression) {
+            return new NullValue();
+        }
+
+        if ($expression instanceof Expression) {
+            if (!$expression->returns()) {
+                throw new QueryBuilderError("Expression must return a value");
+            }
+            return $expression;
+        }
+
+        if (!\is_numeric($expression)) {
+            throw new QueryBuilderError("Value must be an int or castable as int");
+        }
+
+        return new Value((int) $expression, 'bigint');
     }
 
     /**

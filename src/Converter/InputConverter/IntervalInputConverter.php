@@ -9,6 +9,12 @@ use MakinaCorpus\QueryBuilder\Converter\InputConverter;
 use MakinaCorpus\QueryBuilder\Converter\InputTypeGuesser;
 use MakinaCorpus\QueryBuilder\Error\UnexpectedInputValueTypeError;
 
+/**
+ * Be aware that this will probably only work with PostgreSQL.
+ *
+ * Interval should be injected as expressions in the query instead whenever
+ * possible. Especially when not using PostgreSQL.
+ */
 class IntervalInputConverter implements InputConverter, InputTypeGuesser
 {
     /**

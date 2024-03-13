@@ -5,10 +5,15 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Platform\Writer;
 
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
+use MakinaCorpus\QueryBuilder\Error\UnsupportedFeatureError;
+use MakinaCorpus\QueryBuilder\Expression\DateAdd;
+use MakinaCorpus\QueryBuilder\Expression\DateInterval;
+use MakinaCorpus\QueryBuilder\Expression\DateSub;
 use MakinaCorpus\QueryBuilder\Expression\Lpad;
 use MakinaCorpus\QueryBuilder\Expression\Random;
 use MakinaCorpus\QueryBuilder\Expression\RandomInt;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
+use MakinaCorpus\QueryBuilder\Expression\Value;
 use MakinaCorpus\QueryBuilder\Query\Delete;
 use MakinaCorpus\QueryBuilder\Writer\Writer;
 use MakinaCorpus\QueryBuilder\Writer\WriterContext;
@@ -50,6 +55,52 @@ class SQLiteWriter extends Writer
             ),
             $context,
         );
+    }
+
+    #[\Override]
+    protected function formatDateAdd(DateAdd $expression, WriterContext $context): string
+    {
+        $interval = $expression->getInterval();
+
+        if ($interval instanceof DateInterval) {
+            $ret = $this->format($expression->getDate(), $context);
+
+            foreach ($interval->getValues() as $unit => $value) {
+                $intervalStr = $this->format(new Value($this->doFormatDateIntervalSingleUnit($value, $unit)), $context);
+
+                $ret = 'datetime(' . $ret . ', ' . $intervalStr . ')';
+            }
+        } else {
+            $ret = 'datetime(' . $this->format($expression->getDate(), $context) . ', ' . $this->format($expression->getInterval(), $context) . ')';
+        }
+
+        return $ret;
+    }
+
+    #[\Override]
+    protected function formatDateSub(DateSub $expression, WriterContext $context): string
+    {
+        $interval = $expression->getInterval();
+
+        if ($interval instanceof DateInterval) {
+            $ret = $this->format($expression->getDate(), $context);
+
+            foreach ($interval->getValues() as $unit => $value) {
+                $intervalStr = $this->format(new Value($this->doFormatDateIntervalSingleUnit(0 - $value, $unit)), $context);
+
+                $ret = 'datetime(' . $ret . ', ' . $intervalStr . ')';
+            }
+        } else {
+            throw new UnsupportedFeatureError("SQLite cannot format date substraction if interval is an arbitrary expression which is not an interval.");
+        }
+
+        return $ret;
+    }
+
+    #[\Override]
+    protected function formatDateInterval(DateInterval $expression, WriterContext $context): string
+    {
+        throw new UnsupportedFeatureError('SQLite does not know the interval type.');
     }
 
     #[\Override]
