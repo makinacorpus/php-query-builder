@@ -20,17 +20,13 @@ class Modulo implements Expression
         $this->right = $right;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function returns(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function returnType(): ?string
     {
         // % operator can be used for various other types.

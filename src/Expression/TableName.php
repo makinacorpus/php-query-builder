@@ -23,25 +23,19 @@ class TableName extends Identifier implements TableExpression, WithAlias
         parent::__construct($name, $namespace);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getAlias(): ?string
     {
         return $this->alias;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function returnType(): ?string
     {
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function cloneWithAlias(?string $alias): static
     {
         $ret = clone $this;

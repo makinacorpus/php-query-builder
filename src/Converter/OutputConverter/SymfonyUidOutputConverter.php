@@ -16,9 +16,7 @@ use Symfony\Component\Uid\Uuid;
  */
 class SymfonyUidOutputConverter implements OutputConverter
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function supportedOutputTypes(): array
     {
         return [
@@ -27,9 +25,7 @@ class SymfonyUidOutputConverter implements OutputConverter
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function fromSql(string $type, int|float|string $value, ConverterContext $context): mixed
     {
         if ($type === Ulid::class || \is_subclass_of($type, Ulid::class)) {

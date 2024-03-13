@@ -36,17 +36,13 @@ class Comparison implements Expression
         $this->operator = $operator;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function returns(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function returnType(): ?string
     {
         return 'bool';

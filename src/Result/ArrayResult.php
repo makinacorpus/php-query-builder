@@ -17,33 +17,25 @@ class ArrayResult extends AbstractResult
         \reset($this->data);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doRowCount(): int
     {
         return \count($this->data);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doColumnCount(): int
     {
         return $this->columnCount;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doFree(): void
     {
         $this->data = [];
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doFetchNext(): null|array
     {
         $ret = \current($this->data);

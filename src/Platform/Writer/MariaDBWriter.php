@@ -13,8 +13,6 @@ use MakinaCorpus\QueryBuilder\Writer\WriterContext;
 class MariaDBWriter extends MySQL8Writer
 {
     /**
-     * {@inheritdoc}
-     *
      * MariaDB >= 10.3 supports standard SQL VALUES statement.
      * Nevertheless, it doesn't support aliasing column names of values.
      *
@@ -22,6 +20,7 @@ class MariaDBWriter extends MySQL8Writer
      * @see https://modern-sql.com/use-case/naming-unnamed-columns#with
      * @see https://dba.stackexchange.com/questions/177312/does-mariadb-or-mysql-implement-the-values-expression-table-value-constructor
      */
+    #[\Override]
     protected function doFormatConstantTableRow(Row $expression, WriterContext $context, bool $inInsert = false): string
     {
         return $this->formatRow($expression, $context);

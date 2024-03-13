@@ -72,17 +72,13 @@ class Where implements Expression
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function returns(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function returnType(): ?string
     {
         return 'bool';
@@ -112,9 +108,7 @@ class Where implements Expression
         return $this->children;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function getInstance(): Where
     {
         return $this;

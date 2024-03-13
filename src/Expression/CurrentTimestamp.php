@@ -7,21 +7,17 @@ namespace MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Expression;
 
 /**
- * CURRENT_TIMESTAMP, NOw(), GETDATE() depending upon the dialect.
+ * CURRENT_TIMESTAMP, NOW(), GETDATE() depending upon the dialect.
  */
 class CurrentTimestamp implements Expression
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function returns(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function returnType(): ?string
     {
         return 'timestamp';

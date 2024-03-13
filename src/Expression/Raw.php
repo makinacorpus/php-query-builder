@@ -25,20 +25,17 @@ class Raw implements Expression
     }
 
     /**
-     * {@inheritdoc}
-     *
      * This particular implementation will yield arbitrary user given SQL code
      * and we cannot predict if it will return values or not. Per default, it
      * will return true until the user says the opposite.
      */
+    #[\Override]
     public function returns(): bool
     {
         return $this->returns;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function returnType(): ?string
     {
         return null;

@@ -46,9 +46,7 @@ class PdoQueryBuilder extends AbstractBridge
         };
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function lookupServerName(): ?string
     {
         $this->dieIfClosed();
@@ -67,9 +65,7 @@ class PdoQueryBuilder extends AbstractBridge
         return $rawServerName;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function lookupServerVersion(): ?string
     {
         $this->dieIfClosed();
@@ -99,9 +95,7 @@ class PdoQueryBuilder extends AbstractBridge
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function createEscaper(): Escaper
     {
         $this->dieIfClosed();
@@ -113,9 +107,7 @@ class PdoQueryBuilder extends AbstractBridge
         };
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doExecuteQuery(string $expression, array $arguments = []): Result
     {
         $this->dieIfClosed();
@@ -134,9 +126,7 @@ class PdoQueryBuilder extends AbstractBridge
         return $result;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doExecuteStatement(string $expression, array $arguments = []): ?int
     {
         $this->dieIfClosed();
@@ -147,9 +137,7 @@ class PdoQueryBuilder extends AbstractBridge
         return $statement->rowCount();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function close(): void
     {
         $this->connection = null;

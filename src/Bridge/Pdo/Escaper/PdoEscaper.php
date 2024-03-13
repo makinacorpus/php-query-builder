@@ -60,17 +60,13 @@ class PdoEscaper extends StandardEscaper
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function unescapePlaceholderChar(): string
     {
         return '??';
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function escapeLiteral(string $string): string
     {
         if ($this->doCheckIdentifiers) {

@@ -52,9 +52,7 @@ class SQLiteWriter extends Writer
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function formatLpad(Lpad $expression, WriterContext $context): string
     {
         list($value, $size, $fill) = $this->doGetPadArguments($expression, $context);
@@ -77,9 +75,7 @@ class SQLiteWriter extends Writer
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function formatRpad(Lpad $expression, WriterContext $context): string
     {
         list($value, $size, $fill) = $this->doGetPadArguments($expression, $context);
@@ -102,19 +98,16 @@ class SQLiteWriter extends Writer
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doFormatInsertNoValuesStatement(WriterContext $context): string
     {
         return "DEFAULT VALUES";
     }
 
     /**
-     * {@inheritdoc}
-     *
      * SQLite does not support OFFSET alone.
      */
+    #[\Override]
     protected function doFormatRange(WriterContext $context, int $limit = 0, int $offset = 0, bool $hasOrder = true): string
     {
         if ($limit) {
@@ -129,9 +122,7 @@ class SQLiteWriter extends Writer
         return '';
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function formatDelete(Delete $query, WriterContext $context): string
     {
         $from = $query->getAllFrom();

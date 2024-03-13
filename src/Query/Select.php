@@ -363,9 +363,7 @@ class Select extends AbstractQuery implements TableExpression
         return $this->where;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function getWhereInstance(): Where
     {
         return $this->where;
@@ -379,9 +377,7 @@ class Select extends AbstractQuery implements TableExpression
         return $this->having;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function getHavingInstance(): Where
     {
         return $this->having;
@@ -511,9 +507,7 @@ class Select extends AbstractQuery implements TableExpression
         ;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function willReturnRows(): bool
     {
         return !$this->performOnly;

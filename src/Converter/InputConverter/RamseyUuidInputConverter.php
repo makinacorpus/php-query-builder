@@ -17,9 +17,7 @@ use Ramsey\Uuid\UuidInterface;
  */
 class RamseyUuidInputConverter implements InputConverter, InputTypeGuesser
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function supportedInputTypes(): array
     {
         return [
@@ -28,9 +26,7 @@ class RamseyUuidInputConverter implements InputConverter, InputTypeGuesser
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function guessInputType(mixed $value): ?string
     {
         if ($value instanceof UuidInterface) {
@@ -39,9 +35,7 @@ class RamseyUuidInputConverter implements InputConverter, InputTypeGuesser
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function toSql(string $type, mixed $value, ConverterContext $context): null|int|float|string
     {
         if (!$value instanceof UuidInterface) {

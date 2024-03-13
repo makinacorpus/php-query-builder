@@ -18,17 +18,11 @@ final class OptionsBag
         return \array_key_exists($name, $this->data) ? $this->data[$name] : $default;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getAll(?array $overrides = null): array
     {
         return $overrides ? \array_merge($this->data, $overrides) : $this->data;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function set(string $name, mixed $value): static
     {
         if (null === $value) {
@@ -39,9 +33,6 @@ final class OptionsBag
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function setAll(array $options): static
     {
         foreach ($options as $name => $value) {

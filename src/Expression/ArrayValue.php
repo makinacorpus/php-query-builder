@@ -35,17 +35,13 @@ class ArrayValue implements Expression
         private bool $shouldCast = true
     ) {}
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function returns(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function returnType(): ?string
     {
         return $this->valueType ? ($this->valueType . '[]') : 'array';

@@ -95,14 +95,13 @@ class PdoSQLiteErrorConverter implements ErrorConverter
     }
 
     /**
-     * {@inheritdoc}
-     *
      * I have to admit, I was largely inspired by Doctrine DBAL for this one.
      * All credits to the Doctrine team, developers and contributors. You do
      * very impressive and qualitative work, I hope you will continue forever.
      * Many thanks to all contributors. If someday you come to France, give me
      * a call, an email, anything, and I'll pay you a drink, whoever you are.
      */
+    #[\Override]
     public function convertError(\Throwable $error, ?string $sql = null, ?string $message = null): \Throwable
     {
         if (!$error instanceof \PDOException) {

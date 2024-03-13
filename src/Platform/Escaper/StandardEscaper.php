@@ -27,18 +27,14 @@ class StandardEscaper implements Escaper
         private ?int $placeholderOffset = null,
     ) {}
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function escapeIdentifier(string $string): string
     {
         // See https://www.postgresql.org/docs/10/sql-syntax-lexical.html#SQL-SYNTAX-IDENTIFIERS
         return '"' . \str_replace('"', '""', $string) . '"';
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function escapeLiteral(string $string): string
     {
         // See https://www.postgresql.org/docs/10/sql-syntax-lexical.html#SQL-SYNTAX-STRINGS
@@ -70,9 +66,7 @@ class StandardEscaper implements Escaper
         return '\\%_';
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function escapeLike(string $string): string
     {
         return \addcslashes($string, $this->getReservedCharsLike());
@@ -86,17 +80,13 @@ class StandardEscaper implements Escaper
         return '\\%_|*+?{}()[]';
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function escapeSimilarto(string $string): string
     {
         return \addcslashes($string, $this->getReservedCharsSimilarTo());
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getEscapeSequences(): array
     {
         return [
@@ -106,9 +96,7 @@ class StandardEscaper implements Escaper
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function writePlaceholder(int $index): string
     {
         if ($this->placeholderOffset) {
@@ -117,9 +105,7 @@ class StandardEscaper implements Escaper
         return $this->placeholder;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function unescapePlaceholderChar(): string
     {
         return '?';

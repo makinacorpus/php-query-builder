@@ -21,17 +21,13 @@ class RandomInt implements Expression
         private int $min = 0,
     ) {}
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function returns(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function returnType(): ?string
     {
         return 'int';

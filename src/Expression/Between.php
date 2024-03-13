@@ -17,17 +17,13 @@ class Between implements Expression
         private Expression $to
     ) {}
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function returns(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function returnType(): ?string
     {
         return 'bool';

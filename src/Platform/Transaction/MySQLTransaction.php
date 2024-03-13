@@ -9,9 +9,7 @@ use MakinaCorpus\QueryBuilder\Expression\Raw;
 
 class MySQLTransaction extends AbstractTransaction
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doTransactionStart(int $isolationLevel): void
     {
         $levelString = self::getIsolationLevelString($isolationLevel);
@@ -37,76 +35,58 @@ class MySQLTransaction extends AbstractTransaction
         $this->executor->executeStatement("BEGIN");
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doChangeLevel(int $isolationLevel): void
     {
         // @todo if debug
         @\trigger_error(\sprintf("MySQL does not support transaction level change during transaction '%s'", $this->getName()), E_USER_NOTICE);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doCreateSavepoint(string $name): void
     {
         $this->executor->executeStatement("SAVEPOINT ?::id", $name);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doRollbackToSavepoint(string $name): void
     {
         $this->executor->executeStatement("ROLLBACK TO SAVEPOINT ?::id", $name);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doRollback(): void
     {
         $this->executor->executeStatement("ROLLBACK");
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doCommit(): void
     {
         $this->executor->executeStatement("COMMIT");
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doDeferConstraints(array $constraints): void
     {
         // @todo if debug
         @\trigger_error(\sprintf("MySQL does not support deferred constraints during transaction '%s'", $this->getName()), E_USER_NOTICE);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doDeferAll(): void
     {
         // @todo if debug
         @\trigger_error(\sprintf("MySQL does not support deferred constraints during transaction '%s'", $this->getName()), E_USER_NOTICE);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doImmediateConstraints(array $constraints): void
     {
         // Do nothing, as MySQL always check constraints immediatly
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doImmediateAll(): void
     {
         // Do nothing, as MySQL always check constraints immediatly

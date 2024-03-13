@@ -14,9 +14,7 @@ final class TransactionSavepoint implements Transaction
         private bool $running = true,
     ) {}
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function level(int $isolationLevel): static
     {
         @\trigger_error(\sprintf("Cannot change transaction level in nested transaction with savepoint '%s'", $this->name), E_USER_NOTICE);
@@ -24,17 +22,13 @@ final class TransactionSavepoint implements Transaction
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function isStarted(): bool
     {
         return $this->running && $this->root->isStarted();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function start(): static
     {
         if (!$this->running) {
@@ -44,9 +38,7 @@ final class TransactionSavepoint implements Transaction
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function immediate($constraint = null): static
     {
         if ($constraint) {
@@ -58,9 +50,7 @@ final class TransactionSavepoint implements Transaction
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function deferred($constraint = null): static
     {
         if ($constraint) {
@@ -72,9 +62,7 @@ final class TransactionSavepoint implements Transaction
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function savepoint(?string $name = null): TransactionSavepoint
     {
         if ($name) {
@@ -83,33 +71,25 @@ final class TransactionSavepoint implements Transaction
         return $this->root->savepoint();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function isNested(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getName(): string
     {
         return $this->root->getName();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getSavepointName(): ?string
     {
         return $this->name;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function commit(): static
     {
         $this->running = false;
@@ -117,9 +97,7 @@ final class TransactionSavepoint implements Transaction
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function rollback(): static
     {
         $this->running = false;
@@ -128,9 +106,7 @@ final class TransactionSavepoint implements Transaction
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function rollbackToSavepoint(string $name): static
     {
         $this->root->rollbackToSavepoint($name);

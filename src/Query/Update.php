@@ -111,9 +111,7 @@ class Update extends AbstractQuery
         return $this->where;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function getWhereInstance(): Where
     {
         return $this->where;

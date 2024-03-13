@@ -6,25 +6,19 @@ namespace MakinaCorpus\QueryBuilder\Bridge\Pdo\Escaper;
 
 class PdoMySQLEscaper extends PdoEscaper
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function areIdentifiersSafe(): bool
     {
         return false;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function escapeIdentifier(string $string): string
     {
         return '`' . \str_replace('`', '``', $string) . '`';
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getEscapeSequences(): array
     {
         return [

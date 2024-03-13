@@ -18,17 +18,13 @@ final class Aliased implements Expression, WithAlias
         private ?string $alias = null,
     ) {}
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function returns(): bool
     {
         return $this->expression->returns();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function returnType(): ?string
     {
         return $this->expression->returnType();
@@ -42,17 +38,13 @@ final class Aliased implements Expression, WithAlias
         return $this->expression;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getAlias(): ?string
     {
         return $this->alias;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function cloneWithAlias(?string $alias): static
     {
         $ret = clone $this;

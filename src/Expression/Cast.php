@@ -35,17 +35,13 @@ class Cast implements Expression
         $this->expression = $expression;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function returns(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function returnType(): ?string
     {
         return $this->castToType;

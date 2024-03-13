@@ -22,17 +22,13 @@ use MakinaCorpus\QueryBuilder\Expression;
  */
 class Random implements Expression
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function returns(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function returnType(): ?string
     {
         return 'numeric';

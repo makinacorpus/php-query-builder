@@ -18,8 +18,6 @@ use MakinaCorpus\QueryBuilder\Error\Bridge\UniqueConstraintViolationError;
 class PdoPostgreSQLErrorConverter implements ErrorConverter
 {
     /**
-     * {@inheritdoc}
-     *
      * @link http://www.postgresql.org/docs/9.4/static/errcodes-appendix.html
      *
      * I have to admit, I was largely inspired by Doctrine DBAL for this one.
@@ -28,6 +26,7 @@ class PdoPostgreSQLErrorConverter implements ErrorConverter
      * Many thanks to all contributors. If someday you come to France, give me
      * a call, an email, anything, and I'll pay you a drink, whoever you are.
      */
+    #[\Override]
     public function convertError(\Throwable $error, ?string $sql = null, ?string $message = null): \Throwable
     {
         if (!$error instanceof \PDOException) {

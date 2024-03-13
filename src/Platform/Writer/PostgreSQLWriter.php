@@ -18,9 +18,7 @@ use MakinaCorpus\QueryBuilder\Writer\WriterContext;
  */
 class PostgreSQLWriter extends Writer
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doFormatInsertNoValuesStatement(WriterContext $context): string
     {
         return "DEFAULT VALUES";
@@ -29,9 +27,8 @@ class PostgreSQLWriter extends Writer
     /**
      * This is a copy-paste of formatQueryInsertValues(). In 2.x formatter will
      * be refactored to avoid such copy/paste.
-     *
-     * {@inheritdoc}
      */
+    #[\Override]
     protected function formatMerge(Merge $query, WriterContext $context): string
     {
         $output = [];

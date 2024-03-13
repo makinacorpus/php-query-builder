@@ -8,9 +8,7 @@ use MakinaCorpus\QueryBuilder\Expression\Raw;
 
 class PostgreSQLTransaction extends AbstractTransaction
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doTransactionStart(int $isolationLevel): void
     {
         // Set immediate constraint fail per default to be ISO with
@@ -18,9 +16,7 @@ class PostgreSQLTransaction extends AbstractTransaction
         $this->executor->executeStatement("START TRANSACTION ISOLATION LEVEL ? READ WRITE", new Raw(self::getIsolationLevelString($isolationLevel)));
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doChangeLevel(int $isolationLevel): void
     {
         // Set immediate constraint fail per default to be ISO with
@@ -28,65 +24,49 @@ class PostgreSQLTransaction extends AbstractTransaction
         $this->executor->executeStatement("SET TRANSACTION ISOLATION LEVEL ?", new Raw(self::getIsolationLevelString($isolationLevel)));
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doCreateSavepoint(string $name): void
     {
         $this->executor->executeStatement("SAVEPOINT ?::id", $name);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doRollbackToSavepoint(string $name): void
     {
         $this->executor->executeStatement("ROLLBACK TO SAVEPOINT ?::id", $name);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doRollback(): void
     {
         $this->executor->executeStatement("ROLLBACK");
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doCommit(): void
     {
         $this->executor->executeStatement("COMMIT");
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doDeferConstraints(array $constraints): void
     {
         $this->executor->executeStatement("SET CONSTRAINTS ?::id[] DEFERRED", $constraints);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doDeferAll(): void
     {
         $this->executor->executeStatement("SET CONSTRAINTS ALL DEFERRED");
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doImmediateConstraints(array $constraints): void
     {
         $this->executor->executeStatement("SET CONSTRAINTS ?::id[] IMMEDIATE", $constraints);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doImmediateAll(): void
     {
         $this->executor->executeStatement("SET CONSTRAINTS ALL IMMEDIATE");

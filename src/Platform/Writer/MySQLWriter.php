@@ -28,42 +28,27 @@ use MakinaCorpus\QueryBuilder\Writer\WriterContext;
 class MySQLWriter extends Writer
 {
     /**
-     * {@inheritdoc}
-     */
-    protected function createConverter(): Converter
-    {
-        return new MySQLConverter();
-    }
-
-    /**
-     * {@inheritdoc}
-     *
      * MySQL aggregate function names seems to be keywords, not functions.
      */
+    #[\Override]
     protected function shouldEscapeAggregateFunctionName(): bool
     {
         return false;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function formatCurrentTimestamp(CurrentTimestamp $expression, WriterContext $context): string
     {
         return 'now()';
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function formatAggregate(Aggregate $expression, WriterContext $context): string
     {
         return $this->doFormatAggregateWithoutFilter($expression, $context);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function formatStringHash(StringHash $expression, WriterContext $context): string
     {
         $algo = $expression->getAlgo();
@@ -78,10 +63,9 @@ class MySQLWriter extends Writer
     }
 
     /**
-     * {@inheritdoc}
-     *
      * MySQL does not support OFFSET alone.
      */
+    #[\Override]
     protected function doFormatRange(WriterContext $context, int $limit = 0, int $offset = 0, bool $hasOrder = true): string
     {
         if ($limit) {
@@ -96,9 +80,7 @@ class MySQLWriter extends Writer
         return '';
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doFormatInsertNoValuesStatement(WriterContext $context): string
     {
         return "() VALUES ()";
@@ -123,9 +105,8 @@ class MySQLWriter extends Writer
     /**
      * This is a copy-paste of formatQueryInsertValues(). In 2.x formatter will
      * be refactored to avoid such copy/paste.
-     *
-     * {@inheritdoc}
      */
+    #[\Override]
     protected function formatMerge(Merge $query, WriterContext $context): string
     {
         $output = [];
@@ -186,9 +167,7 @@ class MySQLWriter extends Writer
         return \implode("\n", $output);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function formatDelete(Delete $query, WriterContext $context): string
     {
         $output = [];
@@ -234,9 +213,7 @@ class MySQLWriter extends Writer
         return \implode("\n", \array_filter($output));
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function formatUpdate(Update $query, WriterContext $context): string
     {
         $output = [];
@@ -333,14 +310,13 @@ class MySQLWriter extends Writer
     }
 
     /**
-     * {@inheritdoc}
-     *
      * MySQL and types, seriously. Be conservative and fix user basic
      * errors, but do not attempt to do too much magic and let unknown
      * types pass.
      *
      * @see https://dev.mysql.com/doc/refman/8.2/en/cast-functions.html#function_cast
      */
+    #[\Override]
     protected function doFormatCastExpression(string $expressionString, string $type, WriterContext $context): string
     {
         $isArray = false;
@@ -365,9 +341,7 @@ class MySQLWriter extends Writer
         return 'CAST(' . $expressionString . ' AS ' . $type . ')';
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function formatConcat(Concat $expression, WriterContext $context): string
     {
         $output = '';
@@ -381,17 +355,14 @@ class MySQLWriter extends Writer
         return 'CONCAT(' . $output . ')';
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function formatRandom(Random $expression, WriterContext $context): string
     {
         return 'rand()';
     }
 
     /**
-     * {@inheritdoc}
-     *
+    #[\Override]
     protected function formatSimilarTo(SimilarTo $value, WriterContext $context): string
     {
         if ($value->hasValue()) {

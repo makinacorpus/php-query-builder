@@ -9,9 +9,7 @@ use MakinaCorpus\QueryBuilder\Converter\OutputConverter;
 
 class IntervalOutputConverter implements OutputConverter
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function supportedOutputTypes(): array
     {
         return [
@@ -48,9 +46,7 @@ class IntervalOutputConverter implements OutputConverter
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function fromSql(string $type, int|float|string $value, ConverterContext $context): mixed
     {
         return self::extractPostgreSQLAsInterval((string) $value);

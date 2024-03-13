@@ -38,9 +38,7 @@ class IntervalInputConverter implements InputConverter, InputTypeGuesser
         return $string;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function supportedInputTypes(): array
     {
         return [
@@ -48,9 +46,7 @@ class IntervalInputConverter implements InputConverter, InputTypeGuesser
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function guessInputType(mixed $value): ?string
     {
         if ($value instanceof \DateInterval) {
@@ -59,9 +55,7 @@ class IntervalInputConverter implements InputConverter, InputTypeGuesser
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function toSql(string $type, mixed $value, ConverterContext $context): null|int|float|string
     {
         if (!$value instanceof \DateInterval) {

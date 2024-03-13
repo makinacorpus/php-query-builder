@@ -18,9 +18,7 @@ use Symfony\Component\Uid\Uuid;
  */
 class SymfonyUidInputConverter implements InputConverter, InputTypeGuesser
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function supportedInputTypes(): array
     {
         return [
@@ -29,9 +27,7 @@ class SymfonyUidInputConverter implements InputConverter, InputTypeGuesser
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function guessInputType(mixed $value): ?string
     {
         if ($value instanceof Uuid) {
@@ -43,9 +39,7 @@ class SymfonyUidInputConverter implements InputConverter, InputTypeGuesser
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function toSql(string $type, mixed $value, ConverterContext $context): null|int|float|string
     {
         if (!$value instanceof AbstractUid) {

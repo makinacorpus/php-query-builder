@@ -25,9 +25,7 @@ class RawQuery extends AbstractQuery
         $this->arguments = ExpressionHelper::arguments($arguments);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function willReturnRows(): bool
     {
         return $this->returns;

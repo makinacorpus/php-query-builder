@@ -19,9 +19,7 @@ class DefaultResultRow implements ResultRow
         $this->names = \array_keys($rawValues);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function get(int|string $columnName, ?string $phpType = null, bool $caseSensitive = false): mixed
     {
         $value = $this->rawValues[$this->getColumnName($columnName, $caseSensitive)];
@@ -40,9 +38,7 @@ class DefaultResultRow implements ResultRow
         return $value;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function has(int|string $columnName, bool $allowNull = true, bool $caseSensitive = false): bool
     {
         try {
@@ -54,17 +50,13 @@ class DefaultResultRow implements ResultRow
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function raw(int|string $columnName, bool $caseSensitive = false): null|int|float|string
     {
         return $this->rawValues[$this->getColumnName($columnName)];
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function toArray(): array
     {
         return $this->rawValues;
@@ -106,9 +98,7 @@ class DefaultResultRow implements ResultRow
         return $name;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function offsetGet($offset): mixed
     {
         @\trigger_error(\sprintf("You should not use %s instance as array, this is deprecated and will be removed in next major.", ResultRow::class), E_USER_DEPRECATED);
@@ -116,9 +106,7 @@ class DefaultResultRow implements ResultRow
         return $this->get($offset);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function offsetExists($offset): bool
     {
         @\trigger_error(\sprintf("You should not use %s instance as array, this is deprecated and will be removed in next major.", ResultRow::class), E_USER_DEPRECATED);
@@ -126,17 +114,13 @@ class DefaultResultRow implements ResultRow
         return $this->has($offset);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function offsetUnset($offset): void
     {
         throw new ResultError("Result rows are immutable.");
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function offsetSet($offset, $value): void
     {
         throw new ResultError("Result rows are immutable.");

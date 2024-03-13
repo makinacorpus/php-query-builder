@@ -43,9 +43,7 @@ class DateInputConverter implements InputConverter, InputTypeGuesser
     public const FORMAT_TIME_USEC = 'H:i:s.u';
     public const FORMAT_TIME_USEC_TZ = 'H:i:s.uP';
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function supportedInputTypes(): array
     {
         return [
@@ -60,9 +58,7 @@ class DateInputConverter implements InputConverter, InputTypeGuesser
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function guessInputType(mixed $value): ?string
     {
         if ($value instanceof \DateTimeInterface) {
@@ -71,9 +67,7 @@ class DateInputConverter implements InputConverter, InputTypeGuesser
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function toSql(string $type, mixed $value, ConverterContext $context): null|int|float|string
     {
         if (!$value instanceof \DateTimeInterface) {

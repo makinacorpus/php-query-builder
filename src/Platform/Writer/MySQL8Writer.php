@@ -16,9 +16,7 @@ use MakinaCorpus\QueryBuilder\Writer\WriterContext;
  */
 class MySQL8Writer extends MySQLWriter
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doFormatInsertExcludedItem($expression): Expression
     {
         if (\is_string($expression)) {
@@ -33,8 +31,6 @@ class MySQL8Writer extends MySQLWriter
     }
 
     /**
-     * {@inheritdoc}
-     *
      * MySQL VALUES syntax is:
      *    VALUES ROW(?, ?), ROW(?, ?), ...
      *
@@ -46,6 +42,7 @@ class MySQL8Writer extends MySQLWriter
      *
      * @see https://dev.mysql.com/doc/refman/8.0/en/values.html
      */
+    #[\Override]
     protected function doFormatConstantTableRow(Row $expression, WriterContext $context, bool $inInsert = false): string
     {
         if ($inInsert) {

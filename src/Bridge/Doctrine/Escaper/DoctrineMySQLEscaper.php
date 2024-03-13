@@ -6,17 +6,13 @@ namespace MakinaCorpus\QueryBuilder\Bridge\Doctrine\Escaper;
 
 class DoctrineMySQLEscaper extends DoctrineEscaper
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function escapeIdentifier(string $string): string
     {
         return '`' . \str_replace('`', '``', $string) . '`';
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getEscapeSequences(): array
     {
         return [

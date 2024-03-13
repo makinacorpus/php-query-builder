@@ -31,41 +31,31 @@ abstract class AbstractQuery implements Query
         $this->queryExecutor = $queryExecutor;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function returns(): bool
     {
         return $this->willReturnRows();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function returnType(): ?string
     {
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function expression(): ExpressionFactory
     {
         return $this->expressionFactory ??= new ExpressionFactory();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getIdentifier(): ?string
     {
         return $this->identifier;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setIdentifier(string $identifier): static
     {
         $this->identifier = $identifier;
@@ -73,9 +63,7 @@ abstract class AbstractQuery implements Query
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setOption(string $name, $value): static
     {
         $this->getOptions()->set($name, $value);
@@ -83,9 +71,7 @@ abstract class AbstractQuery implements Query
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setOptions(array $options): static
     {
         $this->getOptions()->setAll($options);
@@ -93,17 +79,13 @@ abstract class AbstractQuery implements Query
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getOptions(): OptionsBag
     {
         return $this->options ??= new OptionsBag();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function executeQuery(): Result
     {
         if (!$this->queryExecutor) {
@@ -113,9 +95,7 @@ abstract class AbstractQuery implements Query
         return $this->queryExecutor->executeQuery($this);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function executeStatement(): int
     {
         if (!$this->queryExecutor) {

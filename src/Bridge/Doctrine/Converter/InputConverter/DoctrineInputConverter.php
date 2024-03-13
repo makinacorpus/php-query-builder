@@ -22,17 +22,13 @@ class DoctrineInputConverter implements InputConverter
         private Connection $connection,
     ) {}
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function supportedInputTypes(): array
     {
         return ['*'];
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function toSql(string $type, mixed $value, ConverterContext $context): null|int|float|string
     {
         // Convert some known types to Doctrine own type system.

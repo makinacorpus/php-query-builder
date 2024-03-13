@@ -26,17 +26,13 @@ class IfThen implements Expression
         $this->else = null === $else ? new NullValue() : ExpressionHelper::value($else);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function returns(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function returnType(): ?string
     {
         return null;

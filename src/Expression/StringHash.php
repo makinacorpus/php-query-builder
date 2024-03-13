@@ -21,17 +21,13 @@ class StringHash implements Expression
         $this->value = \is_string($value) ? new Value($value, 'varchar') : ExpressionHelper::value($value);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function returns(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function returnType(): ?string
     {
         return 'varchar';

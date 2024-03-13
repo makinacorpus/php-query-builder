@@ -40,9 +40,7 @@ class DoctrineQueryBuilder extends AbstractBridge
         return new DoctrineErrorConverter();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function lookupServerName(): ?string
     {
         $this->dieIfClosed();
@@ -58,9 +56,7 @@ class DoctrineQueryBuilder extends AbstractBridge
         return $params['driver'] . ' - ' . $this->lookupServerVersion();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function lookupServerVersion(): ?string
     {
         $this->dieIfClosed();
@@ -83,9 +79,7 @@ class DoctrineQueryBuilder extends AbstractBridge
         return $this->doctrineServerVersion = 'unknown';
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function createEscaper(): Escaper
     {
         $this->dieIfClosed();
@@ -107,9 +101,7 @@ class DoctrineQueryBuilder extends AbstractBridge
         return parent::createWriter($escaper, $converter);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doExecuteQuery(string $expression, array $arguments = []): Result
     {
         $this->dieIfClosed();
@@ -122,9 +114,7 @@ class DoctrineQueryBuilder extends AbstractBridge
         return $result;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doExecuteStatement(string $expression, array $arguments = []): ?int
     {
         $this->dieIfClosed();
@@ -132,9 +122,7 @@ class DoctrineQueryBuilder extends AbstractBridge
         return (int) $this->connection->executeStatement($expression, $arguments);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function close(): void
     {
         if ($this->connection) {

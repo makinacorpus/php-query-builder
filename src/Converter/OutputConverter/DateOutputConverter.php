@@ -16,9 +16,7 @@ use MakinaCorpus\QueryBuilder\Error\ValueConversionError;
  */
 class DateOutputConverter implements OutputConverter
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function supportedOutputTypes(): array
     {
         return [
@@ -28,9 +26,7 @@ class DateOutputConverter implements OutputConverter
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function fromSql(string $type, int|float|string $value, ConverterContext $context): mixed
     {
         // I have no idea why this is still here. Probably an old bug.

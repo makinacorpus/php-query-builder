@@ -6,9 +6,7 @@ namespace MakinaCorpus\QueryBuilder\Platform\Transaction;
 
 class SQLiteTransaction extends AbstractTransaction
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doTransactionStart(int $isolationLevel): void
     {
         // SQLite transaction are per default all SERIALIZABLE and this cannot
@@ -17,73 +15,55 @@ class SQLiteTransaction extends AbstractTransaction
         $this->executor->executeStatement("BEGIN TRANSACTION");
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doChangeLevel(int $isolationLevel): void
     {
         // See comment in doTransactionStart().
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doCreateSavepoint(string $name): void
     {
         $this->executor->executeStatement("SAVEPOINT ?::id", $name);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doRollbackToSavepoint(string $name): void
     {
         $this->executor->executeStatement("ROLLBACK TO SAVEPOINT ?::id", $name);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doRollback(): void
     {
         $this->executor->executeStatement("ROLLBACK");
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doCommit(): void
     {
         $this->executor->executeStatement("COMMIT");
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doDeferConstraints(array $constraints): void
     {
         @\trigger_error(\sprintf("SQLite does not support deferred constraints during transaction '%s'", $this->getName()), E_USER_NOTICE);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doDeferAll(): void
     {
         @\trigger_error(\sprintf("SQLite does not support deferred constraints during transaction '%s'", $this->getName()), E_USER_NOTICE);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doImmediateConstraints(array $constraints): void
     {
         @\trigger_error(\sprintf("SQLite does not support deferred constraints during transaction '%s'", $this->getName()), E_USER_NOTICE);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doImmediateAll(): void
     {
         @\trigger_error(\sprintf("SQLite does not support deferred constraints during transaction '%s'", $this->getName()), E_USER_NOTICE);

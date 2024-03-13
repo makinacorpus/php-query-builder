@@ -15,9 +15,7 @@ class DoctrineEscaper extends StandardEscaper
         parent::__construct('?', null);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function escapeLiteral(string $string): string
     {
         return $this->connection->quote($string);

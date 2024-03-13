@@ -52,9 +52,7 @@ class ConstantTable implements TableExpression
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function returnType(): ?string
     {
         return null;
@@ -82,9 +80,7 @@ class ConstantTable implements TableExpression
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function returns(): bool
     {
         return true;

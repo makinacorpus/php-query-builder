@@ -8,9 +8,7 @@ use MakinaCorpus\QueryBuilder\Converter\Converter;
 
 class MySQLConverter extends Converter
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function toSqlDefault(string $type, mixed $value): null|int|float|string|object
     {
         return match ($type) {

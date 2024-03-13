@@ -30,9 +30,7 @@ use MakinaCorpus\QueryBuilder\Bridge\Pdo\ErrorConverter\PdoSQLiteErrorConverter;
 
 class DoctrineErrorConverter implements ErrorConverter
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function convertError(\Throwable $error, ?string $sql = null, ?string $message = null): \Throwable
     {
         $message ??= $error->getMessage();

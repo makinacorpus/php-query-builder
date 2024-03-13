@@ -17,9 +17,7 @@ use MakinaCorpus\QueryBuilder\Error\Bridge\UniqueConstraintViolationError;
 
 class PdoSQLServerErrorConverter implements ErrorConverter
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function convertError(\Throwable $error, ?string $sql = null, ?string $message = null): \Throwable
     {
         if (!$error instanceof \PDOException) {

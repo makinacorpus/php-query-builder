@@ -101,9 +101,7 @@ trait ReturningQueryTrait
         return (bool) $this->findReturnIndex($alias);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function willReturnRows(): bool
     {
         return !empty($this->return);

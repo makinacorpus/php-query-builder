@@ -62,9 +62,7 @@ abstract class AbstractResult implements Result, \IteratorAggregate
      */
     abstract protected function doFetchNext(): null|array;
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getIterator(): \Traversable
     {
         if (null === $this->hydrator) {
@@ -78,9 +76,7 @@ abstract class AbstractResult implements Result, \IteratorAggregate
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setRewindable(bool $rewindable = true): static
     {
         $this->dieIfStarted();
@@ -90,17 +86,13 @@ abstract class AbstractResult implements Result, \IteratorAggregate
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function isCountReliable(): bool
     {
         return $this->countIsReliable;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setHydrator(callable $hydrator): static
     {
         $this->dieIfStarted();
@@ -110,9 +102,7 @@ abstract class AbstractResult implements Result, \IteratorAggregate
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setColumnType(int|string $columnName, string $phpType): static
     {
         $this->dieIfStarted();
@@ -126,9 +116,7 @@ abstract class AbstractResult implements Result, \IteratorAggregate
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setColumnTypes(array $columnTypes): static
     {
         foreach ($columnTypes as $columnName => $phpType) {
@@ -138,9 +126,7 @@ abstract class AbstractResult implements Result, \IteratorAggregate
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function fetchRow(): ?ResultRow
     {
         if ($row = $this->fetchNext()) {
@@ -149,9 +135,7 @@ abstract class AbstractResult implements Result, \IteratorAggregate
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function fetchHydrated(): mixed
     {
         if (null === $this->hydrator) {
@@ -167,9 +151,7 @@ abstract class AbstractResult implements Result, \IteratorAggregate
         return ($this->hydrator)($this->hydratorUsesArray ? $row : new DefaultResultRow($row, $this->converter));
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function fetchAllHydrated(): array
     {
         $this->dieIfStarted();
@@ -183,9 +165,9 @@ abstract class AbstractResult implements Result, \IteratorAggregate
     }
 
     /**
-     * {@inheritdoc}
      * @deprecated
      */
+    #[\Override]
     public function fetch(int $mode = self::ASSOCIATIVE): mixed
     {
         if ($mode === self::ASSOCIATIVE) {
@@ -203,9 +185,7 @@ abstract class AbstractResult implements Result, \IteratorAggregate
         throw new \LogicException('Only fetch modes declared on Doctrine\DBAL\FetchMode are supported by legacy API.');
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function fetchNumeric(): null|array
     {
         if ($row = $this->fetchAssociative()) {
@@ -214,25 +194,19 @@ abstract class AbstractResult implements Result, \IteratorAggregate
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function fetchAssociative(): null|array
     {
         return $this->fetchNext();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function fetchOne(int|string $valueColumn = 0): mixed
     {
         return $this->getColumnValue($this->fetchNext(), $valueColumn);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function fetchAllNumeric(): array
     {
         $this->dieIfStarted();
@@ -245,9 +219,7 @@ abstract class AbstractResult implements Result, \IteratorAggregate
         return $ret;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function fetchAllAssociative(): array
     {
         $this->dieIfStarted();
@@ -260,9 +232,7 @@ abstract class AbstractResult implements Result, \IteratorAggregate
         return $ret;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function fetchAllKeyValue(int|string $keyColumn = 0, int|string $valueColumn = 1): array
     {
         $this->dieIfStarted();
@@ -275,9 +245,7 @@ abstract class AbstractResult implements Result, \IteratorAggregate
         return $ret;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function fetchAllAssociativeIndexed(int|string $keyColumn = 0): array
     {
         $this->dieIfStarted();
@@ -290,9 +258,7 @@ abstract class AbstractResult implements Result, \IteratorAggregate
         return $ret;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function fetchFirstColumn(int|string $valueColumn = 0): array
     {
         $this->dieIfStarted();
@@ -305,9 +271,7 @@ abstract class AbstractResult implements Result, \IteratorAggregate
         return $ret;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function iterateNumeric(): \Traversable
     {
         $this->dieIfStarted();
@@ -319,9 +283,7 @@ abstract class AbstractResult implements Result, \IteratorAggregate
         })();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function iterateAssociative(): \Traversable
     {
         $this->dieIfStarted();
@@ -333,9 +295,7 @@ abstract class AbstractResult implements Result, \IteratorAggregate
         })();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function iterateKeyValue(int|string $keyColumn = 0, int|string $valueColumn = 1): \Traversable
     {
         $this->dieIfStarted();
@@ -347,9 +307,7 @@ abstract class AbstractResult implements Result, \IteratorAggregate
         })();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function iterateAssociativeIndexed(int|string $keyColumn = 0): \Traversable
     {
         $this->dieIfStarted();
@@ -361,9 +319,7 @@ abstract class AbstractResult implements Result, \IteratorAggregate
         })();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function iterateColumn(int|string $valueColumn = 0): \Traversable
     {
         $this->dieIfStarted();
@@ -375,9 +331,7 @@ abstract class AbstractResult implements Result, \IteratorAggregate
         })();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function rowCount(): int
     {
         $this->dieIfFreed();
@@ -385,9 +339,7 @@ abstract class AbstractResult implements Result, \IteratorAggregate
         return $this->rowCount ??= $this->doRowCount();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function columnCount(): int
     {
         $this->dieIfFreed();
@@ -395,9 +347,7 @@ abstract class AbstractResult implements Result, \IteratorAggregate
         return $this->columnCount ??= $this->doColumnCount();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function free(): void
     {
         $this->iterationFreed = true;

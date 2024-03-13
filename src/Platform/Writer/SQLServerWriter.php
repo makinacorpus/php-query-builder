@@ -23,44 +23,36 @@ class SQLServerWriter extends Writer
     // @see doModifyLimitQuery() in doctrine/dbal
 
     /**
-     * {@inheritdoc}
-     *
      * SQLServer aggregate function names seems to be keywords, not functions.
      */
+    #[\Override]
     protected function shouldEscapeAggregateFunctionName(): bool
     {
         return false;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function formatCurrentTimetamp(CurrentTimestamp $expression, WriterContext $context): string
+    #[\Override]
+    protected function formatCurrentTimestamp(CurrentTimestamp $expression, WriterContext $context): string
     {
         return 'getdate()';
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function formatRandom(Random $expression, WriterContext $context): string
     {
         return 'rand()';
     }
 
     /**
-     * {@inheritdoc}
-     *
      * https://modern-sql.com/feature/filter
      */
+    #[\Override]
     protected function formatAggregate(Aggregate $expression, WriterContext $context): string
     {
         return $this->doFormatAggregateWithoutFilter($expression, $context);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function formatLpad(Lpad $expression, WriterContext $context): string
     {
         list($value, $size, $fill) = $this->doGetPadArguments($expression, $context);
@@ -73,9 +65,7 @@ class SQLServerWriter extends Writer
         return 'right(replicate(' . $this->format($fill, $context) . ', 100) + ' . $this->format($value, $context) . ', ' . $this->format($size, $context) . ')';
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function formatRpad(Lpad $expression, WriterContext $context): string
     {
         list($value, $size, $fill) = $this->doGetPadArguments($expression, $context);
@@ -104,9 +94,7 @@ class SQLServerWriter extends Writer
         return 'CONCAT(' . $output . ')';
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function formatStringHash(StringHash $expression, WriterContext $context): string
     {
         $algo = $expression->getAlgo();
@@ -116,25 +104,19 @@ class SQLServerWriter extends Writer
         return 'lower(convert(nvarchar(32), hashbytes(' . $escapedAlgo  . ', ' . $this->format($value, $context) . '), 2))';
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doFormatOutputNewRowIdentifier(TableName $table): string
     {
         return 'inserted';
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doFormatOutputOldRowIdentifier(TableName $table): string
     {
         return 'deleted';
     }
 
     /**
-     * {@inheritdoc}
-     *
      * SQL Server uses the OUTPUT clause, which is far more advanced than
      * simply returning whatever was mutated, it can deambiguate between
      * DELETED (row prior mutation) and INSERTED (row after mutation).
@@ -145,17 +127,17 @@ class SQLServerWriter extends Writer
      * require, the old or the new one. By default, and without anything
      * specified, it will always be the new one.
      */
+    #[\Override]
     protected function doFormatReturning(WriterContext $context, array $return, ?string $escapedTableName = null): string
     {
         return 'output ' . $this->doFormatSelect($context, $return, $escapedTableName);
     }
 
     /**
-     * {@inheritdoc}
-     *
      * WARNING DANGER, SQLServer requires an ORDER BY in the query for having
      * a limit/offset. It's what it is.
      */
+    #[\Override]
     protected function doFormatRange(WriterContext $context, int $limit = 0, int $offset = 0, bool $hasOrder = true): string
     {
         $ret = '';

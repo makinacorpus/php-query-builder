@@ -13,9 +13,7 @@ namespace MakinaCorpus\QueryBuilder\Bridge;
  */
 class PassthroughErrorConverter implements ErrorConverter
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function convertError(\Throwable $error, ?string $sql = null, ?string $message = null): \Throwable
     {
         return $error;

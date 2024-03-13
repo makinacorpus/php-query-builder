@@ -79,7 +79,7 @@ interface Query extends Expression
     public function setOptions(array $options): static;
 
     /**
-     * {@inheritdoc}
+     * Get options bag.
      */
     public function getOptions(): OptionsBag;
 

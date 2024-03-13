@@ -56,17 +56,13 @@ class Row implements Expression
         private ?string $compositeTypeName = null
     ) {}
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function returns(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function returnType(): ?string
     {
         return null;

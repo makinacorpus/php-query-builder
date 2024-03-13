@@ -114,9 +114,7 @@ abstract class AbstractTransaction implements Transaction
      */
     abstract protected function doImmediateAll(): void;
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function level(int $isolationLevel): static
     {
         if ($isolationLevel === $this->isolationLevel) {
@@ -130,17 +128,13 @@ abstract class AbstractTransaction implements Transaction
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function isStarted(): bool
     {
         return $this->started;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function start(): static
     {
         if (!$this->started) {
@@ -151,9 +145,7 @@ abstract class AbstractTransaction implements Transaction
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function immediate($constraint = null): static
     {
         if ($constraint) {
@@ -168,9 +160,7 @@ abstract class AbstractTransaction implements Transaction
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function deferred($constraint = null): static
     {
         if ($constraint) {
@@ -185,9 +175,7 @@ abstract class AbstractTransaction implements Transaction
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function savepoint(string $name = null): TransactionSavepoint
     {
         if (!$this->started) {
@@ -207,33 +195,25 @@ abstract class AbstractTransaction implements Transaction
         return $this->savepoints[$name] = new TransactionSavepoint($name, $this);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function isNested(): bool
     {
         return false;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getName(): string
     {
         return (string) $this->count;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getSavepointName(): ?string
     {
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function commit(): static
     {
         if (!$this->started) {
@@ -250,9 +230,7 @@ abstract class AbstractTransaction implements Transaction
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function rollback(): static
     {
         if (!$this->started) {
@@ -268,9 +246,7 @@ abstract class AbstractTransaction implements Transaction
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function rollbackToSavepoint(string $name): static
     {
         if (!$this->started) {

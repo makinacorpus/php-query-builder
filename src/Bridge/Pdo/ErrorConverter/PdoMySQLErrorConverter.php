@@ -18,8 +18,6 @@ use MakinaCorpus\QueryBuilder\Error\Bridge\ServerError;
 class PdoMySQLErrorConverter implements ErrorConverter
 {
     /**
-     * {@inheritdoc}
-     *
      * @link http://dev.mysql.com/doc/refman/5.7/en/error-messages-client.html
      * @link http://dev.mysql.com/doc/refman/5.7/en/error-messages-server.html
      *
@@ -29,6 +27,7 @@ class PdoMySQLErrorConverter implements ErrorConverter
      * Many thanks to all contributors. If someday you come to France, give me
      * a call, an email, anything, and I'll pay you a drink, whoever you are.
      */
+    #[\Override]
     public function convertError(\Throwable $error, ?string $sql = null, ?string $message = null): \Throwable
     {
         if (!$error instanceof \PDOException) {

@@ -24,9 +24,7 @@ class DefaultQueryBuilder implements QueryBuilder
         $this->queryExecutor = $queryExecutor;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function select(null|string|Expression $table = null, ?string $alias = null): Select
     {
         $ret = new Select($table, $alias);
@@ -38,9 +36,7 @@ class DefaultQueryBuilder implements QueryBuilder
         return $ret;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function update(string|Expression $table, ?string $alias = null): Update
     {
         $ret = new Update($table, $alias);
@@ -52,9 +48,7 @@ class DefaultQueryBuilder implements QueryBuilder
         return $ret;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function insert(string|Expression $table): Insert
     {
         $ret = new Insert($table);
@@ -66,9 +60,7 @@ class DefaultQueryBuilder implements QueryBuilder
         return $ret;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function merge(string|Expression $table): Merge
     {
         $ret = new Merge($table);
@@ -80,9 +72,7 @@ class DefaultQueryBuilder implements QueryBuilder
         return $ret;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function delete(string|Expression $table, ?string $alias = null): Delete
     {
         $ret = new Delete($table, $alias);
@@ -94,9 +84,7 @@ class DefaultQueryBuilder implements QueryBuilder
         return $ret;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function raw(string $expression = null, mixed $arguments = null, bool $returns = false): RawQuery
     {
         $ret = new RawQuery($expression, $arguments, $returns);
@@ -108,9 +96,7 @@ class DefaultQueryBuilder implements QueryBuilder
         return $ret;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function expression(): ExpressionFactory
     {
         return new ExpressionFactory();

@@ -36,25 +36,19 @@ class IterableResult extends AbstractResult
         return $this->current;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doRowCount(): int
     {
         return $this->rowCount ?? -1;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doColumnCount(): int
     {
         return $this->columnCount ??= (($current = $this->current()) ? \count($current) : 0);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doFree(): void
     {
         $this->current = null;
@@ -65,9 +59,7 @@ class IterableResult extends AbstractResult
         $this->freeCallback = null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function doFetchNext(): null|array
     {
         if (!$this->currentFetched) {

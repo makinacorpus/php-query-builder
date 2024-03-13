@@ -91,9 +91,7 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
         $this->serverVersion = $serverVersion;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getServerName(): ?string
     {
         if ($this->serverNameLookedUp) {
@@ -139,9 +137,7 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getServerFlavor(): ?string
     {
         if (null !== $this->serverFlavor) {
@@ -179,9 +175,7 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
         return $this->serverFlavor = $serverName;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getServerVersion(): ?string
     {
         if ($this->serverVersionLookekUp) {
@@ -200,9 +194,7 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
         return $this->serverVersion = $serverVersion;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function isVersionLessThan(string $version): bool
     {
         if (!$serverVersion = $this->getServerVersion()) {
@@ -215,9 +207,7 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function isVersionGreaterOrEqualThan(string $version): bool
     {
         if (!$serverVersion = $this->getServerVersion()) {
@@ -235,9 +225,7 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
      */
     abstract protected function doExecuteQuery(string $expression, array $arguments = []): Result;
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function executeQuery(string|Expression $expression = null, mixed $arguments = null): Result
     {
         if (\is_string($expression)) {
@@ -263,9 +251,7 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
      */
     abstract protected function doExecuteStatement(string $expression, array $arguments = []): ?int;
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function executeStatement(string|Expression $expression = null, mixed $arguments = null): ?int
     {
         if (\is_string($expression)) {
@@ -312,9 +298,7 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
         };
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function createTransaction(int $isolationLevel = Transaction::REPEATABLE_READ, bool $allowPending = true): Transaction
     {
         $transaction = $this->findCurrentTransaction();
@@ -335,9 +319,7 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
         return $this->currentTransaction = $this->doCreateTransaction($isolationLevel);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function beginTransaction(int $isolationLevel = Transaction::REPEATABLE_READ, bool $allowPending = true): Transaction
     {
         return $this->createTransaction($isolationLevel, $allowPending)->start();
@@ -412,9 +394,7 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
         return new Writer($escaper, $converter);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getWriter(): Writer
     {
         return $this->writer ??= $this->createWriter($this->createEscaper(), $this->getConverter());
@@ -446,9 +426,7 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
         throw new UnsupportedFeatureError(\sprintf("Schema manager is not implemented yet for vendor '%s'", $serverFlavor));
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getSchemaManager(): SchemaManager
     {
         return $this->schemaManager ??= $this->createSchemaManager();
