@@ -6,6 +6,7 @@ namespace MakinaCorpus\QueryBuilder\Bridge;
 
 use MakinaCorpus\QueryBuilder\QueryBuilder;
 use MakinaCorpus\QueryBuilder\QueryExecutor;
+use MakinaCorpus\QueryBuilder\Schema\SchemaManager;
 use MakinaCorpus\QueryBuilder\Writer\Writer;
 
 interface Bridge extends QueryExecutor, QueryBuilder
@@ -44,6 +45,13 @@ interface Bridge extends QueryExecutor, QueryBuilder
      * Get SQL writer instance.
      */
     public function getWriter(): Writer;
+
+    /**
+     * Get schema manager.
+     *
+     * @experimental
+     */
+    public function getSchemaManager(): SchemaManager;
 
     /**
      * Free everything.

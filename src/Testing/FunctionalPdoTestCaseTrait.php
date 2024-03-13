@@ -39,7 +39,7 @@ trait FunctionalPdoTestCaseTrait
             $dsn[] = 'dbname=' . $value;
         }
 
-        return new \PDO('mysql:' . \implode(';', $dsn), $params['user'] ?? null, $params['password'] ?? null);
+        return new \PDO('mysql:' . \implode(';', $dsn), $params['user'] ?? null, $params['password'] ?? null, [\PDO::ATTR_PERSISTENT => true]);
     }
 
     /**
@@ -58,6 +58,6 @@ trait FunctionalPdoTestCaseTrait
             $dsn[] = 'dbname=' . $value;
         }
 
-        return new \PDO('pgsql:' . \implode(';', $dsn), $params['user'] ?? null, $params['password'] ?? null);
+        return new \PDO('pgsql:' . \implode(';', $dsn), $params['user'] ?? null, $params['password'] ?? null, [\PDO::ATTR_PERSISTENT => true]);
     }
 }

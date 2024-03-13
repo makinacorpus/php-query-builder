@@ -129,3 +129,57 @@ Factory method in the following table refers to methods of the `MakinaCorpus\Que
 Future work is planned on `ARRAY` and `JSON` operators: they were previously implemented in
 `makinacorpus/goat-query` package and will be restored in a near future.
 :::
+
+## Schema alteration (experimental)
+
+| Feature | MariaDB | MySQL | PostgreSQL | SQLite | SQL Server | Notes |
+|:--------|:-------:|:-----:|:----------:|:------:|:----------:|:------|
+| Add column | Yes | Yes | Yes | Yes | Planned | Collations might have problems |
+| Drop column | Yes | Yes | Yes | Yes | Planned | - |
+| Modify column | Downgrade | Downgrade | Yes | Planned | Planned | Collations might have problems |
+| Rename column | Yes | Yes | Yes | No | Planned | - |
+| Drop any constraint | Yes | Yes | Yes | No | Planned | - |
+| Modify any constraint | No | No | No | No | No | - |
+| Rename any constraint | No | No | No | No | No | - |
+| Add foreign key | Downgrade | Downgrade | Yes | Planned | Planned | - |
+| Modify foreign key | No | No | No | No | No | - |
+| Remove foreign key | Yes | Yes | Yes | Planned | Planned | - |
+| Rename foreign key | No | No | No | No | No | - |
+| Create index | Yes | Yes | Yes | Yes | Planned | - |
+| Drop index | Yes | Yes | Yes | Yes | Planned | - |
+| Rename index | Yes | Yes | Yes | Yes | Planned | - |
+| Add primary key | Yes | Yes | Yes | Planned | Planned | - |
+| Drop primary key | Yes | Yes | Yes | Planned | Planned | - |
+| Create table | Yes | Yes | Yes | Yes | Planned | - |
+| Drop table | Yes | Yes | Yes | Yes | Planned | - |
+| Rename table | Yes | Yes | Yes | Planned | Planned | - |
+| Add unique key | Yes | Yes | Yes | Yes | Planned | - |
+| Drop unique key | Yes | Yes | Yes | Yes | Planned | - |
+
+:::info
+MySQL and MariaDB do not support the `DEFERRABLE` constraints. It will simply be
+ignored when specified.
+:::
+
+:::info
+MySQL and MariaDB do not support `NULLS [NOT] DISTINCT` on keys, attempts in
+using this feature will raise exceptions.
+:::
+
+:::warning
+SQLite requires a `DROP` then `CREATE` or `ADD` for most modification or rename
+operations. This hasn't be implemented yet.
+:::
+
+:::warning
+SQLite requires a `DROP` then `CREATE` or `ADD` for most modification or rename
+operations. This hasn't be implemented yet.
+:::
+
+:::warning
+SQL Server is not implemented yet, but is planned.
+:::
+
+:::warning
+Collation support is unforgiving, it simply passes the collation names to the SQL server.
+:::

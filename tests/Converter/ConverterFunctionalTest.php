@@ -22,7 +22,7 @@ class ConverterFunctionalTest extends UnitTestCase
             new Raw(
                 <<<SQL
                 select
-                    ?::column as ?::identifier
+                    ?::column as ?::id
                 from ?::table
                 where
                     ?::column = ?::array

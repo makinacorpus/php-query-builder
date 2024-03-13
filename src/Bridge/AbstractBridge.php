@@ -9,6 +9,7 @@ use MakinaCorpus\QueryBuilder\Converter\ConverterPluginRegistry;
 use MakinaCorpus\QueryBuilder\DefaultQueryBuilder;
 use MakinaCorpus\QueryBuilder\Error\Bridge\TransactionError;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
+use MakinaCorpus\QueryBuilder\Error\UnsupportedFeatureError;
 use MakinaCorpus\QueryBuilder\Escaper\Escaper;
 use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
@@ -16,6 +17,9 @@ use MakinaCorpus\QueryBuilder\Platform;
 use MakinaCorpus\QueryBuilder\Platform\Converter\MySQLConverter;
 use MakinaCorpus\QueryBuilder\Platform\Escaper\MySQLEscaper;
 use MakinaCorpus\QueryBuilder\Platform\Escaper\StandardEscaper;
+use MakinaCorpus\QueryBuilder\Platform\Schema\MySQLSchemaManager;
+use MakinaCorpus\QueryBuilder\Platform\Schema\PostgreSQLSchemaManager;
+use MakinaCorpus\QueryBuilder\Platform\Schema\SQLiteSchemaManager;
 use MakinaCorpus\QueryBuilder\Platform\Transaction\MySQLTransaction;
 use MakinaCorpus\QueryBuilder\Platform\Transaction\PostgreSQLTransaction;
 use MakinaCorpus\QueryBuilder\Platform\Transaction\SQLiteTransaction;
@@ -26,6 +30,7 @@ use MakinaCorpus\QueryBuilder\Platform\Writer\PostgreSQLWriter;
 use MakinaCorpus\QueryBuilder\Platform\Writer\SQLiteWriter;
 use MakinaCorpus\QueryBuilder\Platform\Writer\SQLServerWriter;
 use MakinaCorpus\QueryBuilder\Result\Result;
+use MakinaCorpus\QueryBuilder\Schema\SchemaManager;
 use MakinaCorpus\QueryBuilder\Transaction\Transaction;
 use MakinaCorpus\QueryBuilder\Writer\Writer;
 
@@ -41,6 +46,7 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
     private ?string $serverFlavor = null;
     private ?Transaction $currentTransaction = null;
     private ?ErrorConverter $errorConverter = null;
+    private ?SchemaManager $schemaManager = null;
 
     public function __construct(?ConverterPluginRegistry $converterPluginRegistry = null)
     {
@@ -412,5 +418,39 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
     public function getWriter(): Writer
     {
         return $this->writer ??= $this->createWriter($this->createEscaper(), $this->getConverter());
+    }
+
+    /**
+     * Create default schema manager based upon server name and version.
+     */
+    protected function createSchemaManager(): SchemaManager
+    {
+        $serverFlavor = $this->getServerFlavor();
+
+        if (Platform::POSTGRESQL === $serverFlavor) {
+            return new PostgreSQLSchemaManager($this, $this);
+        }
+
+        if (Platform::MYSQL === $serverFlavor) {
+            return new MySQLSchemaManager($this, $this);
+        }
+
+        if (Platform::MARIADB === $serverFlavor) {
+            return new MySQLSchemaManager($this, $this);
+        }
+
+        if (Platform::SQLITE === $serverFlavor) {
+            return new SQLiteSchemaManager($this, $this);
+        }
+
+        throw new UnsupportedFeatureError(\sprintf("Schema manager is not implemented yet for vendor '%s'", $serverFlavor));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getSchemaManager(): SchemaManager
+    {
+        return $this->schemaManager ??= $this->createSchemaManager();
     }
 }

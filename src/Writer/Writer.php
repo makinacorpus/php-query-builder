@@ -1438,7 +1438,15 @@ class Writer
     }
 
     /**
-     * Format value expression.
+     * Format table name expression.
+     */
+    protected function formatTableName(TableName $expression, WriterContext $context): string
+    {
+        return $this->formatIdentifier($expression, $context);
+    }
+
+    /**
+     * Format identifier expression.
      */
     protected function formatIdentifier(Identifier $expression, WriterContext $context): string
     {

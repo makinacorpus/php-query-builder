@@ -21,7 +21,7 @@ class WriterTest extends UnitTestCase
                 select ?::column
                 from ?::table
                 where
-                    ?::identifier() = ?::value
+                    ?::id() = ?::value
                 SQL,
                 [
                     'the_column',

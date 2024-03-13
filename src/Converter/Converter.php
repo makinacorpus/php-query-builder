@@ -91,6 +91,7 @@ class Converter
             return match ($valueType) {
                 'array' => throw new ValueConversionError("ARRAY[ARRAY] is not supported yet."),
                 'column' => throw new ValueConversionError("ARRAY[column_expr] is not supported yet."),
+                'id' => ExpressionFactory::raw($this->join($value, ',', fn () => '?'), $this->map($value, ExpressionFactory::identifier(...))),
                 'identifier' => ExpressionFactory::raw($this->join($value, ',', fn () => '?'), $this->map($value, ExpressionFactory::identifier(...))),
                 'row' => ExpressionFactory::array($this->map($value, ExpressionFactory::row(...))),
                 'table' => throw new ValueConversionError("ARRAY[column_expr] is not supported yet."),
@@ -103,6 +104,7 @@ class Converter
         return match ($type) {
             'array' => ExpressionFactory::array($value),
             'column' => ExpressionFactory::column($value),
+            'id' => ExpressionFactory::identifier($value),
             'identifier' => ExpressionFactory::identifier($value),
             'row' => ExpressionFactory::row($value),
             'table' => ExpressionFactory::table($value),

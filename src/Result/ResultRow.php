@@ -23,7 +23,7 @@ interface ResultRow extends \ArrayAccess
      * @return null|mixed
      *   The converted value if a type is given, raw SQL value otherwise.
      */
-    public function get(int|string $columnName, ?string $phpType = null): mixed;
+    public function get(int|string $columnName, ?string $phpType = null, bool $caseSensitive = false): mixed;
 
     /**
      * Get a nested sub-row, useful if you return ROW() or composite types
@@ -48,12 +48,12 @@ interface ResultRow extends \ArrayAccess
     /**
      * Does the value exists.
      */
-    public function has(int|string $columnName, bool $allowNull = true): bool;
+    public function has(int|string $columnName, bool $allowNull = true, bool $caseSensitive = false): bool;
 
     /**
      * Get the raw unconverted value from SQL result.
      */
-    public function raw(int|string $columnName): null|int|float|string;
+    public function raw(int|string $columnName, bool $caseSensitive = false): null|int|float|string;
 
     /**
      * Return raw values as array.
