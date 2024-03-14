@@ -6,6 +6,7 @@ namespace MakinaCorpus\QueryBuilder\Tests\Expression;
 
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Expression\DateInterval;
+use MakinaCorpus\QueryBuilder\Expression\DateIntervalUnit;
 use MakinaCorpus\QueryBuilder\Tests\UnitTestCase;
 
 /**
@@ -37,61 +38,61 @@ class DateIntervalTest extends UnitTestCase
 
     public function testWithMillenium(): void
     {
-        $expression = new DateInterval([DateInterval::UNIT_MILLENIUM => 2]);
+        $expression = new DateInterval([DateIntervalUnit::MILLENIUM => 2]);
 
         self::assertSame(
             [
-                DateInterval::UNIT_YEAR => 2000,
+                DateIntervalUnit::YEAR => 2000,
             ],
-            $expression->getValues(),
+            $expression->toArray(),
         );
     }
 
     public function testWithCentury(): void
     {
-        $expression = new DateInterval([DateInterval::UNIT_CENTURY => 3, DateInterval::UNIT_YEAR => 1]);
+        $expression = new DateInterval([DateIntervalUnit::CENTURY => 3, DateIntervalUnit::YEAR => 1]);
 
         self::assertSame(
             [
-                DateInterval::UNIT_YEAR => 301,
+                DateIntervalUnit::YEAR => 301,
             ],
-            $expression->getValues(),
+            $expression->toArray(),
         );
     }
 
     public function testWithDecade(): void
     {
-        $expression = new DateInterval([DateInterval::UNIT_DECADE => 7]);
+        $expression = new DateInterval([DateIntervalUnit::DECADE => 7]);
 
         self::assertSame(
             [
-                DateInterval::UNIT_YEAR => 70,
+                DateIntervalUnit::YEAR => 70,
             ],
-            $expression->getValues(),
+            $expression->toArray(),
         );
     }
 
     public function testWithQuarter(): void
     {
-        $expression = new DateInterval([DateInterval::UNIT_QUARTER => 2, DateInterval::UNIT_MONTH => 2]);
+        $expression = new DateInterval([DateIntervalUnit::QUARTER => 2, DateIntervalUnit::MONTH => 2]);
 
         self::assertSame(
             [
-                DateInterval::UNIT_MONTH => 8,
+                DateIntervalUnit::MONTH => 8,
             ],
-            $expression->getValues(),
+            $expression->toArray(),
         );
     }
 
     public function testWithWeek(): void
     {
-        $expression = new DateInterval([DateInterval::UNIT_WEEK => 3]);
+        $expression = new DateInterval([DateIntervalUnit::WEEK => 3]);
 
         self::assertSame(
             [
-                DateInterval::UNIT_DAY => 21,
+                DateIntervalUnit::DAY => 21,
             ],
-            $expression->getValues(),
+            $expression->toArray(),
         );
     }
 
@@ -103,7 +104,7 @@ class DateIntervalTest extends UnitTestCase
             [
                 'beeeh' => 7,
             ],
-            $expression->getValues(),
+            $expression->toArray(),
         );
     }
 
@@ -113,16 +114,42 @@ class DateIntervalTest extends UnitTestCase
 
         self::assertSame(
             [
-                DateInterval::UNIT_MINUTE => 1,
-                DateInterval::UNIT_SECOND => 2,
+                DateIntervalUnit::MINUTE => 1,
+                DateIntervalUnit::SECOND => 2,
             ],
-            $expression->getValues(),
+            $expression->toArray(),
+        );
+    }
+
+    public function testWithDateIsoString(): void
+    {
+        $expression = new DateInterval('PT1M2S');
+
+        self::assertSame(
+            [
+                DateIntervalUnit::MINUTE => 1,
+                DateIntervalUnit::SECOND => 2,
+            ],
+            $expression->toArray(),
+        );
+    }
+
+    public function testWithDateTimeString(): void
+    {
+        $expression = new DateInterval('1 minute 2 second');
+
+        self::assertSame(
+            [
+                DateIntervalUnit::MINUTE => 1,
+                DateIntervalUnit::SECOND => 2,
+            ],
+            $expression->toArray(),
         );
     }
 
     public function testWithArrayNotIntegerRaiseError(): void
     {
         self::expectException(QueryBuilderError::class);
-        new DateInterval([DateInterval::UNIT_WEEK => 'this is not an int']);
+        new DateInterval([DateIntervalUnit::WEEK => 'this is not an int']);
     }
 }

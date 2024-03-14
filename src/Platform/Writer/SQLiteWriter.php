@@ -65,8 +65,8 @@ class SQLiteWriter extends Writer
         if ($interval instanceof DateInterval) {
             $ret = $this->format($expression->getDate(), $context);
 
-            foreach ($interval->getValues() as $unit => $value) {
-                $intervalStr = $this->format(new Value($this->doFormatDateIntervalSingleUnit($value, $unit)), $context);
+            foreach ($interval->getValues() as $unit) {
+                $intervalStr = $this->formatDateIntervalUnit($unit, $context);
 
                 $ret = 'datetime(' . $ret . ', ' . $intervalStr . ')';
             }
@@ -85,8 +85,8 @@ class SQLiteWriter extends Writer
         if ($interval instanceof DateInterval) {
             $ret = $this->format($expression->getDate(), $context);
 
-            foreach ($interval->getValues() as $unit => $value) {
-                $intervalStr = $this->format(new Value($this->doFormatDateIntervalSingleUnit(0 - $value, $unit)), $context);
+            foreach ($interval->getValues() as $unit) {
+                $intervalStr = $this->formatDateIntervalUnit($unit, $context, true);
 
                 $ret = 'datetime(' . $ret . ', ' . $intervalStr . ')';
             }

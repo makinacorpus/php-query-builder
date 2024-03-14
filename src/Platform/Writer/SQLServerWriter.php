@@ -117,8 +117,8 @@ class SQLServerWriter extends Writer
         if ($interval instanceof DateInterval) {
             $ret = $this->format($expression->getDate(), $context);
 
-            foreach ($interval->getValues() as $unit => $value) {
-                $ret = 'dateadd(' . $unit . ', ' . $this->format(new Value($value, 'bigint'), $context) . ', ' . $ret . ')';
+            foreach ($interval->getValues() as $unit) {
+                $ret = 'dateadd(' . $unit->getUnit() . ', ' . $this->format($unit->getValue(), $context) . ', ' . $ret . ')';
             }
         } else {
             throw new UnsupportedFeatureError("SQLServer does not support DATEADD(expr,expr).");
@@ -135,8 +135,8 @@ class SQLServerWriter extends Writer
         if ($interval instanceof DateInterval) {
             $ret = $this->format($expression->getDate(), $context);
 
-            foreach ($interval->getValues() as $unit => $value) {
-                $ret = 'dateadd(' . $unit . ', ' . $this->format(new Value($value, 'bigint'), $context) . ', ' . $ret . ')';
+            foreach ($interval->getValues() as $unit) {
+                $ret = 'dateadd(' . $unit->getUnit() . ', 0 - ' . $this->format($unit->getValue(), $context) . ', ' . $ret . ')';
             }
         } else {
             throw new UnsupportedFeatureError("SQLServer does not support DATEADD(expr,expr).");

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Platform\Writer;
 
 use MakinaCorpus\QueryBuilder\Expression;
-use MakinaCorpus\QueryBuilder\Converter\Converter;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Error\UnsupportedFeatureError;
 use MakinaCorpus\QueryBuilder\Expression\Aggregate;
@@ -14,12 +13,11 @@ use MakinaCorpus\QueryBuilder\Expression\ConstantTable;
 use MakinaCorpus\QueryBuilder\Expression\CurrentTimestamp;
 use MakinaCorpus\QueryBuilder\Expression\DateAdd;
 use MakinaCorpus\QueryBuilder\Expression\DateInterval;
+use MakinaCorpus\QueryBuilder\Expression\DateIntervalUnit;
 use MakinaCorpus\QueryBuilder\Expression\DateSub;
 use MakinaCorpus\QueryBuilder\Expression\Random;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\Expression\StringHash;
-use MakinaCorpus\QueryBuilder\Expression\Value;
-use MakinaCorpus\QueryBuilder\Platform\Converter\MySQLConverter;
 use MakinaCorpus\QueryBuilder\Query\Delete;
 use MakinaCorpus\QueryBuilder\Query\Merge;
 use MakinaCorpus\QueryBuilder\Query\Query;
@@ -68,6 +66,12 @@ class MySQLWriter extends Writer
     }
 
     #[\Override]
+    protected function formatDateIntervalUnit(DateIntervalUnit $expression, WriterContext $context, bool $negate = false): string
+    {
+        return $this->format($expression->getValue(), $context) . ' ' . $expression->getUnit();
+    }
+
+    #[\Override]
     protected function formatDateAdd(DateAdd $expression, WriterContext $context): string
     {
         $interval = $expression->getInterval();
@@ -75,8 +79,8 @@ class MySQLWriter extends Writer
         if ($interval instanceof DateInterval) {
             $ret = $this->format($expression->getDate(), $context);
 
-            foreach ($interval->getValues() as $unit => $value) {
-                $intervalStr = $this->doFormatDateIntervalSingleUnit($value, $unit);
+            foreach ($interval->getValues() as $unit) {
+                $intervalStr = $this->formatDateIntervalUnit($unit, $context);
 
                 $ret = 'date_add(' . $ret . ', interval ' . $intervalStr . ')';
             }
@@ -95,8 +99,8 @@ class MySQLWriter extends Writer
         if ($interval instanceof DateInterval) {
             $ret = $this->format($expression->getDate(), $context);
 
-            foreach ($interval->getValues() as $unit => $value) {
-                $intervalStr = $this->doFormatDateIntervalSingleUnit($value, $unit);
+            foreach ($interval->getValues() as $unit) {
+                $intervalStr = $this->formatDateIntervalUnit($unit, $context);
 
                 $ret = 'date_sub(' . $ret . ', interval ' . $intervalStr . ')';
             }

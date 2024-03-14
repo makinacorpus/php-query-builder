@@ -23,6 +23,7 @@ use MakinaCorpus\QueryBuilder\Expression\ConstantTable;
 use MakinaCorpus\QueryBuilder\Expression\CurrentTimestamp;
 use MakinaCorpus\QueryBuilder\Expression\DateAdd;
 use MakinaCorpus\QueryBuilder\Expression\DateInterval;
+use MakinaCorpus\QueryBuilder\Expression\DateIntervalUnit;
 use MakinaCorpus\QueryBuilder\Expression\DateSub;
 use MakinaCorpus\QueryBuilder\Expression\FunctionCall;
 use MakinaCorpus\QueryBuilder\Expression\Identifier;
@@ -273,6 +274,7 @@ class Writer
                     CurrentTimestamp::class => $this->formatCurrentTimestamp($expression, $context),
                     DateAdd::class => $this->formatDateAdd($expression, $context),
                     DateInterval::class => $this->formatDateInterval($expression, $context),
+                    DateIntervalUnit::class => $this->formatDateIntervalUnit($expression, $context),
                     DateSub::class => $this->formatDateSub($expression, $context),
                     Identifier::class => $this->formatIdentifier($expression, $context),
                     IfThen::class => $this->formatIfThen($expression, $context),
@@ -979,10 +981,18 @@ class Writer
 
     /**
      * Format a single date interval unit.
+     *
+     * This method should never be called outside of the formatDateInterval()
+     * method. Writing such interval makes no sense alone.
      */
-    protected function doFormatDateIntervalSingleUnit(int|string $value, string $unit): string
+    protected function formatDateIntervalUnit(DateIntervalUnit $expression, WriterContext $context, bool $negate = false): string
     {
-        return $value . ' ' . $unit;
+        if ($negate) {
+            $prefix = '(0 - ' . $this->format($expression->getValue(), $context) . ')';
+        } else {
+            $prefix = $this->format($expression->getValue(), $context);
+        }
+        return $prefix . " || ' ' || " . $this->formatValue(new Value($expression->getUnit(), 'text'), $context);
     }
 
     /**
@@ -993,16 +1003,16 @@ class Writer
         $interval = '';
 
         $first = true;
-        foreach ($expression->getValues() as $unit => $value) {
+        foreach ($expression->getValues() as $unit) {
             if ($first) {
                 $first = false;
             } else {
-                $interval .= ' ';
+                $interval .= " || ' ' || ";
             }
-            $interval .= $this->doFormatDateIntervalSingleUnit($value, $unit);
+            $interval .= $this->formatDateIntervalUnit($unit, $context);
         }
 
-        return 'cast(' . $this->format(new Value($interval), $context) . ' as interval)';
+        return 'cast(' . $interval . ' as interval)';
     }
 
     protected function doGetPadArguments(Lpad $expression, WriterContext $context): array

@@ -27,12 +27,32 @@ class DateAddTest extends UnitTestCase
         self::assertEquals($expression, $clone);
     }
 
+    public function testWithDateAndString(): void
+    {
+        $expression = new DateAdd(new \DateTimeImmutable(), 'PT1S');
+
+        self::assertSameSql(
+            "cast(#1 as timestamp) + cast(#2 || ' ' || #3 as interval)",
+            $expression
+        );
+    }
+
+    public function testWithDateAndMultipleUnits(): void
+    {
+        $expression = new DateAdd(new \DateTimeImmutable(), 'PT2M1S');
+
+        self::assertSameSql(
+            "cast(#1 as timestamp) + cast(#2 || ' ' || #3 || ' ' || #4 || ' ' || #5 as interval)",
+            $expression
+        );
+    }
+
     public function testWithDateAndInterval(): void
     {
         $expression = new DateAdd(new \DateTimeImmutable(), new \DateInterval('PT1S'));
 
         self::assertSameSql(
-            'cast(#1 as timestamp) + cast(#2 as interval)',
+            "cast(#1 as timestamp) + cast(#2 || ' ' || #3 as interval)",
             $expression
         );
     }
@@ -42,7 +62,7 @@ class DateAddTest extends UnitTestCase
         $expression = new DateAdd(new Value('some_column', 'not_a_date'), new \DateInterval('PT1S'));
 
         self::assertSameSql(
-            'cast(#1 as timestamp) + cast(#2 as interval)',
+            "cast(#1 as timestamp) + cast(#2 || ' ' || #3 as interval)",
             $expression
         );
     }
@@ -84,6 +104,6 @@ class DateAddTest extends UnitTestCase
     public function testWithInvalidIntervalRaiseError(): void
     {
         self::expectExceptionMessageMatches('/DateInterval instance or an array/');
-        new DateAdd(new \DateTimeImmutable(), 'bla');
+        new DateAdd(new \DateTimeImmutable(), new \DateTime());
     }
 }

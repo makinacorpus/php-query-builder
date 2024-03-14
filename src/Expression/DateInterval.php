@@ -42,41 +42,50 @@ class DateInterval implements Expression
     const UNIT_MILLENIUM = 'millenium';
 
     /** @var array<string,int> */
-    private array $values;
-    private bool $tainted = false;
+    private array $raw = [];
+    /** @var array<DateIntervalUnit> */
+    private array $values = [];
 
     /**
      * @param \DateInterval|array<string,int> $values
      *   If an array given, keys are units and values are integers.
      */
     public function __construct(
-        \DateInterval|array $values,
+        \DateInterval|array|string $values,
     ) {
+        if (\is_string($values)) {
+            try {
+                $values = new \DateInterval($values);
+            } catch (\Throwable $e) {
+                if (!$values = \DateInterval::createFromDateString($values)) {
+                    throw new QueryBuilderError(\sprintf("Given interval string '%s' is invalid", $values));
+                }
+            }
+        }
+
         if ($values instanceof \DateInterval) {
-            $this->values = [];
             if ($values->y) {
-                $this->values[self::UNIT_YEAR] = $values->y;
+                $this->raw[DateIntervalUnit::YEAR] = $values->y;
             }
             if ($values->m) {
-                $this->values[self::UNIT_MONTH] = $values->m;
+                $this->raw[DateIntervalUnit::MONTH] = $values->m;
             }
             if ($values->d) {
-                $this->values[self::UNIT_DAY] = $values->d;
+                $this->raw[DateIntervalUnit::DAY] = $values->d;
             }
             if ($values->h) {
-                $this->values[self::UNIT_HOUR] = $values->h;
+                $this->raw[DateIntervalUnit::HOUR] = $values->h;
             }
             if ($values->i) {
-                $this->values[self::UNIT_MINUTE] = $values->i;
+                $this->raw[DateIntervalUnit::MINUTE] = $values->i;
             }
             if ($values->s) {
-                $this->values[self::UNIT_SECOND] = $values->s;
+                $this->raw[DateIntervalUnit::SECOND] = $values->s;
             }
             if ($values->f) {
-                $this->values[self::UNIT_MICROSECOND] = \floor($values->f * 1000);
+                $this->raw[DateIntervalUnit::MICROSECOND] = \floor($values->f * 1000);
             }
         } else {
-            $this->values = [];
             foreach ($values as $unit => $value) {
                 if (!\is_int($value)) {
                     throw new QueryBuilderError(\sprintf("When value is an array of unit => value, values must integers, '%s' found for unit '%s'.", \get_debug_type($value), $unit));
@@ -85,69 +94,18 @@ class DateInterval implements Expression
                     throw new QueryBuilderError(\sprintf("When value is an array of unit => value, units must strings, '%s' found.", \get_debug_type($unit)));
                 }
 
-                // First normalize user given value.
-                $unit = \strtolower($unit);
-                if (\str_ends_with($unit, 's')) {
-                    $unit = \substr($unit, 0, -1);
-                }
+                [$value, $unit] = DateIntervalUnit::safeReduce($value, $unit);
 
-                // Allow some synonyms.
-                $unit = match ($unit) {
-                    'millisec' => self::UNIT_MILLISECOND,
-                    'min' => self::UNIT_MINUTE,
-                    'msec' => self::UNIT_MICROSECOND,
-                    'sec' => self::UNIT_CENTURY,
-                    default => $unit,
-                };
-
-                // Proceed to some safe conversions.
-                switch ($unit) {
-                    case self::UNIT_MILLENIUM:
-                        $unit = self::UNIT_YEAR;
-                        $value *= 1000;
-                        break;
-                    case self::UNIT_CENTURY:
-                        $unit = self::UNIT_YEAR;
-                        $value *= 100;
-                        break;
-                    case self::UNIT_DECADE:
-                        $unit = self::UNIT_YEAR;
-                        $value *= 10;
-                        break;
-                    case self::UNIT_YEAR:
-                        break;
-                    case self::UNIT_QUARTER:
-                        $unit = self::UNIT_MONTH;
-                        $value *= 3;
-                        break;
-                    case self::UNIT_MONTH:
-                        break;
-                    case self::UNIT_WEEK:
-                        $unit = self::UNIT_DAY;
-                        $value *= 7;
-                        break;
-                    case self::UNIT_DAY:
-                        break;
-                    case self::UNIT_HOUR:
-                        break;
-                    case self::UNIT_MINUTE:
-                        break;
-                    case self::UNIT_SECOND:
-                        break;
-                    case self::UNIT_MICROSECOND:
-                        break;
-                    case self::UNIT_MILLISECOND:
-                        break;
-                    default:
-                        $this->tainted = true;
-                        break;
-                }
-                if (\array_key_exists($unit, $this->values)) {
-                    $this->values[$unit] += $value;
+                if (\array_key_exists($unit, $this->raw)) {
+                    $this->raw[$unit] += $value;
                 } else {
-                    $this->values[$unit] = $value;
+                    $this->raw[$unit] = $value;
                 }
             }
+        }
+
+        foreach ($this->raw as $unit => $value) {
+            $this->values[] = new DateIntervalUnit($value, $unit);
         }
     }
 
@@ -167,9 +125,18 @@ class DateInterval implements Expression
         return 'interval';
     }
 
-    /** @return array<string,int> */
+    /** @return array<DateIntervalUnit> */
     public function getValues(): array
     {
         return $this->values;
+    }
+
+    /**
+     * @internal
+     *   For unit tests mostly.
+     */
+    public function toArray(): array
+    {
+        return $this->raw;
     }
 }

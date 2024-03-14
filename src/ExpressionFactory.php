@@ -13,11 +13,12 @@ use MakinaCorpus\QueryBuilder\Expression\Concat;
 use MakinaCorpus\QueryBuilder\Expression\ConstantTable;
 use MakinaCorpus\QueryBuilder\Expression\CurrentTimestamp;
 use MakinaCorpus\QueryBuilder\Expression\DateAdd;
+use MakinaCorpus\QueryBuilder\Expression\DateInterval;
+use MakinaCorpus\QueryBuilder\Expression\DateIntervalUnit;
 use MakinaCorpus\QueryBuilder\Expression\DateSub;
 use MakinaCorpus\QueryBuilder\Expression\FunctionCall;
 use MakinaCorpus\QueryBuilder\Expression\Identifier;
 use MakinaCorpus\QueryBuilder\Expression\IfThen;
-use MakinaCorpus\QueryBuilder\Expression\DateInterval;
 use MakinaCorpus\QueryBuilder\Expression\Lpad;
 use MakinaCorpus\QueryBuilder\Expression\Modulo;
 use MakinaCorpus\QueryBuilder\Expression\Not;
@@ -105,11 +106,19 @@ class ExpressionFactory
     }
 
     /**
-     * Create an "INTERVAL value unit" expression.
+     * Create an "INTERVAL '1 month 2 day ...'" expression.
      */
     public static function interval(\DateInterval|array $values): DateInterval
     {
         return new DateInterval($values);
+    }
+
+    /**
+     * Create a single "1 month"~ish statement.
+     */
+    public static function intervalUnit(mixed $value, string $unit): DateIntervalUnit
+    {
+        return new DateIntervalUnit($value, $unit);
     }
 
     /**

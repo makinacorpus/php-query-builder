@@ -276,7 +276,7 @@ final class ExpressionHelper
             return $expression;
         }
 
-        if ($expression instanceof \DateInterval || \is_array($expression)) {
+        if ($expression instanceof \DateInterval || \is_array($expression) || \is_string($expression)) {
             return new DateInterval($expression);
         }
 
