@@ -108,6 +108,11 @@ export default defineConfig({
             ]
           },
           {
+            text: 'Dates and intervals',
+            link: '/query/date',
+            items: []
+          },
+          {
             text: 'Value converter',
             link: '/converter/converter',
             items: []

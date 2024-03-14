@@ -51,8 +51,14 @@ class DateInterval implements Expression
      *   If an array given, keys are units and values are integers.
      */
     public function __construct(
-        \DateInterval|array|string $values,
+        DateIntervalUnit|\DateInterval|array|string $values,
     ) {
+        if ($values instanceof DateIntervalUnit) {
+            $this->values[] = $values;
+
+            return;
+        }
+
         if (\is_string($values)) {
             try {
                 $values = new \DateInterval($values);

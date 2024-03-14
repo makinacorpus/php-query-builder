@@ -8,6 +8,7 @@ use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Expression\ArrayValue;
 use MakinaCorpus\QueryBuilder\Expression\ColumnName;
 use MakinaCorpus\QueryBuilder\Expression\DateInterval;
+use MakinaCorpus\QueryBuilder\Expression\DateIntervalUnit;
 use MakinaCorpus\QueryBuilder\Expression\NullValue;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\Expression\Row;
@@ -267,6 +268,10 @@ final class ExpressionHelper
 
         if (null === $expression) {
             return new NullValue();
+        }
+
+        if ($expression instanceof DateIntervalUnit) {
+            return new DateInterval($expression);
         }
 
         if ($expression instanceof Expression) {
