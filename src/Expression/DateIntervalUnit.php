@@ -43,10 +43,6 @@ class DateIntervalUnit implements Expression
 
     private Expression $value;
 
-    /**
-     * @param \DateInterval|array<string,int> $values
-     *   If an array given, keys are units and values are integers.
-     */
     public function __construct(
         mixed $value,
         private string $unit,
