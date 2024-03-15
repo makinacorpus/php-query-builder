@@ -5,18 +5,19 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Platform\Writer;
 
 use MakinaCorpus\QueryBuilder\Error\UnsupportedFeatureError;
+use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Expression\Aggregate;
 use MakinaCorpus\QueryBuilder\Expression\Cast;
 use MakinaCorpus\QueryBuilder\Expression\Concat;
 use MakinaCorpus\QueryBuilder\Expression\CurrentTimestamp;
 use MakinaCorpus\QueryBuilder\Expression\DateAdd;
 use MakinaCorpus\QueryBuilder\Expression\DateInterval;
+use MakinaCorpus\QueryBuilder\Expression\DateIntervalUnit;
 use MakinaCorpus\QueryBuilder\Expression\DateSub;
 use MakinaCorpus\QueryBuilder\Expression\Lpad;
 use MakinaCorpus\QueryBuilder\Expression\Random;
 use MakinaCorpus\QueryBuilder\Expression\StringHash;
 use MakinaCorpus\QueryBuilder\Expression\TableName;
-use MakinaCorpus\QueryBuilder\Expression\Value;
 use MakinaCorpus\QueryBuilder\Writer\Writer;
 use MakinaCorpus\QueryBuilder\Writer\WriterContext;
 
@@ -34,6 +35,16 @@ class SQLServerWriter extends Writer
     protected function shouldEscapeAggregateFunctionName(): bool
     {
         return false;
+    }
+
+    /**
+     * This is nasty, but we don't what the user will want, just cast dates
+     * to the maximum extent possible.
+     */
+    #[\Override]
+    protected function getDateTimeCastType(): string
+    {
+        return 'datetime2';
     }
 
     #[\Override]
@@ -109,22 +120,33 @@ class SQLServerWriter extends Writer
         return 'lower(convert(nvarchar(32), hashbytes(' . $escapedAlgo  . ', ' . $this->format($value, $context) . '), 2))';
     }
 
+    protected function formatDateAddRecursion(Expression $date, array $values, WriterContext $context, bool $negate = false): string
+    {
+        if (empty($values)) {
+            return $this->format($this->toDate($date, $context), $context);
+        }
+
+        $unit = \array_shift($values);
+        \assert($unit instanceof DateIntervalUnit);
+
+        $delta = $this->format($this->toInt($unit->getValue(), $context), $context);
+        if ($negate) {
+            $delta = '0 - ' . $delta;
+        }
+
+        return 'dateadd(' . $unit->getUnit() . ', ' . $delta . ', ' . $this->formatDateAddRecursion($date, $values, $context, $negate) . ')';
+    }
+
     #[\Override]
     protected function formatDateAdd(DateAdd $expression, WriterContext $context): string
     {
         $interval = $expression->getInterval();
 
         if ($interval instanceof DateInterval) {
-            $ret = $this->format($expression->getDate(), $context);
-
-            foreach ($interval->getValues() as $unit) {
-                $ret = 'dateadd(' . $unit->getUnit() . ', ' . $this->format($unit->getValue(), $context) . ', ' . $ret . ')';
-            }
-        } else {
-            throw new UnsupportedFeatureError("SQLServer does not support DATEADD(expr,expr).");
+            return $this->formatDateAddRecursion($expression->getDate(), $interval->getValues(), $context, false);
         }
 
-        return $ret;
+        throw new UnsupportedFeatureError("SQLServer does not support DATEADD(expr,expr).");
     }
 
     #[\Override]
@@ -133,16 +155,10 @@ class SQLServerWriter extends Writer
         $interval = $expression->getInterval();
 
         if ($interval instanceof DateInterval) {
-            $ret = $this->format($expression->getDate(), $context);
-
-            foreach ($interval->getValues() as $unit) {
-                $ret = 'dateadd(' . $unit->getUnit() . ', 0 - ' . $this->format($unit->getValue(), $context) . ', ' . $ret . ')';
-            }
-        } else {
-            throw new UnsupportedFeatureError("SQLServer does not support DATEADD(expr,expr).");
+            return $this->formatDateAddRecursion($expression->getDate(), $interval->getValues(), $context, true);
         }
 
-        return $ret;
+        throw new UnsupportedFeatureError("SQLServer does not support DATEADD(expr,expr).");
     }
 
     #[\Override]

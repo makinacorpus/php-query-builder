@@ -50,6 +50,7 @@ class DateInputConverter implements InputConverter, InputTypeGuesser
             'date',
             'datetime',
             'datetimez',
+            'datetime2',
             'time with time zone',
             'time',
             'timestamp with time zone',
@@ -97,6 +98,7 @@ class DateInputConverter implements InputConverter, InputTypeGuesser
 
             case 'datetime':
             case 'datetimez':
+            case 'datetime2':
             case 'timestamp with time zone':
             case 'timestamp':
             case 'timestampz':

@@ -79,7 +79,7 @@ abstract class AbstractErrorConverterTestCase extends FunctionalTestCase
                         data nvarchar(500) DEFAULT NULL,
                         CONSTRAINT bar_foo_id_fk FOREIGN KEY (foo_id)
                             REFERENCES bar (id)
-                            ON DELETE CASCADE
+                            ON DELETE NO ACTION
                     )
                     SQL
                 );

@@ -38,6 +38,12 @@ class DateOutputConverter implements OutputConverter
         if (\preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/', $value)) {
             $userTimeZone = new \DateTimeZone($context->getClientTimeZone());
 
+            // SQL Server has a digit more for precision than the others.
+            // let's just strip ip.
+            if (\preg_match('/\.\d{7}$/', $value)) {
+                $value = \substr($value, 0, -1);
+            }
+
             // Attempt all possible outcomes.
             if ($ret = \DateTimeImmutable::createFromFormat(DateInputConverter::FORMAT_DATETIME_USEC_TZ, $value)) {
                 // Time zone is within the date, as an offset. Convert the

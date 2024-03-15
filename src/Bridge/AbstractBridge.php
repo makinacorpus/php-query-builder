@@ -23,6 +23,7 @@ use MakinaCorpus\QueryBuilder\Platform\Schema\SQLiteSchemaManager;
 use MakinaCorpus\QueryBuilder\Platform\Transaction\MySQLTransaction;
 use MakinaCorpus\QueryBuilder\Platform\Transaction\PostgreSQLTransaction;
 use MakinaCorpus\QueryBuilder\Platform\Transaction\SQLiteTransaction;
+use MakinaCorpus\QueryBuilder\Platform\Transaction\SQLServerTransaction;
 use MakinaCorpus\QueryBuilder\Platform\Writer\MariaDBWriter;
 use MakinaCorpus\QueryBuilder\Platform\Writer\MySQL8Writer;
 use MakinaCorpus\QueryBuilder\Platform\Writer\MySQLWriter;
@@ -294,7 +295,8 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
             Platform::MYSQL => new MySQLTransaction($this, $isolationLevel),
             Platform::POSTGRESQL => new PostgreSQLTransaction($this, $isolationLevel),
             Platform::SQLITE => new SQLiteTransaction($this, $isolationLevel),
-            default => new QueryBuilderError(\sprintf("Transactions are not supported yet for vendor '%s'", $this->getServerFlavor())),
+            Platform::SQLSERVER => new SQLServerTransaction($this, $isolationLevel),
+            default => throw new QueryBuilderError(\sprintf("Transactions are not supported yet for vendor '%s'", $this->getServerFlavor())),
         };
     }
 

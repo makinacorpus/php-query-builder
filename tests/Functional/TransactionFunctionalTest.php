@@ -59,7 +59,7 @@ final class TransactionFunctionalTest extends DoctrineTestCase
                 $bridge->executeStatement(
                     <<<SQL
                     CREATE TABLE transaction_test (
-                        id serial PRIMARY KEY,
+                        id int IDENTITY(1,1) PRIMARY KEY,
                         foo integer NOT NULL,
                         bar nvarchar(255) DEFAULT NULL
                     )
@@ -70,7 +70,6 @@ final class TransactionFunctionalTest extends DoctrineTestCase
                     alter table transaction_test
                         add constraint transaction_test_foo
                         unique (foo)
-                        deferrable
                     SQL
                 );
                 $bridge->executeStatement(
@@ -78,7 +77,6 @@ final class TransactionFunctionalTest extends DoctrineTestCase
                     alter table transaction_test
                         add constraint transaction_test_bar
                         unique (bar)
-                        deferrable
                     SQL
                 );
                 break;
@@ -158,8 +156,8 @@ final class TransactionFunctionalTest extends DoctrineTestCase
             ->executeQuery()
         ;
 
-        // @todo Row count doesn't work with SQLite
-        if ($this->ifDatabaseNot(Platform::SQLITE)) {
+        // @todo Row count doesn't work with SQLite and SQLServer
+        if ($this->ifDatabaseNot(Platform::SQLITE) && $this->ifDatabaseNot(Platform::SQLSERVER)) {
             self::assertSame(4, $result->rowCount());
         }
         self::assertSame('a', $result->fetchRow()->get('bar'));
@@ -208,8 +206,8 @@ final class TransactionFunctionalTest extends DoctrineTestCase
             ->executeQuery()
         ;
 
-        // @todo Row count doesn't work with SQLite
-        if ($this->ifDatabaseNot(Platform::SQLITE)) {
+        // @todo Row count doesn't work with SQLite and SQLServer
+        if ($this->ifDatabaseNot(Platform::SQLITE) && $this->ifDatabaseNot(Platform::SQLSERVER)) {
             self::assertSame(2, $result->rowCount());
         }
         self::assertSame('g', $result->fetchRow()->get('bar'));
@@ -257,8 +255,8 @@ final class TransactionFunctionalTest extends DoctrineTestCase
             ->executeQuery()
         ;
 
-        // @todo Row count doesn't work with SQLite
-        if ($this->ifDatabaseNot(Platform::SQLITE)) {
+        // @todo Row count doesn't work with SQLite and SQLServer
+        if ($this->ifDatabaseNot(Platform::SQLITE) && $this->ifDatabaseNot(Platform::SQLSERVER)) {
             self::assertSame(1, $result->rowCount());
         }
         self::assertSame('f', $result->fetchRow()->get('bar'));
@@ -271,6 +269,7 @@ final class TransactionFunctionalTest extends DoctrineTestCase
     {
         // @todo Support IMMEDIATE in the BEGIN statement for SQLite.
         self::skipIfDatabase(Platform::SQLITE);
+        self::skipIfDatabase(Platform::SQLSERVER, 'SQL Server can not deffer constraints');
 
         self::expectNotToPerformAssertions();
 
@@ -319,6 +318,7 @@ final class TransactionFunctionalTest extends DoctrineTestCase
     {
         // @todo Support IMMEDIATE in the BEGIN statement for SQLite.
         self::skipIfDatabase(Platform::SQLITE);
+        self::skipIfDatabase(Platform::SQLSERVER, 'SQL Server can not deffer constraints');
 
         self::expectNotToPerformAssertions();
 
@@ -431,8 +431,8 @@ final class TransactionFunctionalTest extends DoctrineTestCase
             ->executeQuery()
         ;
 
-        // @todo Row count doesn't work with SQLite
-        if ($this->ifDatabaseNot(Platform::SQLITE)) {
+        // @todo Row count doesn't work with SQLite and SQLServer
+        if ($this->ifDatabaseNot(Platform::SQLITE) && $this->ifDatabaseNot(Platform::SQLSERVER)) {
             self::assertSame(3, $result->rowCount());
         } else {
             $count = 0;

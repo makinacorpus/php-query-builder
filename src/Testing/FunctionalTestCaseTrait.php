@@ -245,6 +245,7 @@ trait FunctionalTestCaseTrait
         if (\str_contains($driver,  'sqlsrv')) {
             // https://stackoverflow.com/questions/71688125/odbc-driver-18-for-sql-serverssl-provider-error1416f086
             $driverOptions['TrustServerCertificate'] = "true";
+            $driverOptions['MultipleActiveResultSets'] = "false";
         }
 
         return \array_filter([

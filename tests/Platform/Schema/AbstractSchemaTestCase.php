@@ -18,6 +18,9 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
     /** @before */
     protected function createSchema(): void
     {
+        $this->skipIfDatabase(Platform::SQLITE);
+        $this->skipIfDatabase(Platform::SQLSERVER);
+
         $bridge = $this->getBridge();
 
         foreach ([

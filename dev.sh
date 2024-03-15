@@ -223,7 +223,7 @@ do_test() {
     if [[ -n $@ ]];then shift;fi
 
     case $suit in
-        mysql57|mysql80|mariadb11|mysql|postgresql10|postgresql16|postgresql|sqlsrv2019|sqlsrv|sqlite) do_composer_install && do_test_$suit "$@";;
+        mysql57|mysql80|mariadb11|mysql|postgresql10|postgresql16|postgresql|sqlsrv2019|sqlsrv|sqlsrv2019|sqlsrv2022|sqlite) do_composer_install && do_test_$suit "$@";;
         *) do_test_notice;;
     esac
 }
