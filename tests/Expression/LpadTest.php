@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Tests\Expression;
 
+use MakinaCorpus\QueryBuilder\Expression\ColumnName;
 use MakinaCorpus\QueryBuilder\Expression\Lpad;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
+use MakinaCorpus\QueryBuilder\Expression\Value;
 use MakinaCorpus\QueryBuilder\Tests\UnitTestCase;
 
 class LpadTest extends UnitTestCase
@@ -32,25 +34,37 @@ class LpadTest extends UnitTestCase
         self::assertEquals($expression, $clone);
     }
 
-    public function testBasic(): void
+    public function testCastPerDefault(): void
     {
         $expression = new Lpad('foo', 12);
 
         self::assertSameSql(
             <<<SQL
-            lpad(#1, #2, #3)
+            lpad(cast(#1 as varchar), cast(#2 as int), cast(#3 as varchar))
             SQL,
             $expression
         );
     }
 
-    public function testCastIfNotTypes(): void
+    public function testCastIfValueWithoutTypes(): void
     {
-        $expression = new Lpad(new Raw("'foo'"), new Raw("12"), new Raw("' '"));
+        $expression = new Lpad(new Value("'foo'"), new Value("12", 'int'), new Value("' '", 'text'));
 
         self::assertSameSql(
             <<<SQL
-            lpad(cast('foo' as varchar), cast(12 as int), cast(' ' as varchar))
+            lpad(cast(#1 as varchar), cast(#2 as int), cast(#3 as varchar))
+            SQL,
+            $expression
+        );
+    }
+
+    public function testDoesNotCastWhenRawOrColumn(): void
+    {
+        $expression = new Lpad(new Raw("'foo'"), new Raw("12"), new ColumnName('foo.bar'));
+
+        self::assertSameSql(
+            <<<SQL
+            lpad('foo', 12, "foo"."bar")
             SQL,
             $expression
         );

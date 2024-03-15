@@ -329,9 +329,9 @@ class ExpressionFactory
     /**
      * Arbitrary value.
      */
-    public static function value(mixed $value, ?string $type = null): Value
+    public static function value(mixed $value, ?string $type = null, ?string $castToType = null): Value
     {
-        return new Value($value, $type);
+        return new Value($value, $type, $castToType);
     }
 
     /**

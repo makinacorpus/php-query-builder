@@ -37,7 +37,7 @@ class StringHashTest extends UnitTestCase
 
         self::assertSameSql(
             <<<SQL
-            md5(#1)
+            md5(cast(#1 as varchar))
             SQL,
             $expression
         );
@@ -49,7 +49,7 @@ class StringHashTest extends UnitTestCase
 
         self::assertSameSql(
             <<<SQL
-            digest(#1, 'sha1')
+            digest(cast(#1 as varchar), 'sha1')
             SQL,
             $expression
         );

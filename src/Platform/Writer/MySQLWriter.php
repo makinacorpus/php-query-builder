@@ -40,6 +40,12 @@ class MySQLWriter extends Writer
     }
 
     #[\Override]
+    protected function getDateTimeCastType(): string
+    {
+        return 'datetime';
+    }
+
+    #[\Override]
     protected function formatCurrentTimestamp(CurrentTimestamp $expression, WriterContext $context): string
     {
         return 'now()';

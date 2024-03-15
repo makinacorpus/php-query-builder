@@ -15,7 +15,7 @@ use MakinaCorpus\QueryBuilder\Expression;
  * You may also provide a value type, for the PHP side, in order for the
  * converter to proceed to a different conversion than the SQL cast.
  */
-class Cast implements Expression
+class Cast implements Castable
 {
     private Expression $expression;
 
@@ -47,16 +47,14 @@ class Cast implements Expression
         return $this->castToType;
     }
 
+    #[\Override]
+    public function getCastToType(): ?string
+    {
+        return $this->castToType;
+    }
+
     public function getExpression(): Expression
     {
         return $this->expression;
-    }
-
-    /**
-     * Get value type.
-     */
-    public function getCastToType(): string
-    {
-        return $this->castToType;
     }
 }

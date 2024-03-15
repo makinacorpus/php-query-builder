@@ -18,7 +18,8 @@ class Value implements Expression
 {
     public function __construct(
         private mixed $value,
-        private ?string $type = null
+        private ?string $type = null,
+        private ?string $castToType = null,
     ) {
         if (null === $value && !$type) {
             $this->type = 'null';
@@ -34,7 +35,13 @@ class Value implements Expression
     #[\Override]
     public function returnType(): ?string
     {
-        return $this->type;
+        return $this->castToType ?? $this->type;
+    }
+
+    #[\Override]
+    public function getCastToType(): ?string
+    {
+        return $this->castToType;
     }
 
     /**

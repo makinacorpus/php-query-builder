@@ -55,4 +55,21 @@ class ValueTest extends UnitTestCase
             $expression
         );
     }
+
+    public function testWithCastToType(): void
+    {
+        $expression = new Value('foo', null, 'varchar');
+
+        self::assertTrue($expression->returns());
+        self::assertSame('foo', $expression->getValue());
+        self::assertNull($expression->getType());
+        self::assertSame('varchar', $expression->getCastToType());
+
+        self::assertSameSql(
+            <<<SQL
+            cast(#1 as varchar)
+            SQL,
+            $expression
+        );
+    }
 }
