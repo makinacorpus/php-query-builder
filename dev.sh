@@ -150,8 +150,24 @@ do_test_sqlsrv2019() {
         phpunit vendor/bin/phpunit "$@"
 }
 
+do_test_sqlsrv2022() {
+    section_title "Running tests with SQL Server 2022"
+    docker compose -p query_builder_test exec \
+        -e DBAL_DRIVER=pdo_sqlsrv \
+        -e DBAL_DBNAME=test_db \
+        -e DBAL_HOST=sqlsrv2022 \
+        -e DBAL_PASSWORD=P@ssword123 \
+        -e DBAL_PORT=1433 \
+        -e DBAL_ROOT_PASSWORD=P@ssword123 \
+        -e DBAL_ROOT_USER=sa \
+        -e DBAL_USER=sa \
+        -e DATABASE_URL="pdo-sqlsrv://sa:P%40ssword123@sqlsrv2022:1433/test_db?serverVersion=2022&charset=utf8&driverOptions[TrustServerCertificate]=true" \
+        phpunit vendor/bin/phpunit "$@"
+}
+
 do_test_sqlsrv() {
     do_test_sqlsrv2019 "$@"
+    do_test_sqlsrv2022 "$@"
 }
 
 # SQLite version depends upon the PHP embeded version or linked
@@ -176,6 +192,7 @@ do_test_all() {
     do_test_postgresql10 "$@"
     do_test_postgresql16 "$@"
     do_test_sqlsrv2019 "$@"
+    do_test_sqlsrv2022 "$@"
     do_test_sqlite "$@"
 }
 

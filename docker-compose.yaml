@@ -72,6 +72,18 @@ services:
             - 9606:1433
         networks:
             - query-builder-test
+    sqlsrv2022:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        restart: 'no'
+        environment:
+            ACCEPT_EULA: "y"
+            MSSQL_PID: Developer
+            MSSQL_SA_PASSWORD: P@ssword123
+            SA_PASSWORD: P@ssword123
+        ports:
+            - 9607:1433
+        networks:
+            - query-builder-test
 
 networks:
     query-builder-test:
