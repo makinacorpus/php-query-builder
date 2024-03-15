@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Expression;
 
-use MakinaCorpus\QueryBuilder\Expression;
-
 /**
  * Represents a raw value, along with an optional type.
  *
@@ -14,7 +12,7 @@ use MakinaCorpus\QueryBuilder\Expression;
  *
  * Value itself can be anything including an Expression instance.
  */
-class Value implements Expression
+class Value implements Castable
 {
     public function __construct(
         private mixed $value,
