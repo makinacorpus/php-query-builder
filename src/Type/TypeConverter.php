@@ -27,8 +27,13 @@ class TypeConverter
         }
 
         $userType = \trim($userType);
-        $withTimeZone = false;
+        $withTimeZone = $array = false;
         $length = $precision = $scale = null;
+
+        if (\str_ends_with($userType, '[]')) {
+            $userType = \trim(\substr($userType, 0, -2));
+            $array = true;
+        }
 
         // Catch precision and scale or length.
         $matches = [];
@@ -252,7 +257,15 @@ class TypeConverter
                 break;
         }
 
-        return new Type($internal, $name, $length, $precision, $scale, $withTimeZone);
+        return new Type(
+            internal: $internal,
+            name: $name,
+            length: $length,
+            precision: $precision,
+            scale: $scale,
+            withTimeZone: $withTimeZone,
+            array: $array
+        );
     }
 
     /**

@@ -146,18 +146,6 @@ class Writer
     }
 
     /**
-     * Some vendors don't support the "timestamp" type for cast, such as MySQL.
-     *
-     * @deprecated
-     * @internal
-     * @todo Move this out into a type manager.
-     */
-    protected function getDateTimeCastType(): string
-    {
-        return 'timestamp';
-    }
-
-    /**
      * Generic isType*() implementation.
      *
      * @deprecated
@@ -170,63 +158,19 @@ class Writer
             return false;
         }
 
-        if ($exprType === $this->getDateTimeCastType()) {
-            $exprType = 'timestamp';
-        }
-
         return match ($type) {
-            'date' => \str_contains($exprType, 'date') || \str_contains($exprType, 'timestamp'),
-            'int'  => 'numeric' === $exprType || \str_contains($exprType, 'int') || \str_contains($exprType, 'float'),
-            'numeric' => 'numeric' === $exprType || \str_contains($exprType, 'int') || \str_contains($exprType, 'float'),
-            'text' => 'text' === $exprType || 'string' === $exprType || \str_contains($exprType, 'varchar'),
-            'timestamp' => \str_contains($exprType, 'date') || \str_contains($exprType, 'timestamp'),
-            'varchar' => 'text' === $exprType || 'string' === $exprType || \str_contains($exprType, 'varchar'),
+            'date' => $this->typeConverter->isTypeDateCompatible($exprType),
+            'int'  => $this->typeConverter->isTypeIntCompatible($exprType),
+            'numeric' => $this->typeConverter->isTypeNumeric($exprType),
+            'text' => $this->typeConverter->isTypeTextCompatible($exprType),
+            'timestamp' => $this->typeConverter->isTypeDateCompatible($exprType),
+            'varchar' => $this->typeConverter->isTypeVarcharCompatible($exprType),
             default => false,
         };
     }
 
     /**
-     * Is text type.
-     *
-     * @deprecated
-     * @internal
-     * @todo Move this out into a type manager.
-     */
-    protected function isTypeNumeric(?string $exprType): bool
-    {
-        return $this->isType('numeric', $exprType);
-    }
-
-    /**
-     * Is text type.
-     *
-     * @deprecated
-     * @internal
-     * @todo Move this out into a type manager.
-     */
-    protected function isTypeText(?string $exprType): bool
-    {
-        return $this->isType('text', $exprType);
-    }
-
-    /**
-     * Is text date, datetime, timestamp, ....
-     *
-     * @deprecated
-     * @internal
-     * @todo Move this out into a type manager.
-     */
-    protected function isTypeDate(?string $exprType): bool
-    {
-        return $this->isType('date', $exprType);
-    }
-
-    /**
      * Guess type of expression.
-     *
-     * @deprecated
-     * @internal
-     * @todo Move this out into a type manager.
      */
     protected function guessTypeOf(Expression $expression): ?string
     {
@@ -305,7 +249,7 @@ class Writer
      */
     protected function toDate(Expression $expression, WriterContext $context, bool $ignoreRaw = true): Expression
     {
-        return $this->forceCast($expression, $context, $this->getDateTimeCastType(), $ignoreRaw);
+        return $this->forceCast($expression, $context, $this->typeConverter->getTimestampCastType(), $ignoreRaw);
     }
 
     /**

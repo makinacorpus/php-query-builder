@@ -45,16 +45,6 @@ class SQLServerWriter extends Writer
         return false;
     }
 
-    /**
-     * This is nasty, but we don't what the user will want, just cast dates
-     * to the maximum extent possible.
-     */
-    #[\Override]
-    protected function getDateTimeCastType(): string
-    {
-        return 'datetime2';
-    }
-
     #[\Override]
     protected function formatCurrentTimestamp(CurrentTimestamp $expression, WriterContext $context): string
     {

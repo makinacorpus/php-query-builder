@@ -19,6 +19,7 @@ class Type
         public ?int $precision,
         public ?int $scale,
         public bool $withTimeZone,
+        public bool $array,
     ) {
         $this->isNumeric = $this->internal->isNumeric();
         $this->isText = $this->internal->isText();
