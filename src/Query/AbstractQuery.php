@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Query;
 
+use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\ExpressionFactory;
 use MakinaCorpus\QueryBuilder\OptionsBag;
-use MakinaCorpus\QueryBuilder\QueryExecutor;
 use MakinaCorpus\QueryBuilder\Query\Partial\AliasHolderTrait;
 use MakinaCorpus\QueryBuilder\Query\Partial\WithClauseTrait;
+use MakinaCorpus\QueryBuilder\QueryExecutor;
 use MakinaCorpus\QueryBuilder\Result\Result;
-use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
+use MakinaCorpus\QueryBuilder\Type\Type;
 
 abstract class AbstractQuery implements Query
 {
@@ -38,7 +39,7 @@ abstract class AbstractQuery implements Query
     }
 
     #[\Override]
-    public function returnType(): ?string
+    public function returnType(): ?Type
     {
         return null;
     }

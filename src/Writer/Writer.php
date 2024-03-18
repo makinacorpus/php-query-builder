@@ -170,25 +170,6 @@ class Writer
     }
 
     /**
-     * Guess type of expression.
-     */
-    protected function guessTypeOf(Expression $expression): ?string
-    {
-        if ($type = $expression->returnType()) {
-            return $type;
-        }
-        if ($expression instanceof Value) {
-            if ($type = $this->getConverter()->guessInputType($expression->getValue())) {
-                // Cache guessed type to avoid doing it twice when converting
-                // values later at query time.
-                $expression->setType($type);
-            }
-            return $type;
-        }
-        return null;
-    }
-
-    /**
      * Generic force cast when expression type is unknown or is not compatible
      * with given target type.
      *

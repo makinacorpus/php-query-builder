@@ -6,6 +6,7 @@ namespace MakinaCorpus\QueryBuilder\Expression;
 
 use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\ExpressionHelper;
+use MakinaCorpus\QueryBuilder\Type\Type;
 
 /**
  * Represent a value array, such as ARRAY[1, 2, ...].
@@ -42,9 +43,9 @@ class ArrayValue implements Expression
     }
 
     #[\Override]
-    public function returnType(): ?string
+    public function returnType(): ?Type
     {
-        return $this->valueType ? ($this->valueType . '[]') : 'array';
+        return $this->valueType ? Type::create($this->valueType, true) : null;
     }
 
     /**

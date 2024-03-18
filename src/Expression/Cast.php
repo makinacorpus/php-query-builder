@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Expression;
 
 use MakinaCorpus\QueryBuilder\Expression;
+use MakinaCorpus\QueryBuilder\Type\Type;
 
 /**
  * Cast expression is the same as a value expression, but type is mandatory.
@@ -42,9 +43,9 @@ class Cast implements Castable
     }
 
     #[\Override]
-    public function returnType(): ?string
+    public function returnType(): ?Type
     {
-        return $this->castToType;
+        return Type::create($this->castToType);
     }
 
     #[\Override]

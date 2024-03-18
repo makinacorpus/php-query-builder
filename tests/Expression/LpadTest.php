@@ -9,6 +9,7 @@ use MakinaCorpus\QueryBuilder\Expression\Lpad;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\Expression\Value;
 use MakinaCorpus\QueryBuilder\Tests\UnitTestCase;
+use MakinaCorpus\QueryBuilder\Type\Type;
 
 class LpadTest extends UnitTestCase
 {
@@ -23,7 +24,7 @@ class LpadTest extends UnitTestCase
     {
         $expression = new Lpad('foo', 12);
 
-        self::assertSame('varchar', $expression->returnType());
+        self::assertEquals(Type::text(), $expression->returnType());
     }
 
     public function testClone(): void

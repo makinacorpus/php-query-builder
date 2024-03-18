@@ -7,6 +7,7 @@ namespace MakinaCorpus\QueryBuilder\Tests\Expression;
 use MakinaCorpus\QueryBuilder\Expression\Concat;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\Tests\UnitTestCase;
+use MakinaCorpus\QueryBuilder\Type\Type;
 
 class ConcatTest extends UnitTestCase
 {
@@ -21,7 +22,7 @@ class ConcatTest extends UnitTestCase
     {
         $expression = new Concat('foo');
 
-        self::assertSame('varchar', $expression->returnType());
+        self::assertEquals(Type::text(), $expression->returnType());
     }
 
     public function testClone(): void

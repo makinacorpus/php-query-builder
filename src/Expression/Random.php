@@ -5,6 +5,7 @@ declare (strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Expression;
 
 use MakinaCorpus\QueryBuilder\Expression;
+use MakinaCorpus\QueryBuilder\Type\Type;
 
 /**
  * Non SQL standard RANDOM() expression.
@@ -29,8 +30,8 @@ class Random implements Expression
     }
 
     #[\Override]
-    public function returnType(): ?string
+    public function returnType(): ?Type
     {
-        return 'numeric';
+        return Type::float();
     }
 }

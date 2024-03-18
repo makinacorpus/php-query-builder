@@ -6,6 +6,7 @@ namespace MakinaCorpus\QueryBuilder\Expression;
 
 use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\ExpressionHelper;
+use MakinaCorpus\QueryBuilder\Type\Type;
 
 /**
  * Interval type expression.
@@ -102,9 +103,9 @@ class DateIntervalUnit implements Expression
     /**
      * {@inheritdoc}
      */
-    public function returnType(): ?string
+    public function returnType(): ?Type
     {
-        return 'interval';
+        return Type::dateInterval();
     }
 
     public function getValue(): Expression

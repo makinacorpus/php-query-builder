@@ -5,6 +5,7 @@ declare (strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Expression;
 
 use MakinaCorpus\QueryBuilder\TableExpression;
+use MakinaCorpus\QueryBuilder\Type\Type;
 
 /**
  * Represent a table name.
@@ -30,7 +31,7 @@ class TableName extends Identifier implements TableExpression, WithAlias
     }
 
     #[\Override]
-    public function returnType(): ?string
+    public function returnType(): ?Type
     {
         return null;
     }

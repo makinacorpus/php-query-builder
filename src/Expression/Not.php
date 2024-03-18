@@ -5,6 +5,7 @@ declare (strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Expression;
 
 use MakinaCorpus\QueryBuilder\Expression;
+use MakinaCorpus\QueryBuilder\Type\Type;
 
 /**
  * Negate a boolean expression.
@@ -22,9 +23,9 @@ class Not implements Expression
     }
 
     #[\Override]
-    public function returnType(): ?string
+    public function returnType(): ?Type
     {
-        return 'bool';
+        return Type::bool();
     }
 
     public function getExpression(): Expression

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Expression;
 
+use MakinaCorpus\QueryBuilder\Type\Type;
+
 /**
  * Represents a raw value, along with an optional type.
  *
@@ -31,9 +33,15 @@ class Value implements Castable
     }
 
     #[\Override]
-    public function returnType(): ?string
+    public function returnType(): ?Type
     {
-        return $this->castToType ?? $this->type;
+        if ($this->castToType) {
+            return Type::create($this->castToType);
+        }
+        if ($this->type) {
+            return Type::create($this->type);
+        }
+        return null;
     }
 
     #[\Override]

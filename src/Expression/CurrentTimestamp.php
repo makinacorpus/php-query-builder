@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Expression;
 
 use MakinaCorpus\QueryBuilder\Expression;
+use MakinaCorpus\QueryBuilder\Type\Type;
 
 /**
  * CURRENT_TIMESTAMP, NOW(), GETDATE() depending upon the dialect.
@@ -18,8 +19,8 @@ class CurrentTimestamp implements Expression
     }
 
     #[\Override]
-    public function returnType(): ?string
+    public function returnType(): ?Type
     {
-        return 'timestamp';
+        return Type::timestamp(true);
     }
 }

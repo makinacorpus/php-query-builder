@@ -57,6 +57,9 @@ enum InternalType
     /** JSON. */
     case JSON;
 
+    /** NULL is not really a type. */
+    case NULL;
+
     /** Identity (pgsql only, deprecated). */
     case SERIAL;
 
