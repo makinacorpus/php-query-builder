@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Platform\Writer;
 
 use MakinaCorpus\QueryBuilder\Expression\Row;
+use MakinaCorpus\QueryBuilder\Platform\Type\MariaDBTypeConverter;
+use MakinaCorpus\QueryBuilder\Type\TypeConverter;
 use MakinaCorpus\QueryBuilder\Writer\WriterContext;
 
 /**
@@ -12,6 +14,12 @@ use MakinaCorpus\QueryBuilder\Writer\WriterContext;
  */
 class MariaDBWriter extends MySQL8Writer
 {
+    #[\Override]
+    protected function createTypeConverter(): TypeConverter
+    {
+        return new MariaDBTypeConverter();
+    }
+
     /**
      * MariaDB >= 10.3 supports standard SQL VALUES statement.
      * Nevertheless, it doesn't support aliasing column names of values.

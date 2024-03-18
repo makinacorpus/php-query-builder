@@ -58,6 +58,7 @@ use MakinaCorpus\QueryBuilder\Query\RawQuery;
 use MakinaCorpus\QueryBuilder\Query\Select;
 use MakinaCorpus\QueryBuilder\Query\Update;
 use MakinaCorpus\QueryBuilder\SqlString;
+use MakinaCorpus\QueryBuilder\Type\TypeConverter;
 use MakinaCorpus\QueryBuilder\Where;
 
 /**
@@ -79,6 +80,7 @@ use MakinaCorpus\QueryBuilder\Where;
 class Writer
 {
     private string $matchParametersRegex;
+    private ?TypeConverter $typeConverter = null;
     private ?Converter $converter = null;
     protected Escaper $escaper;
 
@@ -86,7 +88,24 @@ class Writer
     {
         $this->converter = $converter;
         $this->escaper = $escaper ?? new StandardEscaper();
+        $this->typeConverter = $this->createTypeConverter();
         $this->buildParameterRegex();
+    }
+
+    /**
+     * Get type converter.
+     */
+    public function getTypeConverter(): TypeConverter
+    {
+        return $this->typeConverter;
+    }
+
+    /**
+     * Create vendor-specific type converter.
+     */
+    protected function createTypeConverter(): TypeConverter
+    {
+        return new TypeConverter();
     }
 
     /**

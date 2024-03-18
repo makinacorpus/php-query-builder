@@ -18,10 +18,12 @@ use MakinaCorpus\QueryBuilder\Expression\DateSub;
 use MakinaCorpus\QueryBuilder\Expression\Random;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\Expression\StringHash;
+use MakinaCorpus\QueryBuilder\Platform\Type\MySQLTypeConverter;
 use MakinaCorpus\QueryBuilder\Query\Delete;
 use MakinaCorpus\QueryBuilder\Query\Merge;
 use MakinaCorpus\QueryBuilder\Query\Query;
 use MakinaCorpus\QueryBuilder\Query\Update;
+use MakinaCorpus\QueryBuilder\Type\TypeConverter;
 use MakinaCorpus\QueryBuilder\Writer\Writer;
 use MakinaCorpus\QueryBuilder\Writer\WriterContext;
 
@@ -30,6 +32,12 @@ use MakinaCorpus\QueryBuilder\Writer\WriterContext;
  */
 class MySQLWriter extends Writer
 {
+    #[\Override]
+    protected function createTypeConverter(): TypeConverter
+    {
+        return new MySQLTypeConverter();
+    }
+
     /**
      * MySQL aggregate function names seems to be keywords, not functions.
      */

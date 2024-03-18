@@ -7,6 +7,8 @@ namespace MakinaCorpus\QueryBuilder\Platform\Writer;
 use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\Expression\Row;
+use MakinaCorpus\QueryBuilder\Platform\Type\MySQL8TypeConverter;
+use MakinaCorpus\QueryBuilder\Type\TypeConverter;
 use MakinaCorpus\QueryBuilder\Writer\WriterContext;
 
 /**
@@ -16,6 +18,12 @@ use MakinaCorpus\QueryBuilder\Writer\WriterContext;
  */
 class MySQL8Writer extends MySQLWriter
 {
+    #[\Override]
+    protected function createTypeConverter(): TypeConverter
+    {
+        return new MySQL8TypeConverter();
+    }
+
     #[\Override]
     protected function doFormatInsertExcludedItem($expression): Expression
     {

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Platform\Writer;
 
-use MakinaCorpus\QueryBuilder\Error\UnsupportedFeatureError;
 use MakinaCorpus\QueryBuilder\Expression;
+use MakinaCorpus\QueryBuilder\Error\UnsupportedFeatureError;
 use MakinaCorpus\QueryBuilder\Expression\Aggregate;
 use MakinaCorpus\QueryBuilder\Expression\Cast;
 use MakinaCorpus\QueryBuilder\Expression\Concat;
@@ -18,6 +18,8 @@ use MakinaCorpus\QueryBuilder\Expression\Lpad;
 use MakinaCorpus\QueryBuilder\Expression\Random;
 use MakinaCorpus\QueryBuilder\Expression\StringHash;
 use MakinaCorpus\QueryBuilder\Expression\TableName;
+use MakinaCorpus\QueryBuilder\Platform\Type\SQLServerTypeConverter;
+use MakinaCorpus\QueryBuilder\Type\TypeConverter;
 use MakinaCorpus\QueryBuilder\Writer\Writer;
 use MakinaCorpus\QueryBuilder\Writer\WriterContext;
 
@@ -27,6 +29,12 @@ use MakinaCorpus\QueryBuilder\Writer\WriterContext;
 class SQLServerWriter extends Writer
 {
     // @see doModifyLimitQuery() in doctrine/dbal
+
+    #[\Override]
+    protected function createTypeConverter(): TypeConverter
+    {
+        return new SQLServerTypeConverter();
+    }
 
     /**
      * SQLServer aggregate function names seems to be keywords, not functions.
