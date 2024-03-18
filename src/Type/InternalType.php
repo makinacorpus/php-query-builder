@@ -84,6 +84,11 @@ enum InternalType
     /** Unknown / unhandled type. */
     case UNKNOWN;
 
+    public function isDate(): bool
+    {
+        return $this === self::DATE || $this === self::TIMESTAMP;
+    }
+
     public function isNumeric(): bool
     {
         return

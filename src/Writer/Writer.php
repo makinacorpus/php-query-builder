@@ -4,11 +4,13 @@ declare (strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Writer;
 
+use MakinaCorpus\QueryBuilder\Expression;
+use MakinaCorpus\QueryBuilder\SqlString;
+use MakinaCorpus\QueryBuilder\Where;
 use MakinaCorpus\QueryBuilder\Converter\Converter;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Error\UnsupportedExpressionError;
 use MakinaCorpus\QueryBuilder\Escaper\Escaper;
-use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Expression\Aggregate;
 use MakinaCorpus\QueryBuilder\Expression\Aliased;
 use MakinaCorpus\QueryBuilder\Expression\ArrayValue;
@@ -49,17 +51,16 @@ use MakinaCorpus\QueryBuilder\Platform\Escaper\StandardEscaper;
 use MakinaCorpus\QueryBuilder\Query\Delete;
 use MakinaCorpus\QueryBuilder\Query\Insert;
 use MakinaCorpus\QueryBuilder\Query\Merge;
-use MakinaCorpus\QueryBuilder\Query\Partial\JoinStatement;
-use MakinaCorpus\QueryBuilder\Query\Partial\OrderByStatement;
-use MakinaCorpus\QueryBuilder\Query\Partial\SelectColumn;
-use MakinaCorpus\QueryBuilder\Query\Partial\WithStatement;
 use MakinaCorpus\QueryBuilder\Query\Query;
 use MakinaCorpus\QueryBuilder\Query\RawQuery;
 use MakinaCorpus\QueryBuilder\Query\Select;
 use MakinaCorpus\QueryBuilder\Query\Update;
-use MakinaCorpus\QueryBuilder\SqlString;
+use MakinaCorpus\QueryBuilder\Query\Partial\JoinStatement;
+use MakinaCorpus\QueryBuilder\Query\Partial\OrderByStatement;
+use MakinaCorpus\QueryBuilder\Query\Partial\SelectColumn;
+use MakinaCorpus\QueryBuilder\Query\Partial\WithStatement;
+use MakinaCorpus\QueryBuilder\Type\Type;
 use MakinaCorpus\QueryBuilder\Type\TypeConverter;
-use MakinaCorpus\QueryBuilder\Where;
 
 /**
  * Standard SQL query formatter: this implementation conforms as much as it
@@ -80,7 +81,7 @@ use MakinaCorpus\QueryBuilder\Where;
 class Writer
 {
     private string $matchParametersRegex;
-    private ?TypeConverter $typeConverter = null;
+    protected ?TypeConverter $typeConverter = null;
     private ?Converter $converter = null;
     protected Escaper $escaper;
 
@@ -146,37 +147,13 @@ class Writer
     }
 
     /**
-     * Generic isType*() implementation.
-     *
-     * @deprecated
-     * @internal
-     * @todo Move this out into a type manager.
-     */
-    protected function isType(string $type, ?string $exprType): bool
-    {
-        if (null === $exprType) {
-            return false;
-        }
-
-        return match ($type) {
-            'date' => $this->typeConverter->isTypeDateCompatible($exprType),
-            'int'  => $this->typeConverter->isTypeIntCompatible($exprType),
-            'numeric' => $this->typeConverter->isTypeNumeric($exprType),
-            'text' => $this->typeConverter->isTypeTextCompatible($exprType),
-            'timestamp' => $this->typeConverter->isTypeDateCompatible($exprType),
-            'varchar' => $this->typeConverter->isTypeVarcharCompatible($exprType),
-            default => false,
-        };
-    }
-
-    /**
      * Generic force cast when expression type is unknown or is not compatible
      * with given target type.
      *
      * In numerous cases, this API will add explicit CAST() calls in order to
      * bypass some wrong type guess due to parameters usage when querying.
      */
-    protected function forceCast(Expression $expression, WriterContext $context, string $type, bool $ignoreRaw = true): Expression
+    protected function forceCast(Expression $expression, WriterContext $context, Type $type, bool $ignoreRaw = true): Expression
     {
         // Identifiers and function call are typed on the RDBMS side, so we
         // should never automatically cast. The user needs to take care of
@@ -191,7 +168,7 @@ class Writer
         $castType = null;
         $willCast = $expression instanceof Castable && ($castType = $expression->getCastToType());
 
-        if ($willCast && $this->isType($type, $castType)) {
+        if ($willCast && $this->typeConverter->isCompatible($type, $castType)) {
             return $expression;
         }
 
@@ -202,7 +179,9 @@ class Writer
         // which does not seem to optimize anything at all. But some other will
         // crash because of type ambiguity at PREPARE time such as PostgreSQL,
         // which is the sane behaviour we would expect.
-        if ($expression instanceof Value || !$this->isType($type, $castType ?? $expression->returnType())) {
+        $returnType = $castType ?? $expression->returnType();
+
+        if ($expression instanceof Value || !$returnType || !$this->typeConverter->isCompatible($type, $returnType)) {
             return new Cast($expression, $type);
         }
 
@@ -214,7 +193,7 @@ class Writer
      */
     protected function toText(Expression $expression, WriterContext $context, bool $ignoreRaw = true): Expression
     {
-        return $this->forceCast($expression, $context, 'varchar', $ignoreRaw);
+        return $this->forceCast($expression, $context, Type::varchar(), $ignoreRaw);
     }
 
     /**
@@ -222,7 +201,7 @@ class Writer
      */
     protected function toInt(Expression $expression, WriterContext $context, bool $ignoreRaw = true): Expression
     {
-        return $this->forceCast($expression, $context, 'int', $ignoreRaw);
+        return $this->forceCast($expression, $context, Type::int(), $ignoreRaw);
     }
 
     /**
@@ -230,7 +209,7 @@ class Writer
      */
     protected function toDate(Expression $expression, WriterContext $context, bool $ignoreRaw = true): Expression
     {
-        return $this->forceCast($expression, $context, $this->typeConverter->getTimestampCastType(), $ignoreRaw);
+        return $this->forceCast($expression, $context, Type::timestamp(), $ignoreRaw);
     }
 
     /**
@@ -909,7 +888,7 @@ class Writer
         return $this->formatRaw(
             new Raw(
                 'FLOOR(? * (? - ? + 1) + ?)',
-                [new Random(), new Cast($max, 'int'), $min, $min]
+                [new Random(), new Cast($max, Type::int()), $min, $min]
             ),
             $context,
         );
@@ -1189,7 +1168,7 @@ class Writer
         }
 
         if ($expression->shouldCast()) {
-            return $this->doFormatCastExpression('(' . $inner . ')', $expression->getType(), $context);
+            return $this->doFormatCastExpression('(' . $inner . ')', $expression->getCompositeTypeName(), $context);
         }
         return '(' . $inner . ')';
     }
@@ -1593,8 +1572,8 @@ class Writer
 
         $output = 'array[' . $inner .  ']';
 
-        if ($value->shouldCast()) {
-            return $this->doFormatCastExpression($output, $value->getValueType() . '[]', $context);
+        if ($value->shouldCast() && ($valueType = $value->getValueType())) {
+            return $this->doFormatCastExpression($output, $valueType->toArray(), $context);
         }
         return $output;
     }
@@ -1610,9 +1589,16 @@ class Writer
     /**
      * Format cast expression.
      */
-    protected function doFormatCastExpression(string $expressionString, string $type, WriterContext $context): string
+    protected function doFormatCastExpression(string $expressionString, string|Type $type, WriterContext $context): string
     {
-        return 'cast(' . $expressionString . ' as ' . $type . ')';
+        $type = Type::create($type);
+        $typeString = $this->typeConverter->getSqlTypeName($type);
+
+        if ($type->array) {
+            $typeString .= '[]';
+        }
+
+        return 'cast(' . $expressionString . ' as ' . $typeString . ')';
     }
 
     /**

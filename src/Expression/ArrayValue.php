@@ -24,6 +24,8 @@ use MakinaCorpus\QueryBuilder\Type\Type;
  */
 class ArrayValue implements Expression
 {
+    private ?Type $valueType = null;
+
     /**
      * Create a row expression.
      *
@@ -32,9 +34,13 @@ class ArrayValue implements Expression
      */
     public function __construct(
         private iterable $values,
-        private ?string $valueType = null,
+        ?string $valueType = null,
         private bool $shouldCast = true
-    ) {}
+    ) {
+        if ($valueType) {
+            $this->valueType = Type::create($valueType);
+        }
+    }
 
     #[\Override]
     public function returns(): bool
@@ -45,13 +51,13 @@ class ArrayValue implements Expression
     #[\Override]
     public function returnType(): ?Type
     {
-        return $this->valueType ? Type::create($this->valueType, true) : null;
+        return $this->valueType ? Type::create($this->valueType)->toArray() : null;
     }
 
     /**
      * Get value type if specified.
      */
-    public function getValueType(): ?string
+    public function getValueType(): ?Type
     {
         return $this->valueType;
     }

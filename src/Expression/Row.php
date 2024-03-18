@@ -124,7 +124,7 @@ class Row implements Expression
     /**
      * Get composite type for casting.
      */
-    public function getType(): ?string
+    public function getCompositeTypeName(): ?string
     {
         return $this->compositeTypeName;
     }

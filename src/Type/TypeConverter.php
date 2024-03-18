@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Type;
 
+use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
+
 /**
  * Convert user given types to vendor-specific types.
  *
@@ -18,55 +20,47 @@ namespace MakinaCorpus\QueryBuilder\Type;
 class TypeConverter
 {
     /**
-     * Is given type any kind of numeric type.
+     * Is given type compatible with the other one.
      */
-    public function isTypeNumeric(string|Type $type): bool
+    public function isCompatible(Type $type, Type $reference): bool
     {
-        return Type::create($type)->isNumeric;
+        return ($type->isText && $reference->isText) || ($type->isNumeric && $reference->isNumeric) || ($type->isDate && $reference->isDate);
     }
 
-    /**
-     * Is given type integer.
-     */
-    public function isTypeIntCompatible(string|Type $type): bool
+    public function getSqlTypeString(): string
     {
-        return Type::create($type)->isNumeric;
+        throw new QueryBuilderError("implement me.");
     }
 
-    /**
-     * Is given type varchar.
-     */
-    public function isTypeVarcharCompatible(string|Type $type): bool
+    public function getSqlTypeName(Type $type): string
     {
-        return Type::create($type)->isText;
-    }
-
-    /**
-     * Is given type date.
-     */
-    public function isTypeDateCompatible(string|Type $type): bool
-    {
-        $type = Type::create($type);
-
-        return $type->internal === InternalType::DATE || $type->internal === InternalType::TIMESTAMP;
-    }
-
-    /**
-     * Is given type timestamp.
-     */
-    public function isTypeTimestampCompatible(string|Type $type): bool
-    {
-        $type = Type::create($type);
-
-        return $type->internal === InternalType::DATE || $type->internal === InternalType::TIMESTAMP;
-    }
-
-    /**
-     * Is given type text.
-     */
-    public function isTypeTextCompatible(string|Type $type): bool
-    {
-        return Type::create($type)->isText;
+        return match ($type->internal) {
+            InternalType::BINARY => $this->getBinaryType(),
+            InternalType::BOOL => $this->getBoolType(),
+            InternalType::CHAR => $this->getCharType(),
+            InternalType::DATE => $this->getDateType(),
+            InternalType::DATE_INTERVAL => $this->getDateIntervalType(),
+            InternalType::DECIMAL => $this->getDecimalType(),
+            InternalType::FLOAT => $this->getFloatType(),
+            InternalType::FLOAT_BIG => $this->getBigFloatType(),
+            InternalType::FLOAT_SMALL => $this->getSmallFloatType(),
+            InternalType::IDENTITY => $this->getIdentityType(),
+            InternalType::IDENTITY_BIG => $this->getBigIdentityType(),
+            InternalType::IDENTITY_SMALL => $this->getSmallIdentityType(),
+            InternalType::INT => $this->getIntType(),
+            InternalType::INT_BIG => $this->getBigIntType(),
+            InternalType::INT_SMALL => $this->getSmallIntType(),
+            InternalType::JSON => $this->getJsonType(),
+            InternalType::NULL => 'null',
+            InternalType::SERIAL => $this->getSerialType(),
+            InternalType::SERIAL_BIG => $this->getBigSerialType(),
+            InternalType::SERIAL_SMALL => $this->getSmallSerialType(),
+            InternalType::TEXT => $this->getTextType(),
+            InternalType::TIME => $this->getTimeType(),
+            InternalType::TIMESTAMP => $this->getTimestampType(),
+            InternalType::VARCHAR => $this->getVarcharType(),
+            InternalType::UNKNOWN => $type->name ?? throw new QueryBuilderError("Unhandled types must have a type name."),
+        };
     }
 
     /**

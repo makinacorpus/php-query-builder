@@ -14,6 +14,7 @@ use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\Expression\Row;
 use MakinaCorpus\QueryBuilder\Expression\TableName;
 use MakinaCorpus\QueryBuilder\Expression\Value;
+use MakinaCorpus\QueryBuilder\Type\Type;
 
 /**
  * Input normalization functions.
@@ -307,12 +308,12 @@ final class ExpressionHelper
         }
 
         if ($expression instanceof \DateTimeInterface) {
-            return new Value($expression, 'timestamp');
+            return new Value($expression, Type::timestamp(true));
         }
 
         if (\is_string($expression)) {
             try {
-                return new Value(new \DateTimeImmutable($expression), 'timestamp');
+                return new Value(new \DateTimeImmutable($expression), Type::timestamp(true));
             } catch (\Throwable) {}
         }
 

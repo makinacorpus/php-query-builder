@@ -19,7 +19,7 @@ class StringHash implements Expression
         mixed $value,
         private string $algo,
     ) {
-        $this->value = \is_string($value) ? new Value($value, 'varchar') : ExpressionHelper::value($value);
+        $this->value = \is_string($value) ? new Value($value, Type::varchar()) : ExpressionHelper::value($value);
     }
 
     #[\Override]

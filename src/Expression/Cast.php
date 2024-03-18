@@ -19,12 +19,15 @@ use MakinaCorpus\QueryBuilder\Type\Type;
 class Cast implements Castable
 {
     private Expression $expression;
+    private Type $castToType;
 
     public function __construct(
         mixed $expression,
-        private string $castToType,
-        ?string $valueType = null
+        string|Type $castToType,
+        null|string|Type $valueType = null
     ) {
+        $this->castToType = Type::create($castToType);
+
         if ($expression instanceof Expression) {
             if ($valueType) {
                 // @todo Raise warning: value type will be ignored
@@ -49,7 +52,7 @@ class Cast implements Castable
     }
 
     #[\Override]
-    public function getCastToType(): ?string
+    public function getCastToType(): ?Type
     {
         return $this->castToType;
     }

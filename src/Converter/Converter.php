@@ -8,6 +8,8 @@ use MakinaCorpus\QueryBuilder\Converter\Helper\ArrayRowParser;
 use MakinaCorpus\QueryBuilder\Error\ValueConversionError;
 use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\ExpressionFactory;
+use MakinaCorpus\QueryBuilder\Type\Type;
+use MakinaCorpus\QueryBuilder\Type\TypeConverter;
 
 class Converter
 {
@@ -188,8 +190,14 @@ class Converter
      * @throws ValueConversionError
      *   In case of value conversion error.
      */
-    public function toSql(mixed $value, ?string $type = null): null|int|float|string|object
+    public function toSql(mixed $value, null|string|Type $type = null): null|int|float|string|object
     {
+        // @todo Implement this properly.
+        //   For now this is pure backward compatibility.
+        if ($type) {
+            $type = (new TypeConverter())->getSqlTypeName(Type::create($type));
+        }
+
         if (null === $value) {
             return null;
         }

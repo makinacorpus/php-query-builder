@@ -11,6 +11,7 @@ use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
  */
 class Type
 {
+    public readonly bool $isDate;
     public readonly bool $isNumeric;
     public readonly bool $isText;
 
@@ -27,6 +28,7 @@ class Type
             throw new QueryBuilderError("Unhandled internal types must have a type name.");
         }
 
+        $this->isDate = $this->internal->isDate();
         $this->isNumeric = $this->internal->isNumeric();
         $this->isText = $this->internal->isText();
     }
@@ -178,6 +180,19 @@ class Type
     }
 
     /**
+     * Raw type name, that will propagated as-is to the database.
+     *
+     * Types ending with [] will see it stripped, but will be marked as array.
+     * Types ending with (X) where X is numeric will have a length.
+     * Types ending with (X,Y) where X and Y are numeric will have a precision
+     * and a scale.
+     */
+    public static function raw(string $name): self
+    {
+        return self::create($name, true);
+    }
+
+    /**
      * Auto-generated identity (integer).
      *
      * @deprecated
@@ -249,14 +264,14 @@ class Type
     /**
      * Convert given user input type to vendor type.
      */
-    public static function create(string|self $userType, bool $array = false): self
+    public static function create(string|self $userType, bool $raw = false): self
     {
         if ($userType instanceof self) {
             return $userType;
         }
 
         $userType = \trim($userType);
-        $withTimeZone = false;
+        $array = $withTimeZone = false;
         $name = $length = $precision = $scale = null;
 
         if (\str_ends_with($userType, '[]')) {
@@ -276,6 +291,18 @@ class Type
                 }
             }
             $userType = \trim($matches[1]);
+        }
+
+        if ($raw) {
+            return new Type(
+                array: $array,
+                internal: InternalType::UNKNOWN,
+                length: $length,
+                name: $userType,
+                precision: $precision,
+                scale: $scale,
+                withTimeZone: $withTimeZone,
+            );
         }
 
         if (\str_ends_with($userType, 'without time zone')) {

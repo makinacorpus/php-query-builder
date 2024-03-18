@@ -7,6 +7,7 @@ namespace MakinaCorpus\QueryBuilder;
 use MakinaCorpus\QueryBuilder\Converter\Converter;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Expression\Value;
+use MakinaCorpus\QueryBuilder\Type\Type;
 
 /**
  * Stores a copy of all parameters, and matching type if any found.
@@ -16,7 +17,9 @@ use MakinaCorpus\QueryBuilder\Expression\Value;
  */
 final class ArgumentBag
 {
+    /** @var mixed[] */
     private array $data = [];
+    /** @var array<null|Type> */
     private array $types = [];
     private int $index = 0;
     private ?array $converted = null;
@@ -48,17 +51,17 @@ final class ArgumentBag
      * @return int
      *   Added item position for computing value placeholder in SQL string.
      */
-    public function add(mixed $value, ?string $type = null): int
+    public function add(mixed $value, null|string|Type $type = null): int
     {
         $this->converted = null;
 
         if ($value instanceof Value) {
-            if (!$type) {
-                $type = $value->getType();
-            }
+            $type = $type ? Type::create($type) : $value->getType();
             $value = $value->getValue();
         } else if ($value instanceof Expression) {
             throw new QueryBuilderError(\sprintf("Value cannot be an %s instance", Expression::class));
+        } else {
+            $type = $type ? Type::create($type) : null;
         }
 
         $index = $this->index;
@@ -87,10 +90,7 @@ final class ArgumentBag
             $this->converted = [];
 
             foreach ($this->data as $index => $value) {
-                $this->converted[] = $this->converter->toSql(
-                    $value,
-                    $this->getTypeAt($index)
-                );
+                $this->converted[] = $this->converter->toSql($value, $this->getTypeAt($index));
             }
         }
 
@@ -116,10 +116,12 @@ final class ArgumentBag
     /**
      * Set type at index if not set.
      */
-    public function setTypeAt(int $index, ?string $type): void
+    public function setTypeAt(int $index, null|string|Type $type): void
     {
         if (!isset($this->types[$index])) {
-            $this->types[$index] = $type;
+            if ($type = $type ? Type::create($type) : null) {
+                $this->types[$index] = $type;
+            }
             // Avoid PHP warnings in certain circumstances.
             if (!\array_key_exists($index, $this->data)) {
                 $this->data[$index] = null;
@@ -130,7 +132,7 @@ final class ArgumentBag
     /**
      * Get datatype for given index.
      */
-    public function getTypeAt(int $index): ?string
+    public function getTypeAt(int $index): ?Type
     {
         return $this->types[$index] ?? null;
     }

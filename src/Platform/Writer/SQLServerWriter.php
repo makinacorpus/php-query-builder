@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Platform\Writer;
 
-use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Error\UnsupportedFeatureError;
+use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Expression\Aggregate;
 use MakinaCorpus\QueryBuilder\Expression\Cast;
 use MakinaCorpus\QueryBuilder\Expression\Concat;
@@ -19,6 +19,7 @@ use MakinaCorpus\QueryBuilder\Expression\Random;
 use MakinaCorpus\QueryBuilder\Expression\StringHash;
 use MakinaCorpus\QueryBuilder\Expression\TableName;
 use MakinaCorpus\QueryBuilder\Platform\Type\SQLServerTypeConverter;
+use MakinaCorpus\QueryBuilder\Type\Type;
 use MakinaCorpus\QueryBuilder\Type\TypeConverter;
 use MakinaCorpus\QueryBuilder\Writer\Writer;
 use MakinaCorpus\QueryBuilder\Writer\WriterContext;
@@ -113,7 +114,7 @@ class SQLServerWriter extends Writer
     {
         $algo = $expression->getAlgo();
         $escapedAlgo = $this->escaper->escapeLiteral($algo);
-        $value = new Cast($expression->getValue(), 'nvarchar');
+        $value = new Cast($expression->getValue(), Type::varchar());
 
         return 'lower(convert(nvarchar(32), hashbytes(' . $escapedAlgo  . ', ' . $this->format($value, $context) . '), 2))';
     }

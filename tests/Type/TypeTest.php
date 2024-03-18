@@ -22,6 +22,18 @@ class TypeTest extends TestCase
         self::assertFalse($type->array);
     }
 
+    public function testRaw(): void
+    {
+        $type = Type::raw('bigint', true);
+        self::assertSame(InternalType::UNKNOWN, $type->internal);
+        self::assertSame('bigint', $type->name);
+        self::assertNull($type->length);
+        self::assertNull($type->precision);
+        self::assertNull($type->scale);
+        self::assertFalse($type->withTimeZone);
+        self::assertFalse($type->array);
+    }
+
     public function testCreateWithLength(): void
     {
         $type = Type::create('character varying (12)');

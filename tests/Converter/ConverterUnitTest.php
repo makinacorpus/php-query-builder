@@ -12,6 +12,7 @@ use MakinaCorpus\QueryBuilder\Expression\Row;
 use MakinaCorpus\QueryBuilder\Expression\TableName;
 use MakinaCorpus\QueryBuilder\Expression\Value;
 use MakinaCorpus\QueryBuilder\Tests\UnitTestCase;
+use MakinaCorpus\QueryBuilder\Type\Type;
 
 class ConverterUnitTest extends UnitTestCase
 {
@@ -45,7 +46,7 @@ class ConverterUnitTest extends UnitTestCase
 
         self::assertInstanceOf(Value::class, $value);
         self::assertSame('foo', $value->getValue());
-        self::assertSame('blaa', $value->getType());
+        self::assertEquals(Type::raw('blaa'), $value->getType());
     }
 
     public function testToExpressionNullTypeFallback(): void
