@@ -21,7 +21,7 @@ class StringHashTest extends UnitTestCase
     {
         $expression = new StringHash('foo', 'md5');
 
-        self::assertEquals(Type::text(), $expression->returnType());
+        self::assertSameType(Type::text(), $expression->returnType());
     }
 
     public function testClone(): void

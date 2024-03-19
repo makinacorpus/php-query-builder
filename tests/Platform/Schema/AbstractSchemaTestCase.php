@@ -12,6 +12,7 @@ use MakinaCorpus\QueryBuilder\QueryBuilder;
 use MakinaCorpus\QueryBuilder\Schema\Read\ForeignKey;
 use MakinaCorpus\QueryBuilder\Schema\SchemaManager;
 use MakinaCorpus\QueryBuilder\Tests\FunctionalTestCase;
+use MakinaCorpus\QueryBuilder\Type\Type;
 
 abstract class AbstractSchemaTestCase extends FunctionalTestCase
 {
@@ -326,7 +327,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
         // @todo missing default
         self::assertTrue($column->isNullable());
-        self::assertStringContainsString('int', $column->getValueType());
+        self::assertSameType('int', $column->getValueType());
     }
 
     public function testColumnAddNullableWithDefault(): void
@@ -346,7 +347,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
         // @todo missing default
         self::assertTrue($column->isNullable());
-        self::assertStringContainsString('int', $column->getValueType());
+        self::assertSameType('int', $column->getValueType());
     }
 
     public function testColumnAddNotNull(): void
@@ -366,7 +367,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
         // @todo missing default
         self::assertFalse($column->isNullable());
-        self::assertStringContainsString('int', $column->getValueType());
+        self::assertSameType('int', $column->getValueType());
     }
 
     public function testColumnAddNotNullWithDefault(): void
@@ -386,7 +387,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
         // @todo missing default
         self::assertFalse($column->isNullable());
-        self::assertStringContainsString('int', $column->getValueType());
+        self::assertSameType('int', $column->getValueType());
     }
 
     public function testColumnModifyType(): void
@@ -411,15 +412,12 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
         ;
 
         // This changed.
-        self::assertSame('text', $column->getValueType());
+        self::assertSameType(Type::text(), $column->getValueType());
 
         // This didn't.
         self::assertFalse($column->isNullable());
         //self::assertSame("'fr'", $column->getDefault()); // @todo
         //self::assertNotSame('C', $column->getCollation()); // @todo
-        self::assertNull($column->getPrecision());
-        self::assertNull($column->getScale());
-        // self::assertSame(6, $column->getLength()); // @todo
     }
 
     public function testColumnModifyCollation(): void
@@ -452,10 +450,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
         // This didn't.
         self::assertFalse($column->isNullable());
         //self::assertSame("'fr'", $column->getDefault()); // @todo
-        self::assertSame('text', $column->getValueType());
-        self::assertNull($column->getPrecision());
-        self::assertNull($column->getScale());
-        // self::assertSame(6, $column->getLength()); // @todo
+        self::assertSameType('text', $column->getValueType());
     }
 
     public function testColumnModifyDropDefault(): void
@@ -484,11 +479,8 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
         // This didn't.
         self::assertFalse($column->isNullable());
-        self::assertSame('varchar', $column->getValueType());
+        self::assertSameType(Type::varchar(6), $column->getValueType());
         // self::assertNotSame('C', $column->getCollation()); // @todo
-        self::assertNull($column->getPrecision());
-        self::assertNull($column->getScale());
-        // self::assertSame(6, $column->getLength()); // @todo
     }
 
     public function testColumnModifyDefault(): void
@@ -517,11 +509,8 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
         // This didn't.
         self::assertFalse($column->isNullable());
-        self::assertSame('varchar', $column->getValueType());
+        self::assertSameType('varchar(6)', $column->getValueType());
         // self::assertNotSame('C', $column->getCollation()); // @todo
-        self::assertNull($column->getPrecision());
-        self::assertNull($column->getScale());
-        // self::assertSame(6, $column->getLength()); // @todo
     }
 
     public function testColumnModifyNullable(): void
@@ -549,12 +538,9 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
         self::assertTrue($column->isNullable());
 
         // This didn't.
-        self::assertSame('varchar', $column->getValueType());
+        self::assertSameType(Type::varchar(6), $column->getValueType());
         //self::assertSame("'en'", $column->getDefault()); // @todo
         // self::assertNotSame('C', $column->getCollation()); // @todo
-        self::assertNull($column->getPrecision());
-        self::assertNull($column->getScale());
-        // self::assertSame(6, $column->getLength()); // @todo
     }
 
     public function testColumnModifyEverything(): void
@@ -584,12 +570,9 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
         ;
 
         self::assertTrue($column->isNullable());
-        self::assertSame('varchar', $column->getValueType());
+        self::assertSameType('varchar(24)', $column->getValueType());
         //self::assertSame("'es'", $column->getDefault()); // @todo
         // self::assertSame($collation, $column->getCollation()); // @todo
-        self::assertNull($column->getPrecision());
-        self::assertNull($column->getScale());
-        // self::assertNull(24, $column->getLength()); // @todo
     }
 
     public function testColumnDrop(): void
@@ -799,7 +782,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
         ;
 
         self::assertTrue($column->isNullable());
-        self::assertStringContainsString('text', $column->getValueType());
+        self::assertSameType('text', $column->getValueType());
     }
 
     public function testTableCreateTemporary(): void
@@ -1079,13 +1062,11 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
         // @todo collation is hard, espcially cross-vendor.
         // self::assertNotEmpty($column->getCollation());
-        self::assertContains($column->getValueType(), ['decimal', 'numeric']);
+        self::assertSameType(Type::decimal(10, 2), $column->getValueType());
         self::assertSame('org', $column->getTable());
         self::assertSame('public', $column->getSchema());
         self::assertSame('column:test_db.public.org.balance', $column->toString());
         self::assertFalse($column->isNullable());
-        self::assertSame(2, $column->getScale());
-        self::assertSame(10, $column->getPrecision());
     }
 
     public function testColumnUnsigned(): void
@@ -1101,7 +1082,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
             ->getColumn('employes')
         ;
 
-        self::assertTrue($column->isUnsigned());
+        self::assertTrue($column->getValueType()->unsigned);
     }
 
     public function testColumnText(): void
@@ -1113,13 +1094,11 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
         ;
 
         self::assertNotEmpty($column->getCollation());
-        self::assertSame('text', $column->getValueType());
+        self::assertSameType(Type::text(), $column->getValueType());
         self::assertSame('org', $column->getTable());
         self::assertSame('public', $column->getSchema());
         self::assertSame('column:test_db.public.org.name', $column->toString());
         self::assertTrue($column->isNullable());
-        self::assertNull($column->getPrecision());
-        self::assertNull($column->getScale());
     }
 
     public function testColumnDate(): void

@@ -12,6 +12,7 @@ use MakinaCorpus\QueryBuilder\Schema\Read\Column;
 use MakinaCorpus\QueryBuilder\Schema\Read\ForeignKey;
 use MakinaCorpus\QueryBuilder\Schema\Read\Key;
 use MakinaCorpus\QueryBuilder\Schema\SchemaManager;
+use MakinaCorpus\QueryBuilder\Type\Type;
 
 /**
  * Please note that some functions here might use information_schema tables
@@ -175,16 +176,22 @@ class PostgreSQLSchemaManager extends SchemaManager
                 collation: $row->get('collation_name', 'string') ?? $defaultCollation,
                 comment: null, // @todo,
                 database: $database,
-                length: $row->get('character_maximum_length', 'int'),
                 name: $row->get('column_name', 'string'),
                 nullabe: $row->get('is_nullable', 'string') !== 'NO',
                 options: [],
-                precision: $row->get('numeric_precision', 'int'),
-                scale: $row->get('numeric_scale', 'int'),
                 schema: $schema,
                 table: $name,
-                unsigned: false,
-                valueType: $row->get('udt_name', 'string'),
+                // @todo Build Type directly from SQL create string.
+                valueType: new Type(
+                    array: false, // @todo
+                    internal: Type::internalTypeFromName($row->get('udt_name', 'string')),
+                    length: $row->get('character_maximum_length', 'int'),
+                    name: $row->get('udt_name', 'string'),
+                    precision: $row->get('numeric_precision', 'int'),
+                    scale: $row->get('numeric_scale', 'int'),
+                    unsigned: false,
+                    withTimeZone: false, // @todo
+                ),
             ))
             ->fetchAllHydrated()
         ;

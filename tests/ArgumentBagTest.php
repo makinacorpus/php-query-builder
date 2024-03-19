@@ -8,9 +8,8 @@ use MakinaCorpus\QueryBuilder\ArgumentBag;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\Expression\Value;
 use MakinaCorpus\QueryBuilder\Type\Type;
-use PHPUnit\Framework\TestCase;
 
-class ArgumentBagTest extends TestCase
+class ArgumentBagTest extends UnitTestCase
 {
     public function testAddAll(): void
     {
@@ -53,16 +52,16 @@ class ArgumentBagTest extends TestCase
         $bag->add(2, 'int');
         $bag->add(3, Type::text());
 
-        self::assertEquals(Type::int(), $bag->getTypeAt(0));
+        self::assertSameType(Type::int(), $bag->getTypeAt(0));
         self::assertNull($bag->getTypeAt(1));
-        self::assertEquals(Type::int(), $bag->getTypeAt(2));
-        self::assertEquals(Type::text(), $bag->getTypeAt(3));
+        self::assertSameType(Type::int(), $bag->getTypeAt(2));
+        self::assertSameType(Type::text(), $bag->getTypeAt(3));
 
         $bag->setTypeAt(1, 'string');
 
-        self::assertEquals(Type::int(), $bag->getTypeAt(0));
-        self::assertEquals(Type::text(), $bag->getTypeAt(1));
-        self::assertEquals(Type::int(), $bag->getTypeAt(2));
+        self::assertSameType(Type::int(), $bag->getTypeAt(0));
+        self::assertSameType(Type::text(), $bag->getTypeAt(1));
+        self::assertSameType(Type::int(), $bag->getTypeAt(2));
 
         $bag->setTypeAt(5, 'foo');
         self::assertSame('foo', $bag->getTypeAt(5)?->name);
@@ -75,7 +74,8 @@ class ArgumentBagTest extends TestCase
         $bag->add(1, 'int');
         $bag->add(2, 'string');
 
-        self::assertEquals([Type::int(), Type::text()], $bag->getTypes());
+        self::assertSameType('int', $bag->getTypes()[0]);
+        self::assertSameType('text', $bag->getTypes()[1]);
     }
 
     public function testCount(): void

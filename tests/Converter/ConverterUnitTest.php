@@ -46,7 +46,7 @@ class ConverterUnitTest extends UnitTestCase
 
         self::assertInstanceOf(Value::class, $value);
         self::assertSame('foo', $value->getValue());
-        self::assertEquals(Type::raw('blaa'), $value->getType());
+        self::assertSameType(Type::raw('blaa'), $value->getType());
     }
 
     public function testToExpressionNullTypeFallback(): void

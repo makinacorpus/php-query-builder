@@ -46,9 +46,11 @@ use MakinaCorpus\QueryBuilder\Schema\Read\Column;
 use MakinaCorpus\QueryBuilder\Schema\Read\ForeignKey;
 use MakinaCorpus\QueryBuilder\Schema\Read\Key;
 use MakinaCorpus\QueryBuilder\Schema\Read\Table;
+use MakinaCorpus\QueryBuilder\Type\Type;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\NullLogger;
+use MakinaCorpus\QueryBuilder\Expression\DataType;
 
 // @todo Because IDE bug, sorry.
 \class_exists(Column::class);
@@ -361,7 +363,7 @@ abstract class SchemaManager implements LoggerAwareInterface
             nullable: $change->isNullable() ?? $existing->isNullable(),
             schema: $change->getSchema(),
             table: $change->getTable(),
-            type: $change->getType() ?? $existing->getValueTypeSql(),
+            type: $change->getType() ?? $existing->getValueType(),
         );
     }
 
@@ -386,7 +388,7 @@ abstract class SchemaManager implements LoggerAwareInterface
      *     - but there might be constants (such as CURRENT_TIME for example),
      *     - or function calls!
      */
-    protected function doWriteColumnDefault(string $type, string $default): Expression
+    protected function doWriteColumnDefault(Type $type, string $default): Expression
     {
         return match ($type) {
             default => $this->raw($default),
@@ -405,9 +407,9 @@ abstract class SchemaManager implements LoggerAwareInterface
         if (!$type = $change->getType()) {
             throw new QueryBuilderError("You cannot change collation without specifying a new type.");
         }
+        \assert($type instanceof Type);
 
-        // @todo Here type normalization should happen.
-        $pieces = [$this->raw($type)];
+        $pieces = [new DataType($type)];
 
         if ($collation = $change->getCollation()) {
             $pieces[] = $this->doWriteColumnCollation($collation);

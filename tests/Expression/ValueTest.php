@@ -31,7 +31,7 @@ class ValueTest extends UnitTestCase
 
         self::assertTrue($expression->returns());
         self::assertSame('bla', $expression->getValue());
-        self::assertEquals(Type::varchar(), $expression->getType());
+        self::assertSameType(Type::varchar(), $expression->getType());
 
         self::assertSameSql(
             <<<SQL
@@ -64,7 +64,7 @@ class ValueTest extends UnitTestCase
         self::assertTrue($expression->returns());
         self::assertSame('foo', $expression->getValue());
         self::assertNull($expression->getType());
-        self::assertEquals(Type::varchar(), $expression->getCastToType());
+        self::assertSameType(Type::varchar(), $expression->getCastToType());
 
         self::assertSameSql(
             <<<SQL

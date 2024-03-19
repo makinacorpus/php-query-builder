@@ -9,6 +9,8 @@ use MakinaCorpus\QueryBuilder\OptionsBag;
 use MakinaCorpus\QueryBuilder\Converter\Converter;
 use MakinaCorpus\QueryBuilder\Converter\ConverterContext;
 use MakinaCorpus\QueryBuilder\Platform\Escaper\StandardEscaper;
+use MakinaCorpus\QueryBuilder\Type\InternalType;
+use MakinaCorpus\QueryBuilder\Type\Type;
 use MakinaCorpus\QueryBuilder\Writer\Writer;
 use PHPUnit\Framework\TestCase;
 
@@ -57,6 +59,27 @@ abstract class UnitTestCase extends TestCase
     protected static function createTestWriter(): Writer
     {
         return self::$writer ?? (self::$writer = new Writer(new StandardEscaper('#', 1)));
+    }
+
+    protected function assertSameType(string|Type|InternalType $expected, null|string|Type $actual): void
+    {
+        if (null === $actual) {
+            self::assertNotNull($actual);
+        }
+
+        $actual = Type::create($actual);
+
+        if (\is_string($expected)) {
+            $expected = Type::create($expected);
+        }
+
+        if ($expected instanceof InternalType) {
+            self::assertSame($expected, $actual->internal);
+        } else {
+            $actual = $actual->cleanUp();
+
+            self::assertEquals($expected, $actual);
+        }
     }
 
     protected function assertSameSql(string|\Stringable|Expression $expected, string|\Stringable|Expression $actual, $message = null): void

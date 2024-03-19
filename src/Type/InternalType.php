@@ -84,6 +84,21 @@ enum InternalType
     /** Unknown / unhandled type. */
     case UNKNOWN;
 
+    public function precisionIsRelevant(): bool
+    {
+        return $this === self::DECIMAL;
+    }
+
+    public function scaleIsRelevant(): bool
+    {
+        return $this === self::DECIMAL;
+    }
+
+    public function lengthIsRelevant(): bool
+    {
+        return $this === self::CHAR || $this === self::VARCHAR;
+    }
+
     public function isDate(): bool
     {
         return $this === self::DATE || $this === self::TIMESTAMP;

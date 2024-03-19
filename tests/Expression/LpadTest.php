@@ -24,7 +24,7 @@ class LpadTest extends UnitTestCase
     {
         $expression = new Lpad('foo', 12);
 
-        self::assertEquals(Type::text(), $expression->returnType());
+        self::assertSameType(Type::text(), $expression->returnType());
     }
 
     public function testClone(): void

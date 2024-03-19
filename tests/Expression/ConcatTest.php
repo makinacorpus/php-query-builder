@@ -22,7 +22,7 @@ class ConcatTest extends UnitTestCase
     {
         $expression = new Concat('foo');
 
-        self::assertEquals(Type::text(), $expression->returnType());
+        self::assertSameType(Type::text(), $expression->returnType());
     }
 
     public function testClone(): void

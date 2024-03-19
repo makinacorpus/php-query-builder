@@ -469,7 +469,7 @@ class SelectTest extends UnitTestCase
             $query
         );
 
-        self::assertEquals(Type::json(), $formatted->getArguments()->getTypeAt(0));
+        self::assertSameType(Type::json(), $formatted->getArguments()->getTypeAt(0));
     }
 
     public function testConditionWithCallbackCastAsArgument(): void
@@ -696,7 +696,7 @@ class SelectTest extends UnitTestCase
             $formatted
         );
 
-        self::assertEquals(Type::json(), $formatted->getArguments()->getTypeAt(0));
+        self::assertSameType(Type::json(), $formatted->getArguments()->getTypeAt(0));
     }
 
     public function testHavingWithCallbackCastAsArgument(): void

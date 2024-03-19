@@ -32,7 +32,7 @@ class ArrayValueTest extends UnitTestCase
 
         $type = $expression->returnType();
 
-        self::assertSame(InternalType::INT, $type->internal);
+        self::assertSameType(InternalType::INT, $type);
         self::assertTrue($type->array);
     }
 
@@ -42,7 +42,7 @@ class ArrayValueTest extends UnitTestCase
 
         $type = $expression->getValueType();
 
-        self::assertSame(InternalType::INT, $type->internal);
+        self::assertSameType(InternalType::INT, $type);
         self::assertFalse($type->array);
     }
 

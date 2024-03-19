@@ -24,7 +24,7 @@ class RpadTest extends UnitTestCase
     {
         $expression = new Rpad('foo', 12);
 
-        self::assertEquals(Type::text(), $expression->returnType());
+        self::assertSameType(Type::text(), $expression->returnType());
     }
 
     public function testClone(): void

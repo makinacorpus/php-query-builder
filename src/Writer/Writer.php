@@ -4,13 +4,11 @@ declare (strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Writer;
 
-use MakinaCorpus\QueryBuilder\Expression;
-use MakinaCorpus\QueryBuilder\SqlString;
-use MakinaCorpus\QueryBuilder\Where;
 use MakinaCorpus\QueryBuilder\Converter\Converter;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Error\UnsupportedExpressionError;
 use MakinaCorpus\QueryBuilder\Escaper\Escaper;
+use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Expression\Aggregate;
 use MakinaCorpus\QueryBuilder\Expression\Aliased;
 use MakinaCorpus\QueryBuilder\Expression\ArrayValue;
@@ -24,6 +22,7 @@ use MakinaCorpus\QueryBuilder\Expression\Comparison;
 use MakinaCorpus\QueryBuilder\Expression\Concat;
 use MakinaCorpus\QueryBuilder\Expression\ConstantTable;
 use MakinaCorpus\QueryBuilder\Expression\CurrentTimestamp;
+use MakinaCorpus\QueryBuilder\Expression\DataType;
 use MakinaCorpus\QueryBuilder\Expression\DateAdd;
 use MakinaCorpus\QueryBuilder\Expression\DateInterval;
 use MakinaCorpus\QueryBuilder\Expression\DateIntervalUnit;
@@ -51,16 +50,18 @@ use MakinaCorpus\QueryBuilder\Platform\Escaper\StandardEscaper;
 use MakinaCorpus\QueryBuilder\Query\Delete;
 use MakinaCorpus\QueryBuilder\Query\Insert;
 use MakinaCorpus\QueryBuilder\Query\Merge;
-use MakinaCorpus\QueryBuilder\Query\Query;
-use MakinaCorpus\QueryBuilder\Query\RawQuery;
-use MakinaCorpus\QueryBuilder\Query\Select;
-use MakinaCorpus\QueryBuilder\Query\Update;
 use MakinaCorpus\QueryBuilder\Query\Partial\JoinStatement;
 use MakinaCorpus\QueryBuilder\Query\Partial\OrderByStatement;
 use MakinaCorpus\QueryBuilder\Query\Partial\SelectColumn;
 use MakinaCorpus\QueryBuilder\Query\Partial\WithStatement;
+use MakinaCorpus\QueryBuilder\Query\Query;
+use MakinaCorpus\QueryBuilder\Query\RawQuery;
+use MakinaCorpus\QueryBuilder\Query\Select;
+use MakinaCorpus\QueryBuilder\Query\Update;
+use MakinaCorpus\QueryBuilder\SqlString;
 use MakinaCorpus\QueryBuilder\Type\Type;
 use MakinaCorpus\QueryBuilder\Type\TypeConverter;
+use MakinaCorpus\QueryBuilder\Where;
 
 /**
  * Standard SQL query formatter: this implementation conforms as much as it
@@ -251,6 +252,7 @@ class Writer
                     Concat::class => $this->formatConcat($expression, $context),
                     ConstantTable::class => $this->formatConstantTable($expression, $context),
                     CurrentTimestamp::class => $this->formatCurrentTimestamp($expression, $context),
+                    DataType::class => $this->formatDataType($expression, $context),
                     DateAdd::class => $this->formatDateAdd($expression, $context),
                     DateInterval::class => $this->formatDateInterval($expression, $context),
                     DateIntervalUnit::class => $this->formatDateIntervalUnit($expression, $context),
@@ -749,6 +751,31 @@ class Writer
                 $columnNames
             )
         );
+    }
+
+    /**
+     * Format data type declaration.
+     */
+    protected function formatDataType(DataType $expression, WriterContext $context): string
+    {
+        $type = $expression->getDataType();
+
+        $prefix = '';
+        if ($type->unsigned) {
+            $prefix .= 'unsigned ';
+        }
+
+        $suffix = '';
+        if ($type->length) {
+            $suffix .= '(' . $type->length . ')';
+        } else if ($type->precision && $type->scale) {
+            $suffix .= '(' . $type->precision . ',' . $type->scale . ')';
+        }
+        if ($type->array) {
+            $suffix .= '[]';
+        }
+
+        return $prefix . $this->typeConverter->getSqlTypeName($type) . $suffix;
     }
 
     /**

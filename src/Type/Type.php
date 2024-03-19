@@ -11,22 +11,26 @@ use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
  */
 class Type
 {
+    public readonly ?string $name;
     public readonly bool $isDate;
     public readonly bool $isNumeric;
     public readonly bool $isText;
 
     public function __construct(
         public InternalType $internal,
-        public ?string $name = null,
+        ?string $name = null,
         public ?int $length = null,
         public ?int $precision = null,
         public ?int $scale = null,
         public bool $withTimeZone = false,
         public bool $array = false,
+        public bool $unsigned = false,
     ) {
         if ($internal === InternalType::UNKNOWN && !$name) {
             throw new QueryBuilderError("Unhandled internal types must have a type name.");
         }
+
+        $this->name = $name ? \strtolower(\trim($name)) : null;
 
         $this->isDate = $this->internal->isDate();
         $this->isNumeric = $this->internal->isNumeric();
@@ -262,6 +266,157 @@ class Type
     }
 
     /**
+     * Find internal type from name.
+     */
+    public static function internalTypeFromName(string $userType): InternalType
+    {
+        switch ($userType) {
+
+            /*
+             * Boolean types.
+             */
+
+            case 'bool':
+            case 'boolean':
+                return InternalType::BOOL;
+
+            /*
+             * Numeric types
+             */
+
+            case 'int2': // PostgreSQL
+            case 'smallint':
+                return InternalType::INT_SMALL;
+
+            case 'int':
+            case 'int4': // PostgreSQL
+            case 'integer':
+                return InternalType::INT;
+
+            case 'bigint':
+            case 'int8': // PostgreSQL
+                return InternalType::INT_BIG;
+
+            case 'decimal':
+            case 'numeric':
+                return InternalType::DECIMAL;
+
+            case 'float2': // PostgreSQL
+            case 'smallfloat':
+                return InternalType::FLOAT_SMALL;
+
+            case 'double':
+            case 'float':
+            case 'float4': // PostgreSQL
+            case 'real':
+                return InternalType::FLOAT;
+
+            case 'bigfloat':
+            case 'float8': // PostgreSQL
+                return InternalType::FLOAT_BIG;
+
+            /*
+             * Identity types (mostly numeric).
+             */
+
+            case 'smallid':
+            case 'smallidentity':
+                return InternalType::IDENTITY_SMALL;
+
+            case 'id':
+            case 'identity':
+                return InternalType::IDENTITY;
+
+            case 'bigid':
+            case 'bigidentity':
+                return InternalType::IDENTITY_BIG;
+
+            case 'serial2': // PostgreSQL
+            case 'smallserial': // PostgreSQL
+                return InternalType::SERIAL_SMALL;
+
+            case 'serial': // PostgreSQL
+            case 'serial4': // PostgreSQL
+                return InternalType::SERIAL;
+
+            case 'bigserial': // PostgreSQL
+            case 'serial8': // PostgreSQL
+                return InternalType::SERIAL_BIG;
+
+            /*
+             * Text types.
+             */
+
+            case 'bpchar': // PostgreSQL
+            case 'char':
+            case 'character':
+            case 'nchar': // SQL Server
+                return InternalType::CHAR;
+
+            case 'ntext': // SQL Server
+            case 'string':
+            case 'text':
+                return InternalType::TEXT;
+
+            case 'char varying':
+            case 'character varying':
+            case 'nvarchar': // SQL Server
+            case 'varchar':
+            case 'varchar2': // Oracle
+            case 'varying character': // SQLite
+                return InternalType::VARCHAR;
+
+            /*
+             * Binary types.
+             */
+
+            case 'binary': // SQL Server
+            case 'blob':
+            case 'bytea': // PostgreSQL
+            case 'varbinary':
+                return InternalType::BINARY;
+
+            /*
+             * Date and time.
+             */
+
+            case 'interval':
+                return InternalType::DATE_INTERVAL;
+
+            case 'date':
+                return InternalType::DATE;
+
+            case 'time': // PostgreSQL
+                return InternalType::TIME;
+
+            case 'timez':
+                return InternalType::TIME;
+
+            case 'datetime':
+            case 'datetime2': // SQL Server
+            case 'datetimez': // PostgreSQL
+            case 'timestamp':
+            case 'timestampz': // PostgreSQL
+                return InternalType::TIMESTAMP;
+
+            /*
+             * Specific types.
+             */
+
+            case 'json':
+            case 'jsonb': // PostgreSQL
+                return InternalType::JSON;
+
+            /*
+             * Unknown type.
+             */
+
+            default:
+                return InternalType::UNKNOWN;
+        }
+    }
+
+    /**
      * Convert given user input type to vendor type.
      */
     public static function create(string|self $userType, bool $raw = false): self
@@ -271,8 +426,13 @@ class Type
         }
 
         $userType = \trim($userType);
-        $array = $withTimeZone = false;
-        $name = $length = $precision = $scale = null;
+        $unsigned = $array = $withTimeZone = false;
+        $length = $precision = $scale = null;
+
+        if (\str_starts_with($userType, 'unsigned')) {
+            $userType = \trim(\substr($userType, 8));
+            $unsigned = true;
+        }
 
         if (\str_ends_with($userType, '[]')) {
             $userType = \trim(\substr($userType, 0, -2));
@@ -312,190 +472,35 @@ class Type
             $withTimeZone = true;
         }
 
-        switch ($userType) {
-
-            /*
-             * Boolean types.
-             */
-
-            case 'bool':
-            case 'boolean':
-                $internal = InternalType::BOOL;
-                break;
-
-            /*
-             * Numeric types
-             */
-
-            case 'int2': // PostgreSQL
-            case 'int4': // PostgreSQL
-            case 'smallint':
-                $internal = InternalType::INT_SMALL;
-                break;
-
-            case 'int':
-            case 'integer':
-                $internal = InternalType::INT;
-                break;
-
-            case 'bigint':
-            case 'int8': // PostgreSQL
-                $internal = InternalType::INT_BIG;
-                break;
-
-            case 'decimal':
-            case 'numeric':
-                $internal = InternalType::DECIMAL;
-                break;
-
-            case 'float2': // PostgreSQL
-            case 'float4': // PostgreSQL
-            case 'smallfloat':
-                $internal = InternalType::FLOAT_SMALL;
-                break;
-
-            case 'double':
-            case 'float':
-            case 'real':
-                $internal = InternalType::FLOAT;
-                break;
-
-            case 'bigfloat':
-            case 'float8': // PostgreSQL
-                $internal = InternalType::FLOAT_BIG;
-                break;
-
-            /*
-             * Identity types (mostly numeric).
-             */
-
-            case 'smallid':
-            case 'smallidentity':
-                $internal = InternalType::IDENTITY_SMALL;
-                break;
-
-            case 'id':
-            case 'identity':
-                $internal = InternalType::IDENTITY;
-                break;
-
-            case 'bigid':
-            case 'bigidentity':
-                $internal = InternalType::IDENTITY_BIG;
-                break;
-
-            case 'serial2': // PostgreSQL
-            case 'serial4': // PostgreSQL
-            case 'smallserial': // PostgreSQL
-                $internal = InternalType::SERIAL_SMALL;
-                break;
-
-            case 'serial': // PostgreSQL
-                $internal = InternalType::SERIAL;
-                break;
-
-            case 'bigserial': // PostgreSQL
-            case 'serial8': // PostgreSQL
-                $internal = InternalType::SERIAL_BIG;
-                break;
-
-            /*
-             * Text types.
-             */
-
-            case 'bpchar': // PostgreSQL
-            case 'char':
-            case 'character':
-            case 'nchar': // SQL Server
-                $internal = InternalType::CHAR;
-                break;
-
-            case 'ntext': // SQL Server
-            case 'string':
-            case 'text':
-                $internal = InternalType::TEXT;
-                break;
-
-            case 'char varying':
-            case 'character varying':
-            case 'nvarchar': // SQL Server
-            case 'varchar':
-            case 'varchar2': // Oracle
-            case 'varying character': // SQLite
-                $internal = InternalType::VARCHAR;
-                break;
-
-            /*
-             * Binary types.
-             */
-
-            case 'binary': // SQL Server
-            case 'blob':
-            case 'bytea': // PostgreSQL
-            case 'varbinary':
-                $internal = InternalType::BINARY;
-                break;
-
-            /*
-             * Date and time.
-             */
-
-            case 'interval':
-                $internal = InternalType::DATE_INTERVAL;
-                break;
-
-            case 'date':
-                $internal = InternalType::DATE;
-                break;
-
-            case 'time': // PostgreSQL
-                $internal = InternalType::TIME;
-                break;
-
-            case 'timez':
-                $internal = InternalType::TIME;
-                $withTimeZone = true;
-                break;
-
-            case 'datetime':
-            case 'datetime2': // SQL Server
-            case 'timestamp':
-                $internal = InternalType::TIMESTAMP;
-                break;
-
-            case 'datetimez': // PostgreSQL
-            case 'timestampz': // PostgreSQL
-                $internal = InternalType::TIMESTAMP;
-                $withTimeZone = true;
-                break;
-
-            /*
-             * Specific types.
-             */
-
-            case 'json':
-            case 'jsonb': // PostgreSQL
-                $internal = InternalType::JSON;
-                break;
-
-            /*
-             * Unknown type.
-             */
-
-            default:
-                $name = $userType;
-                $internal = InternalType::UNKNOWN;
-                break;
+        if (!$withTimeZone && \in_array($userType, ['datetimez', 'timestampz', 'timez'])) {
+            $withTimeZone = true;
         }
+
+        $internalType = self::internalTypeFromName($userType);
 
         return new Type(
             array: $array,
-            internal: $internal,
+            internal: $internalType,
             length: $length,
-            name: $name,
+            name: InternalType::UNKNOWN === $internalType ? $userType : null,
             precision: $precision,
             scale: $scale,
+            unsigned: $unsigned,
             withTimeZone: $withTimeZone,
+        );
+    }
+
+    public function cleanUp(): self
+    {
+        return new self(
+            array: $this->array,
+            internal: $this->internal,
+            length: $this->internal->lengthIsRelevant() ? $this->length : null,
+            name: $this->internal === InternalType::UNKNOWN ? $this->name : null,
+            precision: $this->internal->precisionIsRelevant() ? $this->precision : null,
+            scale: $this->internal->scaleIsRelevant() ? $this->scale : null,
+            unsigned: $this->unsigned,
+            withTimeZone: $this->withTimeZone,
         );
     }
 
