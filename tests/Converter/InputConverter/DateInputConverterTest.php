@@ -6,6 +6,7 @@ namespace MakinaCorpus\QueryBuilder\Tests\Converter\InputConverter;
 
 use MakinaCorpus\QueryBuilder\Converter\InputConverter\DateInputConverter;
 use MakinaCorpus\QueryBuilder\Tests\UnitTestCase;
+use MakinaCorpus\QueryBuilder\Type\Type;
 
 class DateInputConverterTest extends UnitTestCase
 {
@@ -14,7 +15,7 @@ class DateInputConverterTest extends UnitTestCase
         $instance = new DateInputConverter();
 
         self::assertNull($instance->guessInputType(new \SplObjectStorage()));
-        self::assertSame('timestampz', $instance->guessInputType(new \DateTimeImmutable()));
+        self::assertSameType('timestampz', $instance->guessInputType(new \DateTimeImmutable()));
     }
 
     public function testToSqlDateTimeWithTz(): void
@@ -26,7 +27,7 @@ class DateInputConverterTest extends UnitTestCase
         $instance = new DateInputConverter();
 
         self::assertSame(
-            $instance->toSQL('timestamp with time zone', $date, $context),
+            $instance->toSQL(Type::timestamp(true), $date, $context),
             '2020-11-27 11:42:34.000000'
         );
     }
@@ -40,7 +41,7 @@ class DateInputConverterTest extends UnitTestCase
         $instance = new DateInputConverter();
 
         self::assertSame(
-            $instance->toSQL('timestamp', $date, $context),
+            $instance->toSQL(Type::timestamp(), $date, $context),
             '2020-11-27 11:42:34.000000'
         );
     }
@@ -54,7 +55,7 @@ class DateInputConverterTest extends UnitTestCase
         $instance = new DateInputConverter();
 
         self::assertSame(
-            $instance->toSQL('time with time zone', $date, $context),
+            $instance->toSQL(Type::time(true), $date, $context),
             '11:42:34.000000'
         );
     }
@@ -68,7 +69,7 @@ class DateInputConverterTest extends UnitTestCase
         $instance = new DateInputConverter();
 
         self::assertSame(
-            $instance->toSQL('time', $date, $context),
+            $instance->toSQL(Type::time(), $date, $context),
             '11:42:34.000000'
         );
     }

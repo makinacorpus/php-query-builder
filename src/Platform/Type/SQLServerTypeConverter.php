@@ -61,4 +61,10 @@ class SQLServerTypeConverter extends TypeConverter
     {
         return 'binary';
     }
+
+    #[\Override]
+    public function getUuidType(): string
+    {
+        return 'uniqueidentifier';
+    }
 }

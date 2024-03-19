@@ -20,6 +20,7 @@ use MakinaCorpus\QueryBuilder\Schema\Read\Column;
 use MakinaCorpus\QueryBuilder\Schema\Read\ForeignKey;
 use MakinaCorpus\QueryBuilder\Schema\Read\Key;
 use MakinaCorpus\QueryBuilder\Schema\SchemaManager;
+use MakinaCorpus\QueryBuilder\Type\InternalType;
 use MakinaCorpus\QueryBuilder\Type\Type;
 
 /**
@@ -215,7 +216,7 @@ class MySQLSchemaManager extends SchemaManager
                     // @todo Build Type directly from SQL create string.
                     valueType: new Type(
                         array: false, // @todo
-                        internal: Type::internalTypeFromName($typeName),
+                        internal: InternalType::fromTypeName($typeName),
                         length: $row->get('character_maximum_length', 'int'),
                         name: $typeName,
                         precision: $precision,

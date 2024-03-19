@@ -48,4 +48,10 @@ class SQLiteTypeConverter extends TypeConverter
     {
         return 'datetime';
     }
+
+    #[\Override]
+    public function getUuidType(): string
+    {
+        return 'varchar(36)';
+    }
 }

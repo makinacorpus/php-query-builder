@@ -8,6 +8,7 @@ use MakinaCorpus\QueryBuilder\Converter\ConverterContext;
 use MakinaCorpus\QueryBuilder\Converter\InputConverter;
 use MakinaCorpus\QueryBuilder\Converter\InputTypeGuesser;
 use MakinaCorpus\QueryBuilder\Error\UnexpectedInputValueTypeError;
+use MakinaCorpus\QueryBuilder\Type\Type;
 
 /**
  * Be aware that this will probably only work with PostgreSQL.
@@ -53,21 +54,20 @@ class IntervalInputConverter implements InputConverter, InputTypeGuesser
     }
 
     #[\Override]
-    public function guessInputType(mixed $value): ?string
+    public function guessInputType(mixed $value): null|string|Type
     {
         if ($value instanceof \DateInterval) {
-            return 'interval';
+            return Type::dateInterval();
         }
         return null;
     }
 
     #[\Override]
-    public function toSql(string $type, mixed $value, ConverterContext $context): null|int|float|string
+    public function toSql(Type $type, mixed $value, ConverterContext $context): null|int|float|string
     {
         if (!$value instanceof \DateInterval) {
             throw UnexpectedInputValueTypeError::create(\DateInterval::class, $value);
         }
-
         return self::intervalToIso8601($value);
     }
 }

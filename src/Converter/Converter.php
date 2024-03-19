@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Converter;
 
 use MakinaCorpus\QueryBuilder\Converter\Helper\ArrayRowParser;
+use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Error\ValueConversionError;
 use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\ExpressionFactory;
+use MakinaCorpus\QueryBuilder\Type\InternalType;
 use MakinaCorpus\QueryBuilder\Type\Type;
-use MakinaCorpus\QueryBuilder\Type\TypeConverter;
 
 class Converter
 {
@@ -152,11 +153,11 @@ class Converter
     /**
      * Proceed to naive PHP type conversion.
      */
-    public function guessInputType(mixed $value): string
+    public function guessInputType(mixed $value): Type
     {
         if (\is_array($value)) {
             foreach ($value as $candidate) {
-                return $this->guessInputType($candidate) . '[]';
+                return $this->guessInputType($candidate)->toArray();
             }
         }
 
@@ -165,12 +166,12 @@ class Converter
                 \assert($plugin instanceof InputTypeGuesser);
 
                 if ($type = $plugin->guessInputType($value)) {
-                    return $type;
+                    return Type::create($type);
                 }
             }
         }
 
-        return \get_debug_type($value);
+        return Type::raw(\get_debug_type($value));
     }
 
     /**
@@ -192,12 +193,6 @@ class Converter
      */
     public function toSql(mixed $value, null|string|Type $type = null): null|int|float|string|object
     {
-        // @todo Implement this properly.
-        //   For now this is pure backward compatibility.
-        if ($type) {
-            $type = (new TypeConverter())->getSqlTypeName(Type::create($type));
-        }
-
         if (null === $value) {
             return null;
         }
@@ -208,10 +203,12 @@ class Converter
 
         if (null === $type) {
             $type = $this->guessInputType($value);
+        } else if (\is_string($type)) {
+            $type = Type::create($type);
         }
 
-        if (\str_ends_with($type, '[]')) {
-            $valueType = \substr($type, 0, -2);
+        if ($type->array) {
+            $valueType = $type->toNoArray();
 
             return ArrayRowParser::writeArray($value, fn (mixed $value) => $this->toSql($value, $valueType));
         }
@@ -220,8 +217,9 @@ class Converter
             return $this->toSqlUsingPlugins($value, $type);
         } catch (ValueConversionError) {}
 
+        // If non found, attempt using all plugins.
         try {
-            return $this->toSqlUsingPlugins($value, '*', $type);
+            return $this->toSqlUsingPlugins($value, null, $type);
         } catch (ValueConversionError) {}
 
         // Calling default implementation after plugins allows API users to
@@ -252,9 +250,13 @@ class Converter
     /**
      * Run all plugins to convert a value.
      */
-    protected function fromSqlUsingPlugins(null|int|float|string|object $value, string $type, ?string $realType = null): mixed
+    protected function fromSqlUsingPlugins(null|int|float|string|object $value, ?string $type, ?string $realType = null): mixed
     {
         $realType ??= $type;
+        if (!$realType) {
+            throw new QueryBuilderError();
+        }
+
         $context = $this->getConverterContext();
 
         foreach ($this->getConverterPluginRegistry()->getOutputConverters($type) as $plugin) {
@@ -286,9 +288,9 @@ class Converter
     /**
      * Run all plugins to convert a value.
      */
-    protected function toSqlUsingPlugins(mixed $value, string $type, ?string $realType = null): null|int|float|string|object
+    protected function toSqlUsingPlugins(mixed $value, ?Type $type, ?Type $realType = null): null|int|float|string|object
     {
-        $realType ??= $type;
+        $realType ??= $type ?? throw new QueryBuilderError();
         $context = $this->getConverterContext();
 
         foreach ($this->getConverterPluginRegistry()->getInputConverters($type) as $plugin) {
@@ -305,40 +307,35 @@ class Converter
     /**
      * Handles common primitive types.
      */
-    protected function toSqlDefault(string $type, mixed $value): null|int|float|string|object
+    protected function toSqlDefault(Type $type, mixed $value): null|int|float|string|object
     {
-        return match ($type) {
-            'bigint' => (int) $value,
-            'bigserial' => (int) $value,
-            'blob' => (string) $value,
-            'bool' => $value ? 'true' : 'false',
-            'boolean' => $value ? 'true' : 'false',
-            'bytea' => (string) $value,
-            'char' => (string) $value,
-            'character' => (string) $value,
-            'decimal' => (float) $value,
-            'double' => (float) $value,
-            'float' => (float) $value,
-            'float4' => (float) $value,
-            'float8' => (float) $value,
-            'int' => (int) $value,
-            'int2' => (int) $value,
-            'int4' => (int) $value,
-            'int8' => (int) $value,
-            'integer' => (int) $value,
-            'json' => \json_encode($value, true),
-            'jsonb' => \json_encode($value, true),
-            'numeric' => (float) $value,
-            'real' => (float) $value,
-            'serial' => (int) $value,
-            'serial2' => (int) $value,
-            'serial4' => (int) $value,
-            'serial8' => (int) $value,
-            'smallint' => (int) $value,
-            'smallserial' => (int) $value,
-            'string' => (string) $value,
-            'text' => (string) $value,
-            'varchar' => (string) $value,
+        return match ($type->internal) {
+            InternalType::BINARY => (string) $value,
+            InternalType::BOOL => $value ? 'true' : 'false',
+            InternalType::CHAR => (string) $value,
+            // InternalType::DATE => $this->getDateType(),
+            // InternalType::DATE_INTERVAL => '', // $this->getDateIntervalType(),
+            InternalType::DECIMAL => (float) $value,
+            InternalType::FLOAT => (float) $value,
+            InternalType::FLOAT_BIG => (float) $value,
+            InternalType::FLOAT_SMALL => (float) $value,
+            InternalType::IDENTITY => (int) $value,
+            InternalType::IDENTITY_BIG => (int) $value,
+            InternalType::IDENTITY_SMALL => (int) $value,
+            InternalType::INT => (int) $value,
+            InternalType::INT_BIG => (int) $value,
+            InternalType::INT_SMALL => (int) $value,
+            InternalType::JSON => \json_encode($value, true),
+            InternalType::NULL => null,
+            InternalType::SERIAL => (int) $value,
+            InternalType::SERIAL_BIG => (int) $value,
+            InternalType::SERIAL_SMALL => (int) $value,
+            InternalType::TEXT => (string) $value,
+            // InternalType::TIME => $this->getTimeType(),
+            // InternalType::TIMESTAMP => $this->getTimestampType(),
+            InternalType::VARCHAR => (string) $value,
+            // InternalType::UUID => $this->getUuidType(),
+            InternalType::UNKNOWN => $value,
             default => $value,
         };
     }

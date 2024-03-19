@@ -8,6 +8,7 @@ use MakinaCorpus\QueryBuilder\Converter\ConverterContext;
 use MakinaCorpus\QueryBuilder\Converter\InputConverter;
 use MakinaCorpus\QueryBuilder\Converter\InputTypeGuesser;
 use MakinaCorpus\QueryBuilder\Error\UnexpectedInputValueTypeError;
+use MakinaCorpus\QueryBuilder\Type\Type;
 use Symfony\Component\Uid\AbstractUid;
 use Symfony\Component\Uid\Uuid;
 
@@ -28,10 +29,10 @@ class SymfonyUidInputConverter implements InputConverter, InputTypeGuesser
     }
 
     #[\Override]
-    public function guessInputType(mixed $value): ?string
+    public function guessInputType(mixed $value): null|string|Type
     {
         if ($value instanceof Uuid) {
-            return 'uuid';
+            return Type::uuid();
         }
         if ($value instanceof AbstractUid) {
             return 'ulid';
@@ -40,7 +41,7 @@ class SymfonyUidInputConverter implements InputConverter, InputTypeGuesser
     }
 
     #[\Override]
-    public function toSql(string $type, mixed $value, ConverterContext $context): null|int|float|string
+    public function toSql(Type $type, mixed $value, ConverterContext $context): null|int|float|string
     {
         if (!$value instanceof AbstractUid) {
             throw UnexpectedInputValueTypeError::create(AbstractUid::class, $value);

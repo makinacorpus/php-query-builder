@@ -12,6 +12,7 @@ use MakinaCorpus\QueryBuilder\Schema\Read\Column;
 use MakinaCorpus\QueryBuilder\Schema\Read\ForeignKey;
 use MakinaCorpus\QueryBuilder\Schema\Read\Key;
 use MakinaCorpus\QueryBuilder\Schema\SchemaManager;
+use MakinaCorpus\QueryBuilder\Type\InternalType;
 use MakinaCorpus\QueryBuilder\Type\Type;
 
 /**
@@ -184,7 +185,7 @@ class PostgreSQLSchemaManager extends SchemaManager
                 // @todo Build Type directly from SQL create string.
                 valueType: new Type(
                     array: false, // @todo
-                    internal: Type::internalTypeFromName($row->get('udt_name', 'string')),
+                    internal: InternalType::fromTypeName($row->get('udt_name', 'string')),
                     length: $row->get('character_maximum_length', 'int'),
                     name: $row->get('udt_name', 'string'),
                     precision: $row->get('numeric_precision', 'int'),

@@ -24,6 +24,7 @@ use MakinaCorpus\QueryBuilder\Schema\Read\Column;
 use MakinaCorpus\QueryBuilder\Schema\Read\ForeignKey;
 use MakinaCorpus\QueryBuilder\Schema\Read\Key;
 use MakinaCorpus\QueryBuilder\Schema\SchemaManager;
+use MakinaCorpus\QueryBuilder\Type\InternalType;
 use MakinaCorpus\QueryBuilder\Type\Type;
 
 /**
@@ -167,7 +168,7 @@ class SQLiteSchemaManager extends SchemaManager
                     // @todo Build Type directly from SQL create string.
                     valueType: new Type(
                         array: false, // @todo
-                        internal: Type::internalTypeFromName($valueType),
+                        internal: InternalType::fromTypeName($valueType),
                         length: $length,
                         name: $valueType,
                         precision: $precision,

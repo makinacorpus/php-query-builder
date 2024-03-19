@@ -59,6 +59,7 @@ class TypeConverter
             InternalType::TIME => $this->getTimeType(),
             InternalType::TIMESTAMP => $this->getTimestampType(),
             InternalType::VARCHAR => $this->getVarcharType(),
+            InternalType::UUID => $this->getUuidType(),
             InternalType::UNKNOWN => $type->name ?? throw new QueryBuilderError("Unhandled types must have a type name."),
         };
     }
@@ -300,5 +301,13 @@ class TypeConverter
     public function getTimestampCastType(): string
     {
         return $this->getTimestampType();
+    }
+
+    /**
+     * Get timestamp cast type.
+     */
+    public function getUuidType(): string
+    {
+        return 'uuid';
     }
 }

@@ -49,4 +49,10 @@ class MySQLTypeConverter extends TypeConverter
     {
         return 'integer';
     }
+
+    #[\Override]
+    public function getUuidType(): string
+    {
+        return 'varchar(36)';
+    }
 }

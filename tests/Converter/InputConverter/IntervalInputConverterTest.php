@@ -7,6 +7,7 @@ namespace MakinaCorpus\QueryBuilder\Tests\Converter\InputConverter;
 use MakinaCorpus\QueryBuilder\Converter\InputConverter\IntervalInputConverter;
 use MakinaCorpus\QueryBuilder\Error\UnexpectedInputValueTypeError;
 use MakinaCorpus\QueryBuilder\Tests\UnitTestCase;
+use MakinaCorpus\QueryBuilder\Type\Type;
 
 final class IntervalInputConverterTest extends UnitTestCase
 {
@@ -15,7 +16,7 @@ final class IntervalInputConverterTest extends UnitTestCase
         $instance = new IntervalInputConverter();
 
         self::assertNull($instance->guessInputType(new \DateTimeImmutable()));
-        self::assertSame('interval', $instance->guessInputType(new \DateInterval('P1Y2DT1M')));
+        self::assertSameType('interval', $instance->guessInputType(new \DateInterval('P1Y2DT1M')));
     }
 
     public static function getValidToSQLData()
@@ -35,7 +36,7 @@ final class IntervalInputConverterTest extends UnitTestCase
         $context = self::context();
 
         // Converter only supports PHP \DateInterval structures as input
-        self::assertSame($expected, $converter->toSQL('interval', $value, $context));
+        self::assertSame($expected, $converter->toSQL(Type::dateInterval(), $value, $context));
     }
 
     public static function getInvalidToSQLData()
@@ -59,6 +60,6 @@ final class IntervalInputConverterTest extends UnitTestCase
         $context = self::context();
 
         self::expectException(UnexpectedInputValueTypeError::class);
-        $converter->toSQL('interval', $invalidValue, $context);
+        $converter->toSQL(Type::dateInterval(), $invalidValue, $context);
     }
 }

@@ -7,6 +7,7 @@ namespace MakinaCorpus\QueryBuilder\Tests\Converter\InputConverter;
 use MakinaCorpus\QueryBuilder\Converter\InputConverter\RamseyUuidInputConverter;
 use MakinaCorpus\QueryBuilder\Error\UnexpectedInputValueTypeError;
 use MakinaCorpus\QueryBuilder\Tests\UnitTestCase;
+use MakinaCorpus\QueryBuilder\Type\Type;
 use Ramsey\Uuid\Uuid;
 
 class RamseyUuidInputConverterTest extends UnitTestCase
@@ -16,7 +17,7 @@ class RamseyUuidInputConverterTest extends UnitTestCase
         $instance = new RamseyUuidInputConverter();
 
         self::assertNull($instance->guessInputType(new \DateTimeImmutable()));
-        self::assertSame('uuid', $instance->guessInputType(Uuid::fromString('33881c8a-bfa7-4691-96b7-bcfd03afa115')));
+        self::assertSameType('uuid', $instance->guessInputType(Uuid::fromString('33881c8a-bfa7-4691-96b7-bcfd03afa115')));
     }
 
     public function testToSqlUuid(): void
@@ -27,7 +28,7 @@ class RamseyUuidInputConverterTest extends UnitTestCase
 
         self::assertSame(
             '33881c8a-bfa7-4691-96b7-bcfd03afa115',
-            $instance->toSql('uuid', $uuid, self::context()),
+            $instance->toSql(Type::uuid(), $uuid, self::context()),
         );
     }
 
@@ -36,6 +37,6 @@ class RamseyUuidInputConverterTest extends UnitTestCase
         $instance = new RamseyUuidInputConverter();
 
         self::expectException(UnexpectedInputValueTypeError::class);
-        $instance->toSql('uuid', new \DateTimeImmutable(), self::context());
+        $instance->toSql(Type::uuid(), new \DateTimeImmutable(), self::context());
     }
 }

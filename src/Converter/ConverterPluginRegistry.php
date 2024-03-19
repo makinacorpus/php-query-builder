@@ -11,6 +11,7 @@ use MakinaCorpus\QueryBuilder\Converter\InputConverter\SymfonyUidInputConverter;
 use MakinaCorpus\QueryBuilder\Converter\OutputConverter\DateOutputConverter;
 use MakinaCorpus\QueryBuilder\Converter\OutputConverter\RamseyUuidOutputConverter;
 use MakinaCorpus\QueryBuilder\Converter\OutputConverter\SymfonyUidOutputConverter;
+use MakinaCorpus\QueryBuilder\Type\Type;
 use Ramsey\Uuid\UuidInterface;
 use Symfony\Component\Uid\AbstractUid;
 
@@ -61,7 +62,7 @@ class ConverterPluginRegistry
         if ($plugin instanceof InputConverter) {
             $found = true;
             foreach ($plugin->supportedInputTypes() as $type) {
-                $this->inputConverters[$type][] = $plugin;
+                $this->inputConverters[Type::create($type)->getArbitraryName()][] = $plugin;
             }
         }
 
@@ -83,13 +84,13 @@ class ConverterPluginRegistry
     }
 
     /** @return iterable<InputConverter> */
-    public function getInputConverters(string $type): iterable
+    public function getInputConverters(null|string|Type $type): iterable
     {
-        return $this->inputConverters[$type] ?? [];
+        return $this->inputConverters[Type::create($type ?? '*')->getArbitraryName()] ?? [];
     }
 
     /** @return iterable<OutputConverter> */
-    public function getOutputConverters(string $type): iterable
+    public function getOutputConverters(?string $type): iterable
     {
         return $this->outputConverters[$type] ?? [];
     }
