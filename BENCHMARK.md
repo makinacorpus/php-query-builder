@@ -24,6 +24,34 @@ Run benchmark and compare with tag:
 
 ## Preliminary results
 
+### 1.1 results
+
+_Testing conditions: AMD Ryzen 7 PRO 6850U, PHP 8.3.4_
+
+```
++-----------------+------------------------------+-----+------+-----+----------+-----------+--------+
+| benchmark       | subject                      | set | revs | its | mem_peak | mode      | rstdev |
++-----------------+------------------------------+-----+------+-----+----------+-----------+--------+
+| WriterBench     | benchArbitrary               |     | 1000 | 5   | 2.379mb  | 999.157μs | ±2.81% |
+| ConversionBench | benchIntFromSql              |     | 3000 | 5   | 1.976mb  | 52.563μs  | ±0.32% |
+| ConversionBench | benchIntToSql                |     | 3000 | 5   | 1.976mb  | 145.708μs | ±0.52% |
+| ConversionBench | benchIntToSqlNullType        |     | 3000 | 5   | 1.976mb  | 143.360μs | ±0.38% |
+| ConversionBench | benchIntToSqlWithType        |     | 3000 | 5   | 1.976mb  | 101.565μs | ±1.62% |
+| ConversionBench | benchRamseyUuidFromSql       |     | 3000 | 5   | 1.976mb  | 40.229μs  | ±0.38% |
+| ConversionBench | benchRamseyUuidToSql         |     | 3000 | 5   | 1.976mb  | 85.923μs  | ±0.25% |
+| ConversionBench | benchRamseyUuidToSqlNullType |     | 3000 | 5   | 1.975mb  | 94.053μs  | ±0.40% |
+| ConversionBench | benchRamseyUuidToSqlWithType |     | 3000 | 5   | 1.976mb  | 44.682μs  | ±1.15% |
+| ConversionBench | benchArrayFromSql            |     | 3000 | 5   | 2.004mb  | 305.592μs | ±0.66% |
+| ConversionBench | benchArrayToSql              |     | 3000 | 5   | 2.003mb  | 378.250μs | ±0.77% |
+| ConversionBench | benchArrayToSqlNullType      |     | 3000 | 5   | 2.003mb  | 383.562μs | ±0.97% |
+| ConversionBench | benchArrayToSqlWithType      |     | 3000 | 5   | 2.003mb  | 336.824μs | ±1.45% |
++-----------------+------------------------------+-----+------+-----+----------+-----------+--------+
+```
+
+Analysis: added the type API, induces some mandatory slowness in value conversion. Some deviations
+might be corrected later by improving the converter.
+
+
 ### 1.0 results
 
 _Testing conditions: AMD Ryzen 7 PRO 6850U, PHP 8.3.4_

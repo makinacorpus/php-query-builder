@@ -30,11 +30,11 @@ final class ConversionBench
 
         $this->arrayData = ["foo", "bar", "l''och"];
         $this->arrayDataAsString = "{foo,bar,l''och}";
-        // $this->arrayType = Type::varchar()->toArray();
-        // $this->intType = Type::int();
+        $this->arrayType = Type::varchar()->toArray();
+        $this->intType = Type::int();
         $this->ramseyUuidData = Uuid::fromString('a9336bfe-1a3b-4d14-a2da-38b819da0e96');
         $this->ramseyUuidDataAsString = 'a9336bfe-1a3b-4d14-a2da-38b819da0e96';
-        // $this->ramseyUuidType = Type::uuid();
+        $this->ramseyUuidType = Type::uuid();
     }
 
     /**
@@ -67,12 +67,11 @@ final class ConversionBench
     /**
      * @Revs(3000)
      * @Iterations(5)
-     *
+     */
     public function benchIntToSqlWithType(): void
     {
         $this->converter->toSQL(152485788, $this->intType);
     }
-     */
 
     /**
      * @Revs(3000)
@@ -104,12 +103,11 @@ final class ConversionBench
     /**
      * @Revs(3000)
      * @Iterations(5)
-     *
+     */
     public function benchRamseyUuidToSqlWithType(): void
     {
         $this->converter->toSQL($this->ramseyUuidData, $this->ramseyUuidType);
     }
-     */
 
     /**
      * @Revs(3000)
@@ -141,10 +139,9 @@ final class ConversionBench
     /**
      * @Revs(3000)
      * @Iterations(5)
-     *
+     */
     public function benchArrayToSqlWithType(): void
     {
         $this->converter->toSQL($this->arrayData, $this->arrayType);
     }
-     */
 }

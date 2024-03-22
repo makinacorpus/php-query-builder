@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Goat\Benchmark\Converter;
 
-use MakinaCorpus\QueryBuilder\Expression\Raw;
-use MakinaCorpus\QueryBuilder\Query\Query;
+use MakinaCorpus\QueryBuilder\DefaultQueryBuilder;
+use MakinaCorpus\QueryBuilder\Where;
 use MakinaCorpus\QueryBuilder\Query\Select;
 use MakinaCorpus\QueryBuilder\Writer\Writer;
 
@@ -15,40 +15,59 @@ use MakinaCorpus\QueryBuilder\Writer\Writer;
 final class WriterBench
 {
     private Writer $writer;
-    private Query $query;
+    private Select $querySimple;
+    private Select $queryWithJoin;
+    private Select $queryBig;
 
     public function setUp(): void
     {
         $this->writer = new Writer();
 
-        $query = new Select('task', 't');
-        $query->column('t.*');
-        $query->column('n.type');
-        $query->columnAgg('avg', 'views');
-        $query->column(new Raw('count(n.id)'), 'comment_count');
-        // Add and remove a column for fun
-        $query->column('some_field', 'some_alias')->removeColumn('some_alias');
-        $query->leftJoin('task_note', 'n.task_id = t.id', 'n');
-        $query->groupBy('t.id');
-        $query->groupBy('n.type');
-        $query->orderBy('n.type');
-        $query->orderBy(new Raw('count(n.nid)'), Query::ORDER_DESC);
-        $query->range(7, 42);
-        $where = $query->getWhere();
-        $where->isEqual('t.user_id', 12);
-        $where->isLess('t.deadline', new Raw('current_timestamp'));
-        $having = $query->getHaving();
-        $having->withRaw('count(n.nid) < ?', 3);
+        $queryBuilder = new DefaultQueryBuilder();
+        $expr = $queryBuilder->expression();
 
-        $this->query = $query;
+        $this->querySimple = $queryBuilder
+            ->select('users')
+            ->columnRaw('name')
+            ->where('last_login', $expr->currentTimestamp(), '<')
+        ;
+
+        $this->queryWithJoin = $queryBuilder
+            ->select('users')
+            ->join('login', (new Where())->isEqual('users.id', $expr->raw('?::column'), ['login.user_id']))
+            ->where('login.last_login', $expr->currentTimestamp(), '<')
+        ;
+
+        $this->queryBig = $queryBuilder->select('users');
+        $this->queryBig->createColumnAgg('avg', 'login_count')->createOver()->partitionBy('role')->orderBy('loged_at');
+        $this->queryBig->join('history', $expr->raw('?::column = ?::column and ?::column < 12', ['users.id', 'history.user_id', 'history.severity']));
+        $this->queryBig->getHaving()->isEqual('foo', 'bar')->isBetween($expr->currentTimestamp(), 'history.start', 'history.stop');
     }
 
     /**
      * @Revs(1000)
      * @Iterations(5)
      */
-    public function benchArbitrary(): void
+    public function benchQuerySimple(): void
     {
-        $this->writer->prepare($this->query);
+        $this->writer->prepare($this->querySimple);
+    }
+
+    /**
+     * @Revs(1000)
+     * @Iterations(5)
+     */
+    public function benchQueryWithJoin(): void
+    {
+        $this->writer->prepare($this->queryWithJoin);
+    }
+
+    /**
+     * @Revs(1000)
+     * @Iterations(5)
+     */
+    public function benchQueryBig(): void
+    {
+        $this->writer->prepare($this->queryBig);
     }
 }
