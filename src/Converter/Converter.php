@@ -129,11 +129,6 @@ class Converter
             return null;
         }
 
-        // @todo Maybe later, too slow for hydration. Never do this automatically.
-        // if (null === $type) {
-        //     $type = $this->guessOutputType($value);
-        // }
-
         if (\str_ends_with($type, '[]')) {
             return $this->parseArrayRecursion(\substr($type, 0, -2), ArrayRowParser::parseArray($value));
         }
@@ -157,6 +152,12 @@ class Converter
      */
     public function guessInputType(mixed $value): string
     {
+        if (\is_array($value)) {
+            foreach ($value as $candidate) {
+                return $this->guessInputType($candidate) . '[]';
+            }
+        }
+
         if (\is_object($value)) {
             foreach ($this->getConverterPluginRegistry()->getTypeGuessers() as $plugin) {
                 \assert($plugin instanceof InputTypeGuesser);
@@ -202,8 +203,9 @@ class Converter
         }
 
         if (\str_ends_with($type, '[]')) {
-            // @todo Handle array.
-            throw new ValueConversionError(\sprintf("Handling arrays is not implemented yet, found type '%s'.", $type));
+            $valueType = \substr($type, 0, -2);
+
+            return ArrayRowParser::writeArray($value, fn (mixed $value) => $this->toSql($value, $valueType));
         }
 
         try {

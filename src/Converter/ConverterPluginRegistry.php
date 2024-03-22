@@ -41,7 +41,7 @@ class ConverterPluginRegistry
         $this->register(new DateInputConverter());
         $this->register(new DateOutputConverter());
         $this->register(new IntervalInputConverter());
-        if (\class_exists(UuidInterface::class)) {
+        if (\interface_exists(UuidInterface::class)) {
             $this->register(new RamseyUuidInputConverter());
             $this->register(new RamseyUuidOutputConverter());
         }
