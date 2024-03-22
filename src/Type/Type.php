@@ -12,9 +12,9 @@ use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 class Type
 {
     public readonly ?string $name;
-    public readonly bool $isDate;
-    public readonly bool $isNumeric;
-    public readonly bool $isText;
+    private ?bool $isDate = null;
+    private ?bool $isNumeric = null;
+    private ?bool $isText = null;
 
     public function __construct(
         public InternalType $internal,
@@ -26,15 +26,10 @@ class Type
         public bool $array = false,
         public bool $unsigned = false,
     ) {
-        if ($internal === InternalType::UNKNOWN && !$name) {
+        if (!$name && $internal === InternalType::UNKNOWN) {
             throw new QueryBuilderError("Unhandled internal types must have a type name.");
         }
-
         $this->name = $name ? \strtolower(\trim($name)) : null;
-
-        $this->isDate = $this->internal->isDate();
-        $this->isNumeric = $this->internal->isNumeric();
-        $this->isText = $this->internal->isText();
     }
 
     /**
@@ -282,32 +277,44 @@ class Type
             return $userType;
         }
 
-        $userType = \strtolower(\trim($userType));
         $unsigned = $array = $withTimeZone = false;
         $length = $precision = $scale = null;
 
-        if (\str_starts_with($userType, 'unsigned')) {
-            $userType = \trim(\substr($userType, 8));
-            $unsigned = true;
-        }
-
-        if (\str_ends_with($userType, '[]')) {
-            $userType = \trim(\substr($userType, 0, -2));
-            $array = true;
-        }
-
         // Catch precision and scale or length.
         $matches = [];
-        if (\preg_match('/(.*)\((\d+)(|,(\d+))\)$/', $userType, $matches)) {
-            if ($matches[2]) {
-                if ($matches[3]) {
-                    $precision = (int) $matches[2];
-                    $scale = (int) $matches[4];
+        if (\preg_match(
+            <<<REGEX
+            @
+            (unsigned\s+|)                          # unsigned
+            ([^\(\[]*)                              # type name
+            (\s*\(\s*(\d+)(|\s*,\s*(\d+))\s*\)|)    # (length) or (precision,scale)
+            (\s*\[\]|)                              # array
+            @imx
+            REGEX,
+            $userType,
+            $matches,
+        )) {
+            if ($matches[1]) {
+               $unsigned = true; 
+            }
+            if ($matches[7]) {
+                $array = true;
+            }
+            if ($matches[4]) {
+                if ($matches[6]) {
+                    $precision = (int) $matches[4];
+                    $scale = (int) $matches[6];
                 } else {
-                    $length = (int) $matches[2];
+                    $length = (int) $matches[4];
                 }
             }
-            $userType = \trim($matches[1]);
+            $userType = $matches[2];
+
+            if (\preg_match('@(.*)\s+with(out|)\s+time\s+zone@imx', $userType, $matches)) {
+                $userType = $matches[1];
+                $withTimeZone = !$matches[2];
+            }
+            $userType = \trim($userType);
         }
 
         if ($raw) {
@@ -322,14 +329,7 @@ class Type
             );
         }
 
-        if (\str_ends_with($userType, 'without time zone')) {
-            $userType = \trim(\substr($userType, 0, -17));
-        } else if (\str_ends_with($userType, 'with time zone')) {
-            $userType = \trim(\substr($userType, 0, -14));
-            $withTimeZone = true;
-        }
-
-        if (!$withTimeZone && \in_array($userType, ['datetimez', 'timestampz', 'timez'])) {
+        if (!$withTimeZone && ($userType === 'datetimez' || $userType === 'timestampz' || $userType === 'timez')) {
             $withTimeZone = true;
         }
 
@@ -385,6 +385,21 @@ class Type
         };
     }
 
+    public function isDate(): bool
+    {
+        return $this->isDate ??= $this->internal->isDate();
+    }
+
+    public function isNumeric(): bool
+    {
+        return $this->isNumeric ??= $this->internal->isNumeric();
+    }
+
+    public function isText(): bool
+    {
+        return $this->isText ??= $this->internal->isText();
+    }
+
     public function cleanUp(): self
     {
         return new self(
@@ -407,7 +422,7 @@ class Type
         return $ret;
     }
 
-    public function toNoArray(): self
+    public function toNonArray(): self
     {
         $ret = clone $this;
         $ret->array = false;
@@ -436,6 +451,6 @@ class Type
             $suffix .= '[]';
         }
 
-        return $prefix. ($this->name ?? '<internal>') . $suffix;
+        return $prefix . $this->getArbitraryName() . $suffix;
     }
 }

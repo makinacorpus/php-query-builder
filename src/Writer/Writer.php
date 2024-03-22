@@ -998,7 +998,7 @@ class Writer
         } else {
             $prefix = $this->format($expression->getValue(), $context);
         }
-        return $prefix . " || ' ' || " . $this->formatValue(new Value($expression->getUnit(), 'text'), $context);
+        return $prefix . " || ' ' || " . $this->formatValue(new Value($expression->getUnit(), Type::text()), $context);
     }
 
     /**

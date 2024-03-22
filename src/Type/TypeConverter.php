@@ -24,7 +24,7 @@ class TypeConverter
      */
     public function isCompatible(Type $type, Type $reference): bool
     {
-        return ($type->isText && $reference->isText) || ($type->isNumeric && $reference->isNumeric) || ($type->isDate && $reference->isDate);
+        return ($type->isText() && $reference->isText()) || ($type->isNumeric() && $reference->isNumeric()) || ($type->isDate() && $reference->isDate());
     }
 
     public function getSqlTypeString(): string

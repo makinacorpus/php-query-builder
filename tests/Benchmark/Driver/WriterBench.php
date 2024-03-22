@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace Goat\Benchmark\Converter;
 
 use MakinaCorpus\QueryBuilder\DefaultQueryBuilder;
-use MakinaCorpus\QueryBuilder\Where;
 use MakinaCorpus\QueryBuilder\Query\Select;
+use MakinaCorpus\QueryBuilder\Where;
 use MakinaCorpus\QueryBuilder\Writer\Writer;
+use PhpBench\Attributes\BeforeMethods;
+use PhpBench\Attributes\Iterations;
+use PhpBench\Attributes\Revs;
 
-/**
- * @BeforeMethods({"setUp"})
- */
+#[BeforeMethods(["setUp"])]
 final class WriterBench
 {
     private Writer $writer;
@@ -44,28 +45,22 @@ final class WriterBench
         $this->queryBig->getHaving()->isEqual('foo', 'bar')->isBetween($expr->currentTimestamp(), 'history.start', 'history.stop');
     }
 
-    /**
-     * @Revs(1000)
-     * @Iterations(5)
-     */
+    #[Revs(1000)]
+    #[Iterations(5)]
     public function benchQuerySimple(): void
     {
         $this->writer->prepare($this->querySimple);
     }
 
-    /**
-     * @Revs(1000)
-     * @Iterations(5)
-     */
+    #[Revs(1000)]
+    #[Iterations(5)]
     public function benchQueryWithJoin(): void
     {
         $this->writer->prepare($this->queryWithJoin);
     }
 
-    /**
-     * @Revs(1000)
-     * @Iterations(5)
-     */
+    #[Revs(1000)]
+    #[Iterations(5)]
     public function benchQueryBig(): void
     {
         $this->writer->prepare($this->queryBig);

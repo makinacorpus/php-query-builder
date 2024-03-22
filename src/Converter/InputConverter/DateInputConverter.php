@@ -48,17 +48,7 @@ class DateInputConverter implements InputConverter, InputTypeGuesser
     #[\Override]
     public function supportedInputTypes(): array
     {
-        return [
-            'date',
-            'datetime',
-            'datetimez',
-            'datetime2',
-            'time with time zone',
-            'time',
-            'timestamp with time zone',
-            'timestamp',
-            'timestampz',
-        ];
+        return [Type::date(), Type::time(), Type::timestamp()];
     }
 
     #[\Override]

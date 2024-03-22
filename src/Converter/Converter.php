@@ -155,6 +155,19 @@ class Converter
      */
     public function guessInputType(mixed $value): Type
     {
+        if (\is_int($value)) {
+            return Type::intBig();
+        }
+        if (\is_float($value)) {
+            return Type::floatBig();
+        }
+        if (\is_string($value)) {
+            return Type::varchar();
+        }
+        if (\is_bool($value)) {
+            return Type::bool();
+        }
+
         if (\is_array($value)) {
             foreach ($value as $candidate) {
                 return $this->guessInputType($candidate)->toArray();
@@ -163,8 +176,6 @@ class Converter
 
         if (\is_object($value)) {
             foreach ($this->getConverterPluginRegistry()->getTypeGuessers() as $plugin) {
-                \assert($plugin instanceof InputTypeGuesser);
-
                 if ($type = $plugin->guessInputType($value)) {
                     return Type::create($type);
                 }
@@ -208,24 +219,34 @@ class Converter
         }
 
         if ($type->array) {
-            $valueType = $type->toNoArray();
+            $valueType = $type->toNonArray();
 
             return ArrayRowParser::writeArray($value, fn (mixed $value) => $this->toSql($value, $valueType));
         }
 
-        try {
-            return $this->toSqlUsingPlugins($value, $type);
-        } catch (ValueConversionError) {}
-
-        // If non found, attempt using all plugins.
-        try {
-            return $this->toSqlUsingPlugins($value, null, $type);
-        } catch (ValueConversionError) {}
-
-        // Calling default implementation after plugins allows API users to
-        // override default behavior and implement their own logic pretty
-        // much everywhere.
-        return $this->toSqlDefault($type, $value);
+        return match ($type->internal) {
+            InternalType::BINARY => (string) $value,
+            InternalType::BOOL => $value ? 'true' : 'false',
+            InternalType::CHAR => (string) $value,
+            InternalType::DECIMAL => (float) $value,
+            InternalType::FLOAT => (float) $value,
+            InternalType::FLOAT_BIG => (float) $value,
+            InternalType::FLOAT_SMALL => (float) $value,
+            InternalType::IDENTITY => (int) $value,
+            InternalType::IDENTITY_BIG => (int) $value,
+            InternalType::IDENTITY_SMALL => (int) $value,
+            InternalType::INT => (int) $value,
+            InternalType::INT_BIG => (int) $value,
+            InternalType::INT_SMALL => (int) $value,
+            InternalType::JSON => \json_encode($value, true),
+            InternalType::NULL => null,
+            InternalType::SERIAL => (int) $value,
+            InternalType::SERIAL_BIG => (int) $value,
+            InternalType::SERIAL_SMALL => (int) $value,
+            InternalType::TEXT => (string) $value,
+            InternalType::VARCHAR => (string) $value,
+            default => $this->toSqlUsingPlugins($value, $type),
+        };
     }
 
     /**
@@ -288,20 +309,25 @@ class Converter
     /**
      * Run all plugins to convert a value.
      */
-    protected function toSqlUsingPlugins(mixed $value, ?Type $type, ?Type $realType = null): null|int|float|string|object
+    protected function toSqlUsingPlugins(mixed $value, Type $type): null|int|float|string|object
     {
-        $realType ??= $type ?? throw new QueryBuilderError();
         $context = $this->getConverterContext();
 
+        // First lookup with found type.
         foreach ($this->getConverterPluginRegistry()->getInputConverters($type) as $plugin) {
-            \assert($plugin instanceof InputConverter);
-
             try {
-                return $plugin->toSql($realType, $value, $context);
+                return $plugin->toSql($type, $value, $context);
             } catch (ValueConversionError) {}
         }
 
-        throw new ValueConversionError();
+        // Then with wildcard (dynamic) input type converters.
+        foreach ($this->getConverterPluginRegistry()->getInputConverters(null) as $plugin) {
+            try {
+                return $plugin->toSql($type, $value, $context);
+            } catch (ValueConversionError) {}
+        }
+
+        return $value;
     }
 
     /**

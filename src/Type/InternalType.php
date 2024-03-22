@@ -32,13 +32,13 @@ enum InternalType
     /** Arbitrary precision number. */
     case DECIMAL;
 
-    /** Floating point numner. */
+    /** Floating point number. */
     case FLOAT;
 
-    /** Big floating point numner. */
+    /** Big floating point number. */
     case FLOAT_BIG;
 
-    /** Small floating point numner. */
+    /** Small floating point number. */
     case FLOAT_SMALL;
 
     /** Identity. */

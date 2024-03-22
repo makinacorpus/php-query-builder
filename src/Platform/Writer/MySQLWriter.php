@@ -391,7 +391,7 @@ class MySQLWriter extends Writer
         // accidentally to transparent data alteration.
         if (\in_array($type->internal, [InternalType::INT, InternalType::INT_BIG, InternalType::INT_SMALL])) {
             $typeString = 'SIGNED';
-        } else if ($type->isText) {
+        } else if ($type->isText()) {
             $typeString = 'CHAR';
         }
 

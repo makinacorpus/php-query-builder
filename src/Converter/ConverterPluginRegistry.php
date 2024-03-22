@@ -24,6 +24,8 @@ class ConverterPluginRegistry
 {
     /** @var array<string,array<InputConverter>> */
     private array $inputConverters = [];
+    /** @var array<InputConverter> */
+    private array $wildcardInputConverters = [];
     /** @var array<string,array<OutputConverter>> */
     private array $outputConverters = [];
     /** @var array<InputTypeGuesser> */
@@ -62,7 +64,11 @@ class ConverterPluginRegistry
         if ($plugin instanceof InputConverter) {
             $found = true;
             foreach ($plugin->supportedInputTypes() as $type) {
-                $this->inputConverters[Type::create($type)->getArbitraryName()][] = $plugin;
+                if ('*' === $type) {
+                    $this->wildcardInputConverters[] = $plugin;
+                } else {
+                    $this->inputConverters[Type::create($type)->getArbitraryName()][] = $plugin;
+                }
             }
         }
 
@@ -83,19 +89,22 @@ class ConverterPluginRegistry
         }
     }
 
-    /** @return iterable<InputConverter> */
-    public function getInputConverters(null|string|Type $type): iterable
+    /** @return InputConverter[] */
+    public function getInputConverters(?Type $type): iterable
     {
-        return $this->inputConverters[Type::create($type ?? '*')->getArbitraryName()] ?? [];
+        if (!$type) {
+            return $this->wildcardInputConverters;
+        }
+        return $this->inputConverters[$type->getArbitraryName()] ?? [];
     }
 
-    /** @return iterable<OutputConverter> */
+    /** @return OutputConverter[] */
     public function getOutputConverters(?string $type): iterable
     {
         return $this->outputConverters[$type] ?? [];
     }
 
-    /** @return iterable<InputTypeGuesser> */
+    /** @return InputTypeGuesser[] */
     public function getTypeGuessers(): iterable
     {
         return $this->typeGuessers;

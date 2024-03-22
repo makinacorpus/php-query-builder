@@ -15,7 +15,7 @@ interface InputConverter extends ConverterPlugin
     /**
      * Get supported SQL types.
      *
-     * @return array<string>
+     * @return array<string|Type>
      *   If you return ['*'], the input converted will be dynamically called
      *   late if no other was able to deal with the given type as a fallback.
      */
