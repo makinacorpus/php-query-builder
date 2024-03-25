@@ -18,6 +18,9 @@ use MakinaCorpus\QueryBuilder\Expression\Lpad;
 use MakinaCorpus\QueryBuilder\Expression\Random;
 use MakinaCorpus\QueryBuilder\Expression\StringHash;
 use MakinaCorpus\QueryBuilder\Expression\TableName;
+use MakinaCorpus\QueryBuilder\Platform\Type\SQLServerTypeConverter;
+use MakinaCorpus\QueryBuilder\Type\Type;
+use MakinaCorpus\QueryBuilder\Type\TypeConverter;
 use MakinaCorpus\QueryBuilder\Writer\Writer;
 use MakinaCorpus\QueryBuilder\Writer\WriterContext;
 
@@ -28,6 +31,12 @@ class SQLServerWriter extends Writer
 {
     // @see doModifyLimitQuery() in doctrine/dbal
 
+    #[\Override]
+    protected function createTypeConverter(): TypeConverter
+    {
+        return new SQLServerTypeConverter();
+    }
+
     /**
      * SQLServer aggregate function names seems to be keywords, not functions.
      */
@@ -35,16 +44,6 @@ class SQLServerWriter extends Writer
     protected function shouldEscapeAggregateFunctionName(): bool
     {
         return false;
-    }
-
-    /**
-     * This is nasty, but we don't what the user will want, just cast dates
-     * to the maximum extent possible.
-     */
-    #[\Override]
-    protected function getDateTimeCastType(): string
-    {
-        return 'datetime2';
     }
 
     #[\Override]
@@ -115,7 +114,7 @@ class SQLServerWriter extends Writer
     {
         $algo = $expression->getAlgo();
         $escapedAlgo = $this->escaper->escapeLiteral($algo);
-        $value = new Cast($expression->getValue(), 'nvarchar');
+        $value = new Cast($expression->getValue(), Type::varchar());
 
         return 'lower(convert(nvarchar(32), hashbytes(' . $escapedAlgo  . ', ' . $this->format($value, $context) . '), 2))';
     }

@@ -8,6 +8,7 @@ use MakinaCorpus\QueryBuilder\Expression\Not;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\Expression\Value;
 use MakinaCorpus\QueryBuilder\Query\Where\WhereWhere;
+use MakinaCorpus\QueryBuilder\Type\Type;
 
 /**
  * Represent a condition set with an operator ("and" or "or").
@@ -79,9 +80,9 @@ class Where implements Expression
     }
 
     #[\Override]
-    public function returnType(): ?string
+    public function returnType(): ?Type
     {
-        return 'bool';
+        return Type::bool();
     }
 
     /**

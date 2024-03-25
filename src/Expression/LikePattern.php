@@ -6,6 +6,7 @@ namespace MakinaCorpus\QueryBuilder\Expression;
 
 use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
+use MakinaCorpus\QueryBuilder\Type\Type;
 
 /**
  * Represents LIKE / SIMILAR TO pattern expression.
@@ -48,9 +49,9 @@ class LikePattern implements Expression
     }
 
     #[\Override]
-    public function returnType(): ?string
+    public function returnType(): ?Type
     {
-        return 'varchar';
+        return Type::text();
     }
 
     public function hasValue(): bool

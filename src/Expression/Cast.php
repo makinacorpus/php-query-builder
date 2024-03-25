@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Expression;
 
 use MakinaCorpus\QueryBuilder\Expression;
+use MakinaCorpus\QueryBuilder\Type\Type;
 
 /**
  * Cast expression is the same as a value expression, but type is mandatory.
@@ -18,12 +19,15 @@ use MakinaCorpus\QueryBuilder\Expression;
 class Cast implements Castable
 {
     private Expression $expression;
+    private Type $castToType;
 
     public function __construct(
         mixed $expression,
-        private string $castToType,
-        ?string $valueType = null
+        string|Type $castToType,
+        null|string|Type $valueType = null
     ) {
+        $this->castToType = Type::create($castToType);
+
         if ($expression instanceof Expression) {
             if ($valueType) {
                 // @todo Raise warning: value type will be ignored
@@ -42,13 +46,13 @@ class Cast implements Castable
     }
 
     #[\Override]
-    public function returnType(): ?string
+    public function returnType(): ?Type
     {
-        return $this->castToType;
+        return Type::create($this->castToType);
     }
 
     #[\Override]
-    public function getCastToType(): ?string
+    public function getCastToType(): ?Type
     {
         return $this->castToType;
     }

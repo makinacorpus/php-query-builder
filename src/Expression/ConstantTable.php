@@ -4,8 +4,9 @@ declare (strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Expression;
 
-use MakinaCorpus\QueryBuilder\TableExpression;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
+use MakinaCorpus\QueryBuilder\TableExpression;
+use MakinaCorpus\QueryBuilder\Type\Type;
 
 /**
  * Constant table expression reprensent one or more rows of raw arbitrary
@@ -53,7 +54,7 @@ class ConstantTable implements TableExpression
     }
 
     #[\Override]
-    public function returnType(): ?string
+    public function returnType(): ?Type
     {
         return null;
     }

@@ -6,8 +6,10 @@ namespace MakinaCorpus\QueryBuilder\Platform\Writer;
 
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
+use MakinaCorpus\QueryBuilder\Platform\Type\PostgreSQLTypeConverter;
 use MakinaCorpus\QueryBuilder\Query\Merge;
 use MakinaCorpus\QueryBuilder\Query\Query;
+use MakinaCorpus\QueryBuilder\Type\TypeConverter;
 use MakinaCorpus\QueryBuilder\Writer\Writer;
 use MakinaCorpus\QueryBuilder\Writer\WriterContext;
 
@@ -18,6 +20,12 @@ use MakinaCorpus\QueryBuilder\Writer\WriterContext;
  */
 class PostgreSQLWriter extends Writer
 {
+    #[\Override]
+    protected function createTypeConverter(): TypeConverter
+    {
+        return new PostgreSQLTypeConverter();
+    }
+
     #[\Override]
     protected function doFormatInsertNoValuesStatement(WriterContext $context): string
     {

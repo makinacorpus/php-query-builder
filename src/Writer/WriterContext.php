@@ -6,6 +6,7 @@ namespace MakinaCorpus\QueryBuilder\Writer;
 
 use MakinaCorpus\QueryBuilder\ArgumentBag;
 use MakinaCorpus\QueryBuilder\Converter\Converter;
+use MakinaCorpus\QueryBuilder\Type\Type;
 
 final class WriterContext
 {
@@ -17,7 +18,7 @@ final class WriterContext
         $this->arguments = new ArgumentBag($converter);
     }
 
-    public function append(mixed $value, ?string $type = null): int
+    public function append(mixed $value, ?Type $type = null): int
     {
         $this->arguments->add($value, $type);
 

@@ -6,14 +6,6 @@ namespace MakinaCorpus\QueryBuilder\Schema\Diff\Change;
 
 /**
  * Modify a FOREIGN KEY constraint on a table.
- *
- * This code is generated using bin/generate_changes.php.
- *
- * It includes some manually written code, please review changes and apply
- * manual code after each regeneration.
- *
- * @see \MakinaCorpus\QueryBuilder\Schema\Diff\Change\Template\Generator
- * @see bin/generate_changes.php
  */
 class ForeignKeyModify extends AbstractChange
 {
@@ -35,56 +27,41 @@ class ForeignKeyModify extends AbstractChange
     public function __construct(
         string $database,
         string $schema,
-        /** @var string */
         private readonly string $table,
-        /** @var string */
         private readonly string $name,
-        /** @var string */
         private readonly string $onDelete = ForeignKeyModify::ON_DELETE_NO_ACTION,
-        /** @var string */
         private readonly string $onUpdate = ForeignKeyModify::ON_UPDATE_NO_ACTION,
-        /** @var bool */
         private readonly bool $deferrable = true,
-        /** @var string */
         private readonly string $initially = ForeignKeyModify::INITIALLY_DEFERRED,
     ) {
-        parent::__construct(
-            database: $database,
-            schema: $schema,
-        );
+        parent::__construct(database: $database, schema: $schema);
     }
 
-    /** @return string */
     public function getTable(): string
     {
         return $this->table;
     }
 
-    /** @return string */
     public function getName(): string
     {
         return $this->name;
     }
 
-    /** @return string */
     public function getOnDelete(): string
     {
         return $this->onDelete;
     }
 
-    /** @return string */
     public function getOnUpdate(): string
     {
         return $this->onUpdate;
     }
 
-    /** @return bool */
     public function isDeferrable(): bool
     {
         return $this->deferrable;
     }
 
-    /** @return string */
     public function getInitially(): string
     {
         return $this->initially;

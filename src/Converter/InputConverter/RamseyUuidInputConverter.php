@@ -8,6 +8,7 @@ use MakinaCorpus\QueryBuilder\Converter\ConverterContext;
 use MakinaCorpus\QueryBuilder\Converter\InputConverter;
 use MakinaCorpus\QueryBuilder\Converter\InputTypeGuesser;
 use MakinaCorpus\QueryBuilder\Error\UnexpectedInputValueTypeError;
+use MakinaCorpus\QueryBuilder\Type\Type;
 use Ramsey\Uuid\UuidInterface;
 
 /**
@@ -21,27 +22,28 @@ class RamseyUuidInputConverter implements InputConverter, InputTypeGuesser
     public function supportedInputTypes(): array
     {
         return [
+            'guid',
+            'uniqueidentifier',
             'uuid',
             UuidInterface::class,
         ];
     }
 
     #[\Override]
-    public function guessInputType(mixed $value): ?string
+    public function guessInputType(mixed $value): null|string|Type
     {
         if ($value instanceof UuidInterface) {
-            return 'uuid';
+            return Type::uuid();
         }
         return null;
     }
 
     #[\Override]
-    public function toSql(string $type, mixed $value, ConverterContext $context): null|int|float|string
+    public function toSql(Type $type, mixed $value, ConverterContext $context): null|int|float|string
     {
         if (!$value instanceof UuidInterface) {
             throw UnexpectedInputValueTypeError::create(UuidInterface::class, $value);
         }
-
         return $value->toString();
     }
 }

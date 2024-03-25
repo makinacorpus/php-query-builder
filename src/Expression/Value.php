@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Expression;
 
+use MakinaCorpus\QueryBuilder\Type\Type;
+
 /**
  * Represents a raw value, along with an optional type.
  *
@@ -14,13 +16,22 @@ namespace MakinaCorpus\QueryBuilder\Expression;
  */
 class Value implements Castable
 {
+    private null|Type $type = null;
+    private null|Type $castToType = null;
+
     public function __construct(
         private mixed $value,
-        private ?string $type = null,
-        private ?string $castToType = null,
+        null|string|Type $type = null,
+        null|string|Type $castToType = null,
     ) {
         if (null === $value && !$type) {
-            $this->type = 'null';
+            $this->type = Type::null();
+        }
+        if ($type) {
+            $this->type = Type::create($type);
+        }
+        if ($castToType) {
+            $this->castToType = Type::create($castToType);
         }
     }
 
@@ -31,13 +42,13 @@ class Value implements Castable
     }
 
     #[\Override]
-    public function returnType(): ?string
+    public function returnType(): ?Type
     {
         return $this->castToType ?? $this->type;
     }
 
     #[\Override]
-    public function getCastToType(): ?string
+    public function getCastToType(): ?Type
     {
         return $this->castToType;
     }
@@ -48,9 +59,9 @@ class Value implements Castable
      *   value type guess prior to format SQL code, case in which we will set
      *   the type here for caching purpose.
      */
-    public function setType(?string $type): static
+    public function setType(null|string|Type $type): static
     {
-        $this->type = $type;
+        $this->type = $type ? Type::create($type) : null;
 
         return $this;
     }
@@ -66,7 +77,7 @@ class Value implements Castable
     /**
      * Get value type.
      */
-    public function getType(): ?string
+    public function getType(): ?Type
     {
         return $this->type;
     }

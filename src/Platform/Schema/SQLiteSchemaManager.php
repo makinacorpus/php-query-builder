@@ -24,6 +24,8 @@ use MakinaCorpus\QueryBuilder\Schema\Read\Column;
 use MakinaCorpus\QueryBuilder\Schema\Read\ForeignKey;
 use MakinaCorpus\QueryBuilder\Schema\Read\Key;
 use MakinaCorpus\QueryBuilder\Schema\SchemaManager;
+use MakinaCorpus\QueryBuilder\Type\InternalType;
+use MakinaCorpus\QueryBuilder\Type\Type;
 
 /**
  * Please note that some functions here might use information_schema tables
@@ -158,16 +160,22 @@ class SQLiteSchemaManager extends SchemaManager
                     collation: $defaultCollation, // @todo
                     comment: null, // @todo,
                     database: $database,
-                    length: $length,
                     name: $row->get('name', 'string'),
                     nullabe: !$row->get('notnull', 'bool'),
                     options: [],
-                    precision: $precision,
-                    scale: $scale,
                     schema: $schema,
                     table: $name,
-                    unsigned: false,
-                    valueType: $valueType,
+                    // @todo Build Type directly from SQL create string.
+                    valueType: new Type(
+                        array: false, // @todo
+                        internal: InternalType::fromTypeName($valueType),
+                        length: $length,
+                        name: $valueType,
+                        precision: $precision,
+                        scale: $scale,
+                        unsigned: false,
+                        withTimeZone: false,
+                    ),
                 );
             })
             ->fetchAllHydrated()

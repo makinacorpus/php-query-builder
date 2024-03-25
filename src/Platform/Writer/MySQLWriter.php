@@ -18,18 +18,28 @@ use MakinaCorpus\QueryBuilder\Expression\DateSub;
 use MakinaCorpus\QueryBuilder\Expression\Random;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\Expression\StringHash;
+use MakinaCorpus\QueryBuilder\Platform\Type\MySQLTypeConverter;
 use MakinaCorpus\QueryBuilder\Query\Delete;
 use MakinaCorpus\QueryBuilder\Query\Merge;
 use MakinaCorpus\QueryBuilder\Query\Query;
 use MakinaCorpus\QueryBuilder\Query\Update;
+use MakinaCorpus\QueryBuilder\Type\Type;
+use MakinaCorpus\QueryBuilder\Type\TypeConverter;
 use MakinaCorpus\QueryBuilder\Writer\Writer;
 use MakinaCorpus\QueryBuilder\Writer\WriterContext;
+use MakinaCorpus\QueryBuilder\Type\InternalType;
 
 /**
  * MySQL <= 5.7.
  */
 class MySQLWriter extends Writer
 {
+    #[\Override]
+    protected function createTypeConverter(): TypeConverter
+    {
+        return new MySQLTypeConverter();
+    }
+
     /**
      * MySQL aggregate function names seems to be keywords, not functions.
      */
@@ -37,12 +47,6 @@ class MySQLWriter extends Writer
     protected function shouldEscapeAggregateFunctionName(): bool
     {
         return false;
-    }
-
-    #[\Override]
-    protected function getDateTimeCastType(): string
-    {
-        return 'datetime';
     }
 
     #[\Override]
@@ -378,28 +382,24 @@ class MySQLWriter extends Writer
      * @see https://dev.mysql.com/doc/refman/8.2/en/cast-functions.html#function_cast
      */
     #[\Override]
-    protected function doFormatCastExpression(string $expressionString, string $type, WriterContext $context): string
+    protected function doFormatCastExpression(string $expressionString, string|Type $type, WriterContext $context): string
     {
-        $isArray = false;
-
-        if (\str_ends_with($type, '[]')) {
-            $type = \substr($type, 0, -2);
-            $isArray = true;
-        }
+        $type = Type::create($type);
+        $typeString = $this->typeConverter->getSqlTypeName($type);
 
         // Do not use "unsigned" on behalf of the user, or it would proceed
         // accidentally to transparent data alteration.
-        if (\in_array(\strtolower($type), ['int', 'integer', 'int4', 'int8', 'tinyint', 'smallint', 'bigint', 'serial', 'bigserial'])) {
-            $type = 'SIGNED';
-        } else if (\in_array(\strtolower($type), ['text', 'string', 'varchar'])) {
-            $type = 'CHAR';
+        if (\in_array($type->internal, [InternalType::INT, InternalType::INT_BIG, InternalType::INT_SMALL])) {
+            $typeString = 'SIGNED';
+        } else if ($type->isText()) {
+            $typeString = 'CHAR';
         }
 
-        if ($isArray) {
-            $type .= ' ARRAY';
+        if ($type->array) {
+            $typeString .= ' ARRAY';
         }
 
-        return 'CAST(' . $expressionString . ' AS ' . $type . ')';
+        return 'CAST(' . $expressionString . ' AS ' . $typeString . ')';
     }
 
     #[\Override]

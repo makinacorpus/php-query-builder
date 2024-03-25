@@ -7,6 +7,7 @@ namespace MakinaCorpus\QueryBuilder\Tests\Expression;
 use MakinaCorpus\QueryBuilder\Expression\ArrayValue;
 use MakinaCorpus\QueryBuilder\Expression\Value;
 use MakinaCorpus\QueryBuilder\Tests\UnitTestCase;
+use MakinaCorpus\QueryBuilder\Type\InternalType;
 
 class ArrayValueTest extends UnitTestCase
 {
@@ -25,11 +26,24 @@ class ArrayValueTest extends UnitTestCase
         self::assertEquals($expression, $clone);
     }
 
+    public function testReturnType(): void
+    {
+        $expression = new ArrayValue([1, 2], 'int');
+
+        $type = $expression->returnType();
+
+        self::assertSameType(InternalType::INT, $type);
+        self::assertTrue($type->array);
+    }
+
     public function testValueType(): void
     {
         $expression = new ArrayValue([1, 2], 'int');
 
-        self::assertSame('int', $expression->getValueType());
+        $type = $expression->getValueType();
+
+        self::assertSameType(InternalType::INT, $type);
+        self::assertFalse($type->array);
     }
 
     public function testFormatWithCast(): void

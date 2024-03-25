@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Expression;
 
 use MakinaCorpus\QueryBuilder\Expression;
+use MakinaCorpus\QueryBuilder\Type\Type;
 
 /**
  * Represents MODULO (%) arithmetic operator.
@@ -27,10 +28,10 @@ class Modulo implements Expression
     }
 
     #[\Override]
-    public function returnType(): ?string
+    public function returnType(): ?Type
     {
         // % operator can be used for various other types.
-        return $this->left->returnType() ?? 'int';
+        return $this->left->returnType() ?? Type::int();
     }
 
     public function getLeft(): ?Expression

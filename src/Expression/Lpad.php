@@ -6,6 +6,7 @@ namespace MakinaCorpus\QueryBuilder\Expression;
 
 use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\ExpressionHelper;
+use MakinaCorpus\QueryBuilder\Type\Type;
 
 /**
  * LPAD() expression.
@@ -31,18 +32,18 @@ class Lpad implements Expression
         mixed $size,
         mixed $fill = null,
     ) {
-        $this->value = \is_string($value) ? new Value($value, 'varchar') : ExpressionHelper::value($value);
+        $this->value = \is_string($value) ? new Value($value, Type::varchar()) : ExpressionHelper::value($value);
         if (\is_int($size)) {
-            $this->size = new Value($size, 'int');
+            $this->size = new Value($size, Type::int());
             $this->sizeInt = $size;
         } else {
             $this->size = ExpressionHelper::value($size);
         }
         if (\is_string($fill)) {
-            $this->fill = new Value($fill, 'varchar');
+            $this->fill = new Value($fill, Type::varchar());
             $this->fillString = $fill;
         } else {
-            $this->fill = $fill ? ExpressionHelper::value($fill) : new Value(' ',  'varchar');
+            $this->fill = $fill ? ExpressionHelper::value($fill) : new Value(' ',  Type::varchar());
         }
     }
 
@@ -53,9 +54,9 @@ class Lpad implements Expression
     }
 
     #[\Override]
-    public function returnType(): ?string
+    public function returnType(): ?Type
     {
-        return 'varchar';
+        return Type::text();
     }
 
     /**

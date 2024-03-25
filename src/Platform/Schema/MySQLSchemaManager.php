@@ -20,6 +20,8 @@ use MakinaCorpus\QueryBuilder\Schema\Read\Column;
 use MakinaCorpus\QueryBuilder\Schema\Read\ForeignKey;
 use MakinaCorpus\QueryBuilder\Schema\Read\Key;
 use MakinaCorpus\QueryBuilder\Schema\SchemaManager;
+use MakinaCorpus\QueryBuilder\Type\InternalType;
+use MakinaCorpus\QueryBuilder\Type\Type;
 
 /**
  * Please note that some functions here might use information_schema tables
@@ -183,20 +185,45 @@ class MySQLSchemaManager extends SchemaManager
             ->setHydrator(function (ResultRow $row) use ($defaultCollation, $database, $name) {
                 $creationType = $row->get('column_type', 'string');
 
+                $typeName = \strtolower($row->get('data_type', 'string'));
+                $precision = $row->get('numeric_precision', 'int');
+
+                // Integer precision:
+                //   - 3 => Tiny
+                //   - 5 => Small,
+                //   - ? => Medium,
+                //   - 10 => Normal
+                //   - 19 => Big
+                if ($precision && 'int' === $typeName) {
+                    if ($precision <= 5) {
+                        $typeName = 'smallint';
+                    } else if ($precision <= 10) {
+                        $typeName = 'int';
+                    } else {
+                        $typeName = 'bigint';
+                    }
+                }
+
                 return new Column(
                     collation: $row->get('collation_name', 'string') ?? $defaultCollation,
                     comment: $row->get('column_comment', 'string'),
                     database: $database,
-                    length: $row->get('character_maximum_length', 'int'),
                     name: $row->get('column_name', 'string'),
                     nullabe: $row->get('is_nullable', 'string') !== 'NO',
                     options: [],
-                    precision: $row->get('numeric_precision', 'int'),
-                    scale: $row->get('numeric_scale', 'int'),
                     schema: 'public',
                     table: $name,
-                    unsigned: \str_contains($creationType, 'unsigned'),
-                    valueType: $row->get('data_type', 'string'),
+                    // @todo Build Type directly from SQL create string.
+                    valueType: new Type(
+                        array: false, // @todo
+                        internal: InternalType::fromTypeName($typeName),
+                        length: $row->get('character_maximum_length', 'int'),
+                        name: $typeName,
+                        precision: $precision,
+                        scale: $row->get('numeric_scale', 'int'),
+                        unsigned: \str_contains($creationType, 'unsigned'),
+                        withTimeZone: false,
+                    ),
                 );
             })
             ->fetchAllHydrated()
@@ -371,8 +398,8 @@ class MySQLSchemaManager extends SchemaManager
             }
             $pieces[] = $this->raw('ALTER COLUMN ?::id DROP DEFAULT', [$name]);
         } else if ($default = $change->getDefault()) {
-            // @todo
-            $pieces[] = $this->raw('ALTER COLUMN ?::id SET DEFAULT ?', [$name, $this->doWriteColumnDefault($type ?? 'unknown', $default)]);
+            // @phpstan-ignore-next-line
+            $pieces[] = $this->raw('ALTER COLUMN ?::id SET DEFAULT ?', [$name, $this->doWriteColumnDefault($type ?? Type::raw('unknown'), $default)]);
         }
 
         return $this->raw('ALTER TABLE ? ' . \implode(', ', \array_fill(0, \count($pieces), '?')), [$this->table($change), ...$pieces]);

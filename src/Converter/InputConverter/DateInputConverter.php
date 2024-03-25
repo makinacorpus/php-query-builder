@@ -8,6 +8,8 @@ use MakinaCorpus\QueryBuilder\Converter\ConverterContext;
 use MakinaCorpus\QueryBuilder\Converter\InputConverter;
 use MakinaCorpus\QueryBuilder\Converter\InputTypeGuesser;
 use MakinaCorpus\QueryBuilder\Error\UnexpectedInputValueTypeError;
+use MakinaCorpus\QueryBuilder\Type\InternalType;
+use MakinaCorpus\QueryBuilder\Type\Type;
 
 /**
  * This will fit with most RDBMS since that:
@@ -46,45 +48,34 @@ class DateInputConverter implements InputConverter, InputTypeGuesser
     #[\Override]
     public function supportedInputTypes(): array
     {
-        return [
-            'date',
-            'datetime',
-            'datetimez',
-            'datetime2',
-            'time with time zone',
-            'time',
-            'timestamp with time zone',
-            'timestamp',
-            'timestampz',
-        ];
+        return [Type::date(), Type::time(), Type::timestamp()];
     }
 
     #[\Override]
-    public function guessInputType(mixed $value): ?string
+    public function guessInputType(mixed $value): null|string|Type
     {
         if ($value instanceof \DateTimeInterface) {
-            return 'timestampz';
+            return Type::timestamp(true);
         }
         return null;
     }
 
     #[\Override]
-    public function toSql(string $type, mixed $value, ConverterContext $context): null|int|float|string
+    public function toSql(Type $type, mixed $value, ConverterContext $context): null|int|float|string
     {
         if (!$value instanceof \DateTimeInterface) {
             throw UnexpectedInputValueTypeError::create(\DateTimeInterface::class, $value);
         }
 
-        switch ($type) {
+        switch ($type->internal) {
 
-            case 'date':
+            case InternalType::DATE:
                 return $value->format(self::FORMAT_DATE);
 
-            case 'time':
-            case 'time with time zone':
+            case InternalType::TIME:
                 $userTimeZone = new \DateTimeZone($context->getClientTimeZone());
                 // If user given date time is not using the client timezone
-                // enfore conversion on the PHP side, since the SQL backend
+                // enforce conversion on the PHP side, since the SQL backend
                 // does not care about the time zone at this point and will
                 // not accept it.
                 if ($value->getTimezone()->getName() !== $userTimeZone->getName()) {
@@ -96,16 +87,11 @@ class DateInputConverter implements InputConverter, InputTypeGuesser
                 }
                 return $value->format(self::FORMAT_TIME_USEC);
 
-            case 'datetime':
-            case 'datetimez':
-            case 'datetime2':
-            case 'timestamp with time zone':
-            case 'timestamp':
-            case 'timestampz':
+            case InternalType::TIMESTAMP:
             default:
                 $userTimeZone = new \DateTimeZone($context->getClientTimeZone());
                 // If user given date time is not using the client timezone
-                // enfore conversion on the PHP side, since the SQL backend
+                // enforce conversion on the PHP side, since the SQL backend
                 // does not care about the time zone at this point and will
                 // not accept it.
                 if ($value->getTimezone()->getName() !== $userTimeZone->getName()) {

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Expression;
 
 use MakinaCorpus\QueryBuilder\Expression;
+use MakinaCorpus\QueryBuilder\Type\Type;
 
 /**
  * Represent a single value row, such as (VAL1, VAL2, ...).
@@ -63,7 +64,7 @@ class Row implements Expression
     }
 
     #[\Override]
-    public function returnType(): ?string
+    public function returnType(): ?Type
     {
         return null;
     }
@@ -123,7 +124,7 @@ class Row implements Expression
     /**
      * Get composite type for casting.
      */
-    public function getType(): ?string
+    public function getCompositeTypeName(): ?string
     {
         return $this->compositeTypeName;
     }

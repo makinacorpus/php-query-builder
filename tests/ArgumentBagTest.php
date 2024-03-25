@@ -7,16 +7,16 @@ namespace MakinaCorpus\QueryBuilder\Tests;
 use MakinaCorpus\QueryBuilder\ArgumentBag;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\Expression\Value;
-use PHPUnit\Framework\TestCase;
+use MakinaCorpus\QueryBuilder\Type\Type;
 
-class ArgumentBagTest extends TestCase
+class ArgumentBagTest extends UnitTestCase
 {
     public function testAddAll(): void
     {
         $bag = new ArgumentBag();
         $bag->add(1, 'some_type');
 
-        self::assertSame('some_type', $bag->getTypeAt(0));
+        self::assertSame('some_type', $bag->getTypeAt(0)?->name);
     }
 
     public function testAddWithoutType(): void
@@ -33,7 +33,7 @@ class ArgumentBagTest extends TestCase
         $bag->add(new Value(2, 'value_type'));
 
         self::assertSame(2, $bag->getAll()[0]);
-        self::assertSame('value_type', $bag->getTypeAt(0));
+        self::assertSame('value_type', $bag->getTypeAt(0)?->name);
     }
 
     public function testAddExpressionRaiseError(): void
@@ -50,20 +50,22 @@ class ArgumentBagTest extends TestCase
         $bag->add(1, 'int');
         $bag->add(2);
         $bag->add(2, 'int');
+        $bag->add(3, Type::text());
 
-        self::assertSame('int', $bag->getTypeAt(0));
+        self::assertSameType(Type::int(), $bag->getTypeAt(0));
         self::assertNull($bag->getTypeAt(1));
-        self::assertSame('int', $bag->getTypeAt(2));
+        self::assertSameType(Type::int(), $bag->getTypeAt(2));
+        self::assertSameType(Type::text(), $bag->getTypeAt(3));
 
         $bag->setTypeAt(1, 'string');
 
-        self::assertSame('int', $bag->getTypeAt(0));
-        self::assertSame('string', $bag->getTypeAt(1));
-        self::assertSame('int', $bag->getTypeAt(2));
+        self::assertSameType(Type::int(), $bag->getTypeAt(0));
+        self::assertSameType(Type::text(), $bag->getTypeAt(1));
+        self::assertSameType(Type::int(), $bag->getTypeAt(2));
 
-        $bag->setTypeAt(3, 'foo');
-        self::assertSame('foo', $bag->getTypeAt(3));
-        self::assertNull($bag->getAll()[3]);
+        $bag->setTypeAt(5, 'foo');
+        self::assertSame('foo', $bag->getTypeAt(5)?->name);
+        self::assertNull($bag->getAll()[4]);
     }
 
     public function testGetTypes(): void
@@ -72,7 +74,8 @@ class ArgumentBagTest extends TestCase
         $bag->add(1, 'int');
         $bag->add(2, 'string');
 
-        self::assertSame(['int', 'string'], $bag->getTypes());
+        self::assertSameType('int', $bag->getTypes()[0]);
+        self::assertSameType('text', $bag->getTypes()[1]);
     }
 
     public function testCount(): void

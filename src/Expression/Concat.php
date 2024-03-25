@@ -6,6 +6,7 @@ namespace MakinaCorpus\QueryBuilder\Expression;
 
 use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\ExpressionHelper;
+use MakinaCorpus\QueryBuilder\Type\Type;
 
 /**
  * String concatenation expression.
@@ -32,9 +33,9 @@ class Concat implements Expression
     }
 
     #[\Override]
-    public function returnType(): ?string
+    public function returnType(): ?Type
     {
-        return 'varchar';
+        return Type::text();
     }
 
     /**

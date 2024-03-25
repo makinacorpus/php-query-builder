@@ -13,8 +13,9 @@ use MakinaCorpus\QueryBuilder\Expression\Lpad;
 use MakinaCorpus\QueryBuilder\Expression\Random;
 use MakinaCorpus\QueryBuilder\Expression\RandomInt;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
-use MakinaCorpus\QueryBuilder\Expression\Value;
+use MakinaCorpus\QueryBuilder\Platform\Type\SQLiteTypeConverter;
 use MakinaCorpus\QueryBuilder\Query\Delete;
+use MakinaCorpus\QueryBuilder\Type\TypeConverter;
 use MakinaCorpus\QueryBuilder\Writer\Writer;
 use MakinaCorpus\QueryBuilder\Writer\WriterContext;
 
@@ -25,6 +26,12 @@ use MakinaCorpus\QueryBuilder\Writer\WriterContext;
  */
 class SQLiteWriter extends Writer
 {
+    #[\Override]
+    protected function createTypeConverter(): TypeConverter
+    {
+        return new SQLiteTypeConverter();
+    }
+
     /**
      * Format a function call.
      *

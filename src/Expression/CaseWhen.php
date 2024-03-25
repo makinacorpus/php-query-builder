@@ -6,6 +6,7 @@ namespace MakinaCorpus\QueryBuilder\Expression;
 
 use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\ExpressionHelper;
+use MakinaCorpus\QueryBuilder\Type\Type;
 
 /**
  * CASE WHEN .. THEN statement.
@@ -27,7 +28,7 @@ class CaseWhen implements Expression
     }
 
     #[\Override]
-    public function returnType(): ?string
+    public function returnType(): ?Type
     {
         return null;
     }

@@ -8,6 +8,7 @@ use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\ExpressionHelper;
 use MakinaCorpus\QueryBuilder\Query\Partial\OrderByTrait;
 use MakinaCorpus\QueryBuilder\Query\Partial\OrderByStatement;
+use MakinaCorpus\QueryBuilder\Type\Type;
 
 /**
  * Represent a WINDOW.
@@ -50,7 +51,7 @@ class Window implements Expression
     }
 
     #[\Override]
-    public function returnType(): ?string
+    public function returnType(): ?Type
     {
         return null;
     }

@@ -5,6 +5,7 @@ declare (strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Expression;
 
 use MakinaCorpus\QueryBuilder\Expression;
+use MakinaCorpus\QueryBuilder\Type\Type;
 
 /**
  * Represent an identifier.
@@ -22,7 +23,7 @@ class Namespaced implements Expression
     }
 
     #[\Override]
-    public function returnType(): ?string
+    public function returnType(): ?Type
     {
         return null;
     }

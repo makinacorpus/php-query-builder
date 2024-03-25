@@ -20,6 +20,8 @@ declare (strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder;
 
+use MakinaCorpus\QueryBuilder\Type\Type;
+
 /**
  * Base expression interface.
  */
@@ -33,5 +35,5 @@ interface Expression
     /**
      * Return type if known.
      */
-    public function returnType(): ?string;
+    public function returnType(): ?Type;
 }

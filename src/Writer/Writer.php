@@ -22,6 +22,7 @@ use MakinaCorpus\QueryBuilder\Expression\Comparison;
 use MakinaCorpus\QueryBuilder\Expression\Concat;
 use MakinaCorpus\QueryBuilder\Expression\ConstantTable;
 use MakinaCorpus\QueryBuilder\Expression\CurrentTimestamp;
+use MakinaCorpus\QueryBuilder\Expression\DataType;
 use MakinaCorpus\QueryBuilder\Expression\DateAdd;
 use MakinaCorpus\QueryBuilder\Expression\DateInterval;
 use MakinaCorpus\QueryBuilder\Expression\DateIntervalUnit;
@@ -58,6 +59,8 @@ use MakinaCorpus\QueryBuilder\Query\RawQuery;
 use MakinaCorpus\QueryBuilder\Query\Select;
 use MakinaCorpus\QueryBuilder\Query\Update;
 use MakinaCorpus\QueryBuilder\SqlString;
+use MakinaCorpus\QueryBuilder\Type\Type;
+use MakinaCorpus\QueryBuilder\Type\TypeConverter;
 use MakinaCorpus\QueryBuilder\Where;
 
 /**
@@ -79,6 +82,7 @@ use MakinaCorpus\QueryBuilder\Where;
 class Writer
 {
     private string $matchParametersRegex;
+    protected ?TypeConverter $typeConverter = null;
     private ?Converter $converter = null;
     protected Escaper $escaper;
 
@@ -86,7 +90,24 @@ class Writer
     {
         $this->converter = $converter;
         $this->escaper = $escaper ?? new StandardEscaper();
+        $this->typeConverter = $this->createTypeConverter();
         $this->buildParameterRegex();
+    }
+
+    /**
+     * Get type converter.
+     */
+    public function getTypeConverter(): TypeConverter
+    {
+        return $this->typeConverter;
+    }
+
+    /**
+     * Create vendor-specific type converter.
+     */
+    protected function createTypeConverter(): TypeConverter
+    {
+        return new TypeConverter();
     }
 
     /**
@@ -127,112 +148,13 @@ class Writer
     }
 
     /**
-     * Some vendors don't support the "timestamp" type for cast, such as MySQL.
-     *
-     * @deprecated
-     * @internal
-     * @todo Move this out into a type manager.
-     */
-    protected function getDateTimeCastType(): string
-    {
-        return 'timestamp';
-    }
-
-    /**
-     * Generic isType*() implementation.
-     *
-     * @deprecated
-     * @internal
-     * @todo Move this out into a type manager.
-     */
-    protected function isType(string $type, ?string $exprType): bool
-    {
-        if (null === $exprType) {
-            return false;
-        }
-
-        if ($exprType === $this->getDateTimeCastType()) {
-            $exprType = 'timestamp';
-        }
-
-        return match ($type) {
-            'date' => \str_contains($exprType, 'date') || \str_contains($exprType, 'timestamp'),
-            'int'  => 'numeric' === $exprType || \str_contains($exprType, 'int') || \str_contains($exprType, 'float'),
-            'numeric' => 'numeric' === $exprType || \str_contains($exprType, 'int') || \str_contains($exprType, 'float'),
-            'text' => 'text' === $exprType || 'string' === $exprType || \str_contains($exprType, 'varchar'),
-            'timestamp' => \str_contains($exprType, 'date') || \str_contains($exprType, 'timestamp'),
-            'varchar' => 'text' === $exprType || 'string' === $exprType || \str_contains($exprType, 'varchar'),
-            default => false,
-        };
-    }
-
-    /**
-     * Is text type.
-     *
-     * @deprecated
-     * @internal
-     * @todo Move this out into a type manager.
-     */
-    protected function isTypeNumeric(?string $exprType): bool
-    {
-        return $this->isType('numeric', $exprType);
-    }
-
-    /**
-     * Is text type.
-     *
-     * @deprecated
-     * @internal
-     * @todo Move this out into a type manager.
-     */
-    protected function isTypeText(?string $exprType): bool
-    {
-        return $this->isType('text', $exprType);
-    }
-
-    /**
-     * Is text date, datetime, timestamp, ....
-     *
-     * @deprecated
-     * @internal
-     * @todo Move this out into a type manager.
-     */
-    protected function isTypeDate(?string $exprType): bool
-    {
-        return $this->isType('date', $exprType);
-    }
-
-    /**
-     * Guess type of expression.
-     *
-     * @deprecated
-     * @internal
-     * @todo Move this out into a type manager.
-     */
-    protected function guessTypeOf(Expression $expression): ?string
-    {
-        if ($type = $expression->returnType()) {
-            return $type;
-        }
-        if ($expression instanceof Value) {
-            if ($type = $this->getConverter()->guessInputType($expression->getValue())) {
-                // Cache guessed type to avoid doing it twice when converting
-                // values later at query time.
-                $expression->setType($type);
-            }
-            return $type;
-        }
-        return null;
-    }
-
-    /**
      * Generic force cast when expression type is unknown or is not compatible
      * with given target type.
      *
      * In numerous cases, this API will add explicit CAST() calls in order to
      * bypass some wrong type guess due to parameters usage when querying.
      */
-    protected function forceCast(Expression $expression, WriterContext $context, string $type, bool $ignoreRaw = true): Expression
+    protected function forceCast(Expression $expression, WriterContext $context, Type $type, bool $ignoreRaw = true): Expression
     {
         // Identifiers and function call are typed on the RDBMS side, so we
         // should never automatically cast. The user needs to take care of
@@ -247,7 +169,7 @@ class Writer
         $castType = null;
         $willCast = $expression instanceof Castable && ($castType = $expression->getCastToType());
 
-        if ($willCast && $this->isType($type, $castType)) {
+        if ($willCast && $this->typeConverter->isCompatible($type, $castType)) {
             return $expression;
         }
 
@@ -258,7 +180,9 @@ class Writer
         // which does not seem to optimize anything at all. But some other will
         // crash because of type ambiguity at PREPARE time such as PostgreSQL,
         // which is the sane behaviour we would expect.
-        if ($expression instanceof Value || !$this->isType($type, $castType ?? $expression->returnType())) {
+        $returnType = $castType ?? $expression->returnType();
+
+        if ($expression instanceof Value || !$returnType || !$this->typeConverter->isCompatible($type, $returnType)) {
             return new Cast($expression, $type);
         }
 
@@ -270,7 +194,7 @@ class Writer
      */
     protected function toText(Expression $expression, WriterContext $context, bool $ignoreRaw = true): Expression
     {
-        return $this->forceCast($expression, $context, 'varchar', $ignoreRaw);
+        return $this->forceCast($expression, $context, Type::varchar(), $ignoreRaw);
     }
 
     /**
@@ -278,7 +202,7 @@ class Writer
      */
     protected function toInt(Expression $expression, WriterContext $context, bool $ignoreRaw = true): Expression
     {
-        return $this->forceCast($expression, $context, 'int', $ignoreRaw);
+        return $this->forceCast($expression, $context, Type::int(), $ignoreRaw);
     }
 
     /**
@@ -286,7 +210,7 @@ class Writer
      */
     protected function toDate(Expression $expression, WriterContext $context, bool $ignoreRaw = true): Expression
     {
-        return $this->forceCast($expression, $context, $this->getDateTimeCastType(), $ignoreRaw);
+        return $this->forceCast($expression, $context, Type::timestamp(), $ignoreRaw);
     }
 
     /**
@@ -328,6 +252,7 @@ class Writer
                     Concat::class => $this->formatConcat($expression, $context),
                     ConstantTable::class => $this->formatConstantTable($expression, $context),
                     CurrentTimestamp::class => $this->formatCurrentTimestamp($expression, $context),
+                    DataType::class => $this->formatDataType($expression, $context),
                     DateAdd::class => $this->formatDateAdd($expression, $context),
                     DateInterval::class => $this->formatDateInterval($expression, $context),
                     DateIntervalUnit::class => $this->formatDateIntervalUnit($expression, $context),
@@ -829,6 +754,31 @@ class Writer
     }
 
     /**
+     * Format data type declaration.
+     */
+    protected function formatDataType(DataType $expression, WriterContext $context): string
+    {
+        $type = $expression->getDataType();
+
+        $prefix = '';
+        if ($type->unsigned) {
+            $prefix .= 'unsigned ';
+        }
+
+        $suffix = '';
+        if ($type->length) {
+            $suffix .= '(' . $type->length . ')';
+        } else if ($type->precision && $type->scale) {
+            $suffix .= '(' . $type->precision . ',' . $type->scale . ')';
+        }
+        if ($type->array) {
+            $suffix .= '[]';
+        }
+
+        return $prefix . $this->typeConverter->getSqlTypeName($type) . $suffix;
+    }
+
+    /**
      * Format a CASE WHEN .. THEN .. ELSE .. statement.
      */
     protected function formatCaseWhen(CaseWhen $expression, WriterContext $context): string
@@ -965,7 +915,7 @@ class Writer
         return $this->formatRaw(
             new Raw(
                 'FLOOR(? * (? - ? + 1) + ?)',
-                [new Random(), new Cast($max, 'int'), $min, $min]
+                [new Random(), new Cast($max, Type::int()), $min, $min]
             ),
             $context,
         );
@@ -1048,7 +998,7 @@ class Writer
         } else {
             $prefix = $this->format($expression->getValue(), $context);
         }
-        return $prefix . " || ' ' || " . $this->formatValue(new Value($expression->getUnit(), 'text'), $context);
+        return $prefix . " || ' ' || " . $this->formatValue(new Value($expression->getUnit(), Type::text()), $context);
     }
 
     /**
@@ -1245,7 +1195,7 @@ class Writer
         }
 
         if ($expression->shouldCast()) {
-            return $this->doFormatCastExpression('(' . $inner . ')', $expression->getType(), $context);
+            return $this->doFormatCastExpression('(' . $inner . ')', $expression->getCompositeTypeName(), $context);
         }
         return '(' . $inner . ')';
     }
@@ -1649,8 +1599,8 @@ class Writer
 
         $output = 'array[' . $inner .  ']';
 
-        if ($value->shouldCast()) {
-            return $this->doFormatCastExpression($output, $value->getValueType() . '[]', $context);
+        if ($value->shouldCast() && ($valueType = $value->getValueType())) {
+            return $this->doFormatCastExpression($output, $valueType->toArray(), $context);
         }
         return $output;
     }
@@ -1666,9 +1616,16 @@ class Writer
     /**
      * Format cast expression.
      */
-    protected function doFormatCastExpression(string $expressionString, string $type, WriterContext $context): string
+    protected function doFormatCastExpression(string $expressionString, string|Type $type, WriterContext $context): string
     {
-        return 'cast(' . $expressionString . ' as ' . $type . ')';
+        $type = Type::create($type);
+        $typeString = $this->typeConverter->getSqlTypeName($type);
+
+        if ($type->array) {
+            $typeString .= '[]';
+        }
+
+        return 'cast(' . $expressionString . ' as ' . $typeString . ')';
     }
 
     /**

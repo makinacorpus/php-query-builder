@@ -10,6 +10,7 @@ use MakinaCorpus\QueryBuilder\Schema\Diff\Change\IndexCreate;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\PrimaryKeyAdd;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\TableCreate;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\UniqueKeyAdd;
+use MakinaCorpus\QueryBuilder\Type\Type;
 
 /**
  * @internal
@@ -29,7 +30,7 @@ abstract class AbstractTableBuilder
     private bool $temporary = false;
 
     public function __construct(
-        private readonly GeneratedAbstractTransaction $parent,
+        private readonly AbstractSchemaTransaction $parent,
         private readonly string $database,
         private readonly string $name,
         private string $schema,
@@ -58,7 +59,7 @@ abstract class AbstractTableBuilder
     /**
      * Set the primary key.
      */
-    public function column(string $name, string $type, bool $nullable, ?string $default = null): static
+    public function column(string $name, string|Type $type, bool $nullable, ?string $default = null): static
     {
         $this->columns[] = new ColumnAdd(
             database: $this->database,

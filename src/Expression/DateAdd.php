@@ -6,6 +6,7 @@ namespace MakinaCorpus\QueryBuilder\Expression;
 
 use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\ExpressionHelper;
+use MakinaCorpus\QueryBuilder\Type\Type;
 
 /**
  * Add interval to date.
@@ -30,9 +31,9 @@ class DateAdd implements Expression
     }
 
     #[\Override]
-    public function returnType(): ?string
+    public function returnType(): ?Type
     {
-        return 'timestamp';
+        return Type::timestamp();
     }
 
     public function getDate(): Expression

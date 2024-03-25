@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Expression;
 
 use MakinaCorpus\QueryBuilder\Expression;
+use MakinaCorpus\QueryBuilder\Type\Type;
 
 /**
  * Represents a expressions comparison.
@@ -43,9 +44,9 @@ class Comparison implements Expression
     }
 
     #[\Override]
-    public function returnType(): ?string
+    public function returnType(): ?Type
     {
-        return 'bool';
+        return Type::bool();
     }
 
     public function getLeft(): ?Expression

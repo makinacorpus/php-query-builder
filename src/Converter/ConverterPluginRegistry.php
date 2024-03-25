@@ -11,6 +11,7 @@ use MakinaCorpus\QueryBuilder\Converter\InputConverter\SymfonyUidInputConverter;
 use MakinaCorpus\QueryBuilder\Converter\OutputConverter\DateOutputConverter;
 use MakinaCorpus\QueryBuilder\Converter\OutputConverter\RamseyUuidOutputConverter;
 use MakinaCorpus\QueryBuilder\Converter\OutputConverter\SymfonyUidOutputConverter;
+use MakinaCorpus\QueryBuilder\Type\Type;
 use Ramsey\Uuid\UuidInterface;
 use Symfony\Component\Uid\AbstractUid;
 
@@ -23,6 +24,8 @@ class ConverterPluginRegistry
 {
     /** @var array<string,array<InputConverter>> */
     private array $inputConverters = [];
+    /** @var array<InputConverter> */
+    private array $wildcardInputConverters = [];
     /** @var array<string,array<OutputConverter>> */
     private array $outputConverters = [];
     /** @var array<InputTypeGuesser> */
@@ -61,7 +64,11 @@ class ConverterPluginRegistry
         if ($plugin instanceof InputConverter) {
             $found = true;
             foreach ($plugin->supportedInputTypes() as $type) {
-                $this->inputConverters[$type][] = $plugin;
+                if ('*' === $type) {
+                    $this->wildcardInputConverters[] = $plugin;
+                } else {
+                    $this->inputConverters[Type::create($type)->getArbitraryName()][] = $plugin;
+                }
             }
         }
 
@@ -82,19 +89,22 @@ class ConverterPluginRegistry
         }
     }
 
-    /** @return iterable<InputConverter> */
-    public function getInputConverters(string $type): iterable
+    /** @return InputConverter[] */
+    public function getInputConverters(?Type $type): iterable
     {
-        return $this->inputConverters[$type] ?? [];
+        if (!$type) {
+            return $this->wildcardInputConverters;
+        }
+        return $this->inputConverters[$type->getArbitraryName()] ?? [];
     }
 
-    /** @return iterable<OutputConverter> */
-    public function getOutputConverters(string $type): iterable
+    /** @return OutputConverter[] */
+    public function getOutputConverters(?string $type): iterable
     {
         return $this->outputConverters[$type] ?? [];
     }
 
-    /** @return iterable<InputTypeGuesser> */
+    /** @return InputTypeGuesser[] */
     public function getTypeGuessers(): iterable
     {
         return $this->typeGuessers;

@@ -5,6 +5,7 @@ declare (strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Expression;
 
 use MakinaCorpus\QueryBuilder\Expression;
+use MakinaCorpus\QueryBuilder\Type\Type;
 
 /**
  * Non SQL standard random integer expression.
@@ -28,9 +29,9 @@ class RandomInt implements Expression
     }
 
     #[\Override]
-    public function returnType(): ?string
+    public function returnType(): ?Type
     {
-        return 'int';
+        return Type::int();
     }
 
     public function getMin(): int

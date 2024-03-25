@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Schema\Read;
 
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
+use MakinaCorpus\QueryBuilder\Type\Type;
+
+// @todo IDE bug
+\class_exists(Type::class);
 
 class Table extends AbstractObject
 {
@@ -117,7 +121,7 @@ class Table extends AbstractObject
     /**
      * Get column types.
      *
-     * @return array<string,string>
+     * @return array<string,Type>
      *   Keys are column names, values are column value types.
      */
     public function getColumnTypeMap(): array

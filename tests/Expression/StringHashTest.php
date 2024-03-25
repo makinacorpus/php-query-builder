@@ -6,6 +6,7 @@ namespace MakinaCorpus\QueryBuilder\Tests\Expression;
 
 use MakinaCorpus\QueryBuilder\Expression\StringHash;
 use MakinaCorpus\QueryBuilder\Tests\UnitTestCase;
+use MakinaCorpus\QueryBuilder\Type\Type;
 
 class StringHashTest extends UnitTestCase
 {
@@ -20,7 +21,7 @@ class StringHashTest extends UnitTestCase
     {
         $expression = new StringHash('foo', 'md5');
 
-        self::assertSame('varchar', $expression->returnType());
+        self::assertSameType(Type::text(), $expression->returnType());
     }
 
     public function testClone(): void

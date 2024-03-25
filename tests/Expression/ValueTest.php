@@ -6,6 +6,7 @@ namespace MakinaCorpus\QueryBuilder\Tests\Expression;
 
 use MakinaCorpus\QueryBuilder\Expression\Value;
 use MakinaCorpus\QueryBuilder\Tests\UnitTestCase;
+use MakinaCorpus\QueryBuilder\Type\Type;
 
 class ValueTest extends UnitTestCase
 {
@@ -30,7 +31,7 @@ class ValueTest extends UnitTestCase
 
         self::assertTrue($expression->returns());
         self::assertSame('bla', $expression->getValue());
-        self::assertSame('varchar', $expression->getType());
+        self::assertSameType(Type::varchar(), $expression->getType());
 
         self::assertSameSql(
             <<<SQL
@@ -63,7 +64,7 @@ class ValueTest extends UnitTestCase
         self::assertTrue($expression->returns());
         self::assertSame('foo', $expression->getValue());
         self::assertNull($expression->getType());
-        self::assertSame('varchar', $expression->getCastToType());
+        self::assertSameType(Type::varchar(), $expression->getCastToType());
 
         self::assertSameSql(
             <<<SQL
