@@ -42,7 +42,6 @@ abstract class AbstractSchemaTransaction
     private ChangeLog $changeLog;
 
     public function __construct(
-        protected readonly string $database,
         protected readonly string $schema,
     ) {
         $this->changeLog = new ChangeLog();
@@ -64,7 +63,7 @@ abstract class AbstractSchemaTransaction
      */
     public function query(callable $callback): static
     {
-        $this->logChange(new CallbackChange($this->database, $this->schema, $callback));
+        $this->logChange(new CallbackChange($this->schema, $callback));
 
         return $this;
     }
@@ -75,9 +74,9 @@ abstract class AbstractSchemaTransaction
     protected function nestWithCondition(AbstractCondition ...$conditions): NestedSchemaTransaction|DeepNestedSchemaTransaction
     {
         if ($this instanceof NestedSchemaTransaction || $this instanceof DeepNestedSchemaTransaction) {
-            $ret = new DeepNestedSchemaTransaction($this, $this->database, $this->schema, $conditions);
+            $ret = new DeepNestedSchemaTransaction($this, $this->schema, $conditions);
         } else {
-            $ret = new NestedSchemaTransaction($this, $this->database, $this->schema, $conditions);
+            $ret = new NestedSchemaTransaction($this, $this->schema, $conditions);
         }
 
         $this->logChange($ret);
@@ -114,7 +113,6 @@ abstract class AbstractSchemaTransaction
                 default: $default,
                 collation: $collation,
                 schema: $schema ?? $this->schema,
-                database: $this->database,
             )
         );
 
@@ -144,7 +142,6 @@ abstract class AbstractSchemaTransaction
                 dropDefault: $dropDefault,
                 collation: $collation,
                 schema: $schema ?? $this->schema,
-                database: $this->database,
             )
         );
 
@@ -166,7 +163,6 @@ abstract class AbstractSchemaTransaction
                 name: $name,
                 cascade: $cascade,
                 schema: $schema ?? $this->schema,
-                database: $this->database,
             )
         );
 
@@ -188,7 +184,6 @@ abstract class AbstractSchemaTransaction
                 name: $name,
                 newName: $newName,
                 schema: $schema ?? $this->schema,
-                database: $this->database,
             )
         );
 
@@ -208,7 +203,6 @@ abstract class AbstractSchemaTransaction
                 table: $table,
                 name: $name,
                 schema: $schema ?? $this->schema,
-                database: $this->database,
             )
         );
 
@@ -232,7 +226,6 @@ abstract class AbstractSchemaTransaction
                 deferrable: $deferrable,
                 initially: $initially,
                 schema: $schema ?? $this->schema,
-                database: $this->database,
             )
         );
 
@@ -254,7 +247,6 @@ abstract class AbstractSchemaTransaction
                 name: $name,
                 newName: $newName,
                 schema: $schema ?? $this->schema,
-                database: $this->database,
             )
         );
 
@@ -290,7 +282,6 @@ abstract class AbstractSchemaTransaction
                 deferrable: $deferrable,
                 initially: $initially,
                 schema: $schema ?? $this->schema,
-                database: $this->database,
             )
         );
 
@@ -318,7 +309,6 @@ abstract class AbstractSchemaTransaction
                 deferrable: $deferrable,
                 initially: $initially,
                 schema: $schema ?? $this->schema,
-                database: $this->database,
             )
         );
 
@@ -338,7 +328,6 @@ abstract class AbstractSchemaTransaction
                 table: $table,
                 name: $name,
                 schema: $schema ?? $this->schema,
-                database: $this->database,
             )
         );
 
@@ -360,7 +349,6 @@ abstract class AbstractSchemaTransaction
                 name: $name,
                 newName: $newName,
                 schema: $schema ?? $this->schema,
-                database: $this->database,
             )
         );
 
@@ -384,7 +372,6 @@ abstract class AbstractSchemaTransaction
                 columns: $columns,
                 type: $type,
                 schema: $schema ?? $this->schema,
-                database: $this->database,
             )
         );
 
@@ -404,7 +391,6 @@ abstract class AbstractSchemaTransaction
                 table: $table,
                 name: $name,
                 schema: $schema ?? $this->schema,
-                database: $this->database,
             )
         );
 
@@ -426,7 +412,6 @@ abstract class AbstractSchemaTransaction
                 name: $name,
                 newName: $newName,
                 schema: $schema ?? $this->schema,
-                database: $this->database,
             )
         );
 
@@ -448,7 +433,6 @@ abstract class AbstractSchemaTransaction
                 name: $name,
                 columns: $columns,
                 schema: $schema ?? $this->schema,
-                database: $this->database,
             )
         );
 
@@ -468,7 +452,6 @@ abstract class AbstractSchemaTransaction
                 table: $table,
                 name: $name,
                 schema: $schema ?? $this->schema,
-                database: $this->database,
             )
         );
 
@@ -488,7 +471,6 @@ abstract class AbstractSchemaTransaction
                 name: $name,
                 cascade: $cascade,
                 schema: $schema ?? $this->schema,
-                database: $this->database,
             )
         );
 
@@ -508,7 +490,6 @@ abstract class AbstractSchemaTransaction
                 name: $name,
                 newName: $newName,
                 schema: $schema ?? $this->schema,
-                database: $this->database,
             )
         );
 
@@ -532,7 +513,6 @@ abstract class AbstractSchemaTransaction
                 columns: $columns,
                 nullsDistinct: $nullsDistinct,
                 schema: $schema ?? $this->schema,
-                database: $this->database,
             )
         );
 
@@ -552,7 +532,6 @@ abstract class AbstractSchemaTransaction
                 table: $table,
                 name: $name,
                 schema: $schema ?? $this->schema,
-                database: $this->database,
             )
         );
 

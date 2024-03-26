@@ -12,11 +12,10 @@ class DeepNestedTableBuilder extends AbstractTableBuilder
 {
     public function __construct(
         private readonly DeepNestedSchemaTransaction $parent,
-        string $database,
         string $name,
         string $schema,
     ) {
-        parent::__construct($parent, $database, $name, $schema);
+        parent::__construct($parent, $name, $schema);
     }
 
     /**

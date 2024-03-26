@@ -10,13 +10,12 @@ namespace MakinaCorpus\QueryBuilder\Schema\Diff\Change;
 class ForeignKeyRename extends AbstractChange
 {
     public function __construct(
-        string $database,
         string $schema,
         private readonly string $table,
         private readonly string $name,
         private readonly string $newName,
     ) {
-        parent::__construct(database: $database, schema: $schema);
+        parent::__construct(schema: $schema);
     }
 
     public function getTable(): string

@@ -14,7 +14,6 @@ class CallbackChange extends AbstractChange
     private \Closure $callback;
 
     public function __construct(
-        string $database,
         string $schema,
         /**
          * @param (callable(QueryBuilder):mixed) $callback
@@ -22,7 +21,7 @@ class CallbackChange extends AbstractChange
          */
         callable $callback,
     ) {
-        parent::__construct($database, $schema);
+        parent::__construct($schema);
 
         $this->callback = $callback(...);
     }

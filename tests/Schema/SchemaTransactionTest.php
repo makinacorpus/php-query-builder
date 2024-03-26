@@ -18,7 +18,7 @@ class SchemaTransactionTest extends TestCase
 {
     public function testNesting(): void
     {
-        $transaction = new SchemaTransaction('some_db', 'some_schema', fn () => null);
+        $transaction = new SchemaTransaction('some_schema', fn () => null);
 
         $transaction
             ->ifTableNotExists('users')

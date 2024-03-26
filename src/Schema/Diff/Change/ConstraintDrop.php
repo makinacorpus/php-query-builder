@@ -10,12 +10,11 @@ namespace MakinaCorpus\QueryBuilder\Schema\Diff\Change;
 class ConstraintDrop extends AbstractChange
 {
     public function __construct(
-        string $database,
         string $schema,
         private readonly string $table,
         private readonly string $name,
     ) {
-        parent::__construct(database: $database, schema: $schema);
+        parent::__construct(schema: $schema);
     }
 
     public function getTable(): string

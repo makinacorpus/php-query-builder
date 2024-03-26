@@ -14,13 +14,12 @@ class CallbackCondition extends AbstractCondition
     private \Closure $callback;
 
     public function __construct(
-        string $database,
         string $schema,
         /** @param (callable(QueryBuilder):bool) $callback */
         callable $callback,
         bool $negation = false,
     ) {
-        parent::__construct($database, $schema, $negation);
+        parent::__construct($schema, $negation);
 
         $this->callback = $callback(...);
     }

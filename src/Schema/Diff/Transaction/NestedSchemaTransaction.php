@@ -10,11 +10,10 @@ class NestedSchemaTransaction extends AbstractNestedSchemaTransaction
 {
     public function __construct(
         private readonly SchemaTransaction $parent,
-        string $database,
         string $schema,
         array $conditions = [],
     ) {
-        parent::__construct($database, $schema, $conditions);
+        parent::__construct($schema, $conditions);
     }
 
     /**
@@ -22,7 +21,7 @@ class NestedSchemaTransaction extends AbstractNestedSchemaTransaction
      */
     public function createTable(string $name): NestedTableBuilder
     {
-        return new NestedTableBuilder(parent: $this, database: $this->database, name: $name, schema: $this->schema);
+        return new NestedTableBuilder(parent: $this, name: $name, schema: $this->schema);
     }
 
     /**

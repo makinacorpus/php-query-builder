@@ -21,11 +21,10 @@ class SchemaTransaction extends AbstractSchemaTransaction
     private ChangeLog $changeLog;
 
     public function __construct(
-        string $database,
         string $schema,
         private readonly \Closure $onCommit,
     ) {
-        parent::__construct($database, $schema);
+        parent::__construct($schema);
     }
 
     public function commit(): void
@@ -38,7 +37,7 @@ class SchemaTransaction extends AbstractSchemaTransaction
      */
     public function createTable(string $name): TableBuilder
     {
-        return new TableBuilder(parent: $this, database: $this->database, name: $name, schema: $this->schema);
+        return new TableBuilder(parent: $this, name: $name, schema: $this->schema);
     }
 
     /**
@@ -48,7 +47,7 @@ class SchemaTransaction extends AbstractSchemaTransaction
      */
     public function ifCallback(callable $callback): NestedSchemaTransaction
     {
-        return $this->nestWithCondition(new CallbackCondition($this->database, $this->schema, $callback));
+        return $this->nestWithCondition(new CallbackCondition($this->schema, $callback));
     }
 
     /**
@@ -56,7 +55,7 @@ class SchemaTransaction extends AbstractSchemaTransaction
      */
     public function ifTableExists(string $table): NestedSchemaTransaction
     {
-        return $this->nestWithCondition(new TableExists($this->database, $this->schema, $table));
+        return $this->nestWithCondition(new TableExists($this->schema, $table));
     }
 
     /**
@@ -64,7 +63,7 @@ class SchemaTransaction extends AbstractSchemaTransaction
      */
     public function ifTableNotExists(string $table): NestedSchemaTransaction
     {
-        return $this->nestWithCondition(new TableExists($this->database, $this->schema, $table, true));
+        return $this->nestWithCondition(new TableExists($this->schema, $table, true));
     }
 
     /**
@@ -72,7 +71,7 @@ class SchemaTransaction extends AbstractSchemaTransaction
      */
     public function ifColumnExists(string $table, string $column): NestedSchemaTransaction
     {
-        return $this->nestWithCondition(new ColumnExists($this->database, $this->schema, $table, $column));
+        return $this->nestWithCondition(new ColumnExists($this->schema, $table, $column));
     }
 
     /**
@@ -80,7 +79,7 @@ class SchemaTransaction extends AbstractSchemaTransaction
      */
     public function ifColumnNotExists(string $table, string $column): NestedSchemaTransaction
     {
-        return $this->nestWithCondition(new ColumnExists($this->database, $this->schema, $table, $column, true));
+        return $this->nestWithCondition(new ColumnExists($this->schema, $table, $column, true));
     }
 
     /**
@@ -88,7 +87,7 @@ class SchemaTransaction extends AbstractSchemaTransaction
      */
     public function ifIndexExists(string $table, array $columns): NestedSchemaTransaction
     {
-        return $this->nestWithCondition(new IndexExists($this->database, $this->schema, $table, $columns));
+        return $this->nestWithCondition(new IndexExists($this->schema, $table, $columns));
     }
 
     /**
@@ -96,6 +95,6 @@ class SchemaTransaction extends AbstractSchemaTransaction
      */
     public function ifIndexNotExists(string $table, array $columns): NestedSchemaTransaction
     {
-        return $this->nestWithCondition(new IndexExists($this->database, $this->schema, $table, $columns, true));
+        return $this->nestWithCondition(new IndexExists($this->schema, $table, $columns, true));
     }
 }

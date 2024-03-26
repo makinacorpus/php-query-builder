@@ -12,15 +12,8 @@ use MakinaCorpus\QueryBuilder\Schema\Diff\ChangeLogItem;
 abstract class AbstractChange implements ChangeLogItem
 {
     public function __construct(
-        private readonly string $database,
         private readonly string $schema,
     ) {}
-
-    #[\Override]
-    public function getDatabase(): string
-    {
-        return $this->database;
-    }
 
     #[\Override]
     public function getSchema(): string

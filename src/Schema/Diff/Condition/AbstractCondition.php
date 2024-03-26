@@ -12,16 +12,9 @@ use MakinaCorpus\QueryBuilder\Schema\Diff\ChangeLogItem;
 abstract class AbstractCondition implements ChangeLogItem
 {
     public function __construct(
-        private readonly string $database,
         private readonly string $schema,
         private readonly bool $negation = false,
     ) {}
-
-    #[\Override]
-    public function getDatabase(): string
-    {
-        return $this->database;
-    }
 
     #[\Override]
     public function getSchema(): string

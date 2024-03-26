@@ -14,7 +14,6 @@ class ColumnModify extends AbstractChange
     private readonly ?Type $type;
 
     public function __construct(
-        string $database,
         string $schema,
         private readonly string $table,
         private readonly string $name,
@@ -24,7 +23,7 @@ class ColumnModify extends AbstractChange
         private readonly bool $dropDefault = false,
         private readonly ?string $collation = null,
     ) {
-        parent::__construct(database: $database, schema: $schema);
+        parent::__construct(schema: $schema);
 
         $this->type = $type ? Type::create($type) : null;
     }

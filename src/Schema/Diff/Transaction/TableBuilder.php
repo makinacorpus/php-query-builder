@@ -10,11 +10,10 @@ class TableBuilder extends AbstractTableBuilder
 {
     public function __construct(
         private readonly SchemaTransaction $parent,
-        string $database,
         string $name,
         string $schema,
     ) {
-        parent::__construct($parent, $database, $name, $schema);
+        parent::__construct($parent, $name, $schema);
     }
 
     /**

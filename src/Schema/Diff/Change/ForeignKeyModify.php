@@ -25,7 +25,6 @@ class ForeignKeyModify extends AbstractChange
     const ON_UPDATE_SET_NULL = 'set null';
 
     public function __construct(
-        string $database,
         string $schema,
         private readonly string $table,
         private readonly string $name,
@@ -34,7 +33,7 @@ class ForeignKeyModify extends AbstractChange
         private readonly bool $deferrable = true,
         private readonly string $initially = ForeignKeyModify::INITIALLY_DEFERRED,
     ) {
-        parent::__construct(database: $database, schema: $schema);
+        parent::__construct(schema: $schema);
     }
 
     public function getTable(): string

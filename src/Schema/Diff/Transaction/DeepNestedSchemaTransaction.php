@@ -12,11 +12,10 @@ class DeepNestedSchemaTransaction extends AbstractNestedSchemaTransaction
 {
     public function __construct(
         private readonly NestedSchemaTransaction $parent,
-        string $database,
         string $schema,
         array $conditions = [],
     ) {
-        parent::__construct($database, $schema, $conditions);
+        parent::__construct($schema, $conditions);
     }
 
     /**
@@ -24,7 +23,7 @@ class DeepNestedSchemaTransaction extends AbstractNestedSchemaTransaction
      */
     public function createTable(string $name): DeepNestedTableBuilder
     {
-        return new DeepNestedTableBuilder(parent: $this, database: $this->database, name: $name, schema: $this->schema);
+        return new DeepNestedTableBuilder(parent: $this, name: $name, schema: $this->schema);
     }
 
     /**

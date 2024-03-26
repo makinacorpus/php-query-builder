@@ -21,17 +21,10 @@ use MakinaCorpus\QueryBuilder\Schema\Diff\Condition\TableExists;
 abstract class AbstractNestedSchemaTransaction extends AbstractSchemaTransaction implements ChangeLogItem
 {
     public function __construct(
-        string $database,
         string $schema,
         private readonly array $conditions = [],
     ) {
-        parent::__construct($database, $schema);
-    }
-
-    #[\Override]
-    public function getDatabase(): string
-    {
-        return $this->database;
+        parent::__construct($schema);
     }
 
     #[\Override]
@@ -47,7 +40,7 @@ abstract class AbstractNestedSchemaTransaction extends AbstractSchemaTransaction
      */
     public function ifCallback(callable $callback): DeepNestedSchemaTransaction
     {
-        return $this->nestWithCondition(new CallbackCondition($this->database, $this->schema, $callback));
+        return $this->nestWithCondition(new CallbackCondition($this->schema, $callback));
     }
 
     /**
@@ -55,7 +48,7 @@ abstract class AbstractNestedSchemaTransaction extends AbstractSchemaTransaction
      */
     public function ifTableExists(string $table): DeepNestedSchemaTransaction
     {
-        return $this->nestWithCondition(new TableExists($this->database, $this->schema, $table));
+        return $this->nestWithCondition(new TableExists($this->schema, $table));
     }
 
     /**
@@ -63,7 +56,7 @@ abstract class AbstractNestedSchemaTransaction extends AbstractSchemaTransaction
      */
     public function ifTableNotExists(string $table): DeepNestedSchemaTransaction
     {
-        return $this->nestWithCondition(new TableExists($this->database, $this->schema, $table, true));
+        return $this->nestWithCondition(new TableExists($this->schema, $table, true));
     }
 
     /**
@@ -71,7 +64,7 @@ abstract class AbstractNestedSchemaTransaction extends AbstractSchemaTransaction
      */
     public function ifColumnExists(string $table, string $column): DeepNestedSchemaTransaction
     {
-        return $this->nestWithCondition(new ColumnExists($this->database, $this->schema, $table, $column));
+        return $this->nestWithCondition(new ColumnExists($this->schema, $table, $column));
     }
 
     /**
@@ -79,7 +72,7 @@ abstract class AbstractNestedSchemaTransaction extends AbstractSchemaTransaction
      */
     public function ifColumnNotExists(string $table, string $column): DeepNestedSchemaTransaction
     {
-        return $this->nestWithCondition(new ColumnExists($this->database, $this->schema, $table, $column, true));
+        return $this->nestWithCondition(new ColumnExists($this->schema, $table, $column, true));
     }
 
     /**
@@ -87,7 +80,7 @@ abstract class AbstractNestedSchemaTransaction extends AbstractSchemaTransaction
      */
     public function ifIndexExists(string $table, array $columns): DeepNestedSchemaTransaction
     {
-        return $this->nestWithCondition(new IndexExists($this->database, $this->schema, $table, $columns));
+        return $this->nestWithCondition(new IndexExists($this->schema, $table, $columns));
     }
 
     /**
@@ -95,7 +88,7 @@ abstract class AbstractNestedSchemaTransaction extends AbstractSchemaTransaction
      */
     public function ifIndexNotExists(string $table, array $columns): DeepNestedSchemaTransaction
     {
-        return $this->nestWithCondition(new IndexExists($this->database, $this->schema, $table, $columns, true));
+        return $this->nestWithCondition(new IndexExists($this->schema, $table, $columns, true));
     }
 
     /**

@@ -10,7 +10,6 @@ namespace MakinaCorpus\QueryBuilder\Schema\Diff\Change;
 class IndexCreate extends AbstractChange
 {
     public function __construct(
-        string $database,
         string $schema,
         private readonly string $table,
         /** @var array<string> */
@@ -18,7 +17,7 @@ class IndexCreate extends AbstractChange
         private readonly ?string $name = null,
         private readonly ?string $type = null,
     ) {
-        parent::__construct(database: $database, schema: $schema);
+        parent::__construct(schema: $schema);
     }
 
     public function getTable(): string

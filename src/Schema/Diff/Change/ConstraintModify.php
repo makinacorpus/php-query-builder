@@ -13,14 +13,13 @@ class ConstraintModify extends AbstractChange
     const INITIALLY_IMMEDIATE = 'immediate';
 
     public function __construct(
-        string $database,
         string $schema,
         private readonly string $table,
         private readonly string $name,
         private readonly bool $deferrable = true,
         private readonly string $initially = ConstraintModify::INITIALLY_DEFERRED,
     ) {
-        parent::__construct(database: $database, schema: $schema);
+        parent::__construct(schema: $schema);
     }
 
     public function getTable(): string

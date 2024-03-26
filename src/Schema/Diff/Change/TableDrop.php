@@ -10,12 +10,11 @@ namespace MakinaCorpus\QueryBuilder\Schema\Diff\Change;
 class TableDrop extends AbstractChange
 {
     public function __construct(
-        string $database,
         string $schema,
         private readonly string $name,
         private readonly bool $cascade = false,
     ) {
-        parent::__construct(database: $database, schema: $schema);
+        parent::__construct(schema: $schema);
     }
 
     public function getName(): string

@@ -251,7 +251,6 @@ abstract class SchemaManager implements LoggerAwareInterface
     public function modify(string $database, ?string $schema = null): SchemaTransaction
     {
         return new SchemaTransaction(
-            $database,
             $schema ?? $this->getDefaultSchema(),
             function (SchemaTransaction $transaction) {
                 $browser = new ChangeLogBrowser();
@@ -333,7 +332,7 @@ abstract class SchemaManager implements LoggerAwareInterface
     {
         $existing = $this
             ->getTable(
-                $change->getDatabase(),
+                $this->session->getCurrentDatabase(),
                 $change->getTable(),
                 $change->getSchema(),
             )
@@ -343,7 +342,6 @@ abstract class SchemaManager implements LoggerAwareInterface
         return new ColumnAdd(
             // @todo Do not change collation when default...
             collation: null, // $change->getCollation() ?? $existing->getCollation(),
-            database: $change->getDatabase(),
             default: $change->isDropDefault() ? null : ($change->getDefault() ?? $existing->getDefault()),
             name: $change->getName(),
             nullable: $change->isNullable() ?? $existing->isNullable(),
@@ -883,7 +881,7 @@ abstract class SchemaManager implements LoggerAwareInterface
                 $condition->getColumn(),
                 $this
                     ->getTable(
-                        $condition->getDatabase(),
+                        $this->session->getCurrentDatabase(),
                         $condition->getTable(),
                         $condition->getSchema()
                     )
@@ -907,7 +905,7 @@ abstract class SchemaManager implements LoggerAwareInterface
      */
     protected function evaluateConditionTableExists(TableExists $condition): bool
     {
-        return $this->tableExists($condition->getDatabase(), $condition->getTable(), $condition->getSchema());
+        return $this->tableExists($this->session->getCurrentDatabase(), $condition->getTable(), $condition->getSchema());
     }
 
     /**

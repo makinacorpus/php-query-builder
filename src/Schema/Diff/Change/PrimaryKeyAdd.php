@@ -10,14 +10,13 @@ namespace MakinaCorpus\QueryBuilder\Schema\Diff\Change;
 class PrimaryKeyAdd extends AbstractChange
 {
     public function __construct(
-        string $database,
         string $schema,
         private readonly string $table,
         /** @var array<string> */
         private readonly array $columns,
         private readonly ?string $name = null,
     ) {
-        parent::__construct(database: $database, schema: $schema);
+        parent::__construct(schema: $schema);
     }
 
     public function getTable(): string

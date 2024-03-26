@@ -31,7 +31,6 @@ abstract class AbstractTableBuilder
 
     public function __construct(
         private readonly AbstractSchemaTransaction $parent,
-        private readonly string $database,
         private readonly string $name,
         private string $schema,
     ) {}
@@ -62,7 +61,6 @@ abstract class AbstractTableBuilder
     public function column(string $name, string|Type $type, bool $nullable, ?string $default = null): static
     {
         $this->columns[] = new ColumnAdd(
-            database: $this->database,
             default: $default,
             name: $name,
             nullable: $nullable,
@@ -83,7 +81,6 @@ abstract class AbstractTableBuilder
     {
         $this->primaryKey = new PrimaryKeyAdd(
             columns: $columns,
-            database: $this->database,
             schema: $this->schema,
             table: $this->name,
         );
@@ -109,7 +106,6 @@ abstract class AbstractTableBuilder
     ): static {
         $this->foreignKeys[] = new ForeignKeyAdd(
             columns: \array_keys($columns),
-            database: $this->database,
             deferrable: $deferrable,
             foreignColumns: \array_values($columns),
             foreignSchema: $foreignSchema,
@@ -134,7 +130,6 @@ abstract class AbstractTableBuilder
     {
         $this->uniqueKeys[] = new UniqueKeyAdd(
             columns: $columns,
-            database: $this->database,
             name: $name,
             nullsDistinct: $nullsDistinct,
             schema: $this->schema,
@@ -153,7 +148,6 @@ abstract class AbstractTableBuilder
     {
         $this->indexes[] = new IndexCreate(
             columns: $columns,
-            database: $this->database,
             name: $name,
             schema: $this->schema,
             table: $this->name,
@@ -171,7 +165,6 @@ abstract class AbstractTableBuilder
         $this->parent->logChange(
             new TableCreate(
                 columns: $this->columns,
-                database: $this->database,
                 foreignKeys: $this->foreignKeys,
                 indexes: $this->indexes,
                 name: $this->name,
