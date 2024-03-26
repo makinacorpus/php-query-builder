@@ -6,6 +6,11 @@
 This is experimental work-in-progress and API will change.
 :::
 
+:::info
+All schema alteration can only happen in the database selected when the
+session was connected.
+:::
+
 The schema manager is an object that allows you to introspect and alter your
 database schema.
 
@@ -92,7 +97,8 @@ The schema manager allows data manipulation. For making changes, you must first
 start a transaction:
 
 ```php
-$transaction = $schemaManager->modify('my_database');
+// Parameter is optional, it is the default schema in which to add new elements.
+$transaction = $schemaManager->modify('some_schema');
 ```
 
 :::warning
@@ -117,7 +123,7 @@ of a simple table creation:
 
 ```php
 $schemaManager
-    ->modify(database: 'my_database')
+    ->modify()
         ->createTable(name: 'user')
             ->column(name: 'id', type: 'serial', nullable: false)
             ->primaryKey(['id'])
@@ -139,7 +145,7 @@ exists in your schema:
 
 ```php
 $schemaManager
-    ->modify(database: 'my_database')
+    ->modify()
         ->column(table: 'user', name: 'id', type: 'serial', nullable: false)
         ->primaryKey(table: 'user', ['id'])
         ->column(table: 'user', name: 'enabled', type: 'bool', nullable: false, default: 'false')
@@ -160,7 +166,7 @@ in the code, consider the previous example:
 
 ```php
 $schemaManager
-    ->modify(database: 'my_database')
+    ->modify()
         ->ifTableNotExists(table: 'user')
             ->createTable(name: 'user')
                 ->column(name: 'id', type: 'serial', nullable: false)
@@ -199,7 +205,7 @@ We may write it this way:
 
 ```php
 $schemaManager
-    ->modify(database: 'my_database')
+    ->modify()
         ->ifColumnNotExists('user', 'username')
             ->addColumn('user', 'username', 'varchar(64)', false)
             ->query(
@@ -233,7 +239,7 @@ you may use an arbitrary callback as a condition:
 
 ```php
 $schemaManager
-    ->modify(database: 'my_database')
+    ->modify()
         ->ifCallback(
             fn (QueryBuilder $builder) => $builder
                 ->select()
@@ -267,7 +273,7 @@ $schemaManager
     // Create the transaction object, no transaction will be started at this
     // point, but an in-memory changelog is created for recording all changes
     // you are going to do.
-    ->modify(database: 'my_database')
+    ->modify()
 
         // Create a "user" table
         ->createTable(name: 'user')

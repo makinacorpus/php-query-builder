@@ -248,7 +248,7 @@ abstract class SchemaManager implements LoggerAwareInterface
      * If the database vendor doesn't support DDL statements transactions
      * then no transactions will be done at all.
      */
-    public function modify(string $database, ?string $schema = null): SchemaTransaction
+    public function modify(?string $schema = null): SchemaTransaction
     {
         return new SchemaTransaction(
             $schema ?? $this->getDefaultSchema(),

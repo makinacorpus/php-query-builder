@@ -10,6 +10,7 @@ use MakinaCorpus\QueryBuilder\Expression\Aggregate;
 use MakinaCorpus\QueryBuilder\Expression\Cast;
 use MakinaCorpus\QueryBuilder\Expression\Concat;
 use MakinaCorpus\QueryBuilder\Expression\CurrentDatabase;
+use MakinaCorpus\QueryBuilder\Expression\CurrentSchema;
 use MakinaCorpus\QueryBuilder\Expression\CurrentTimestamp;
 use MakinaCorpus\QueryBuilder\Expression\DateAdd;
 use MakinaCorpus\QueryBuilder\Expression\DateInterval;
@@ -124,6 +125,12 @@ class SQLServerWriter extends Writer
     protected function formatCurrentDatabase(CurrentDatabase $expression, WriterContext $context): string
     {
         return "DB_NAME()";
+    }
+
+    #[\Override]
+    protected function formatCurrentSchema(CurrentSchema $expression, WriterContext $context): string
+    {
+        return 'SCHEMA_NAME()';
     }
 
     protected function formatDateAddRecursion(Expression $date, array $values, WriterContext $context, bool $negate = false): string

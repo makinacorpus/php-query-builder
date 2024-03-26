@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Tests\Functional;
 
-use MakinaCorpus\QueryBuilder\Platform;
 use MakinaCorpus\QueryBuilder\Expression\Cast;
 use MakinaCorpus\QueryBuilder\Expression\ColumnName;
 use MakinaCorpus\QueryBuilder\Expression\ConstantTable;
@@ -13,6 +12,7 @@ use MakinaCorpus\QueryBuilder\Expression\Random;
 use MakinaCorpus\QueryBuilder\Expression\RandomInt;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\Expression\Value;
+use MakinaCorpus\QueryBuilder\Platform;
 use MakinaCorpus\QueryBuilder\Query\Query;
 use MakinaCorpus\QueryBuilder\Query\Select;
 use MakinaCorpus\QueryBuilder\Tests\Bridge\Doctrine\DoctrineTestCase;
@@ -112,7 +112,25 @@ class SelectFunctionalTest extends DoctrineTestCase
 
         $value = $this->executeQuery($select)->fetchRow()->get(0, 'string');
 
-        self::assertSame('test_db', $value);
+        if ($this->ifDatabase(Platform::SQLITE)) {
+            self::assertSame('main', $value);
+        } else {
+            self::assertSame('test_db', $value);
+        }
+    }
+
+    public function testCurrentSchema(): void
+    {
+        $select = new Select();
+        $expr = $select->expression();
+
+        $select->column($expr->currentSchema());
+
+        $value = $this->executeQuery($select)->fetchRow()->get(0, 'string');
+
+        if (!$this->ifDatabase(Platform::SQLSERVER)) {
+            self::assertSame('public', $value);
+        }
     }
 
     public function testSelectInt(): void

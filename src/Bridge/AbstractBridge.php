@@ -13,6 +13,7 @@ use MakinaCorpus\QueryBuilder\Error\UnsupportedFeatureError;
 use MakinaCorpus\QueryBuilder\Escaper\Escaper;
 use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Expression\CurrentDatabase;
+use MakinaCorpus\QueryBuilder\Expression\CurrentSchema;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\Platform;
 use MakinaCorpus\QueryBuilder\Platform\Converter\MySQLConverter;
@@ -50,6 +51,7 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
     private ?ErrorConverter $errorConverter = null;
     private ?SchemaManager $schemaManager = null;
     private ?string $currentDatabase = null;
+    private ?string $currentSchema = null;
 
     public function __construct(?ConverterPluginRegistry $converterPluginRegistry = null, ?string $currentDatabase = null)
     {
@@ -235,7 +237,10 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
     #[\Override]
     public function getDefaultSchema(): string
     {
-        throw new UnsupportedFeatureError();
+        if (null === $this->currentSchema) {
+            $this->currentSchema = (string) $this->raw('SELECT ?', [new CurrentSchema()])->executeQuery()->fetchOne();
+        }
+        return $this->currentSchema;
     }
 
     /**

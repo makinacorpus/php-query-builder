@@ -7,6 +7,7 @@ namespace MakinaCorpus\QueryBuilder\Platform\Writer;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Error\UnsupportedFeatureError;
 use MakinaCorpus\QueryBuilder\Expression\CurrentDatabase;
+use MakinaCorpus\QueryBuilder\Expression\CurrentSchema;
 use MakinaCorpus\QueryBuilder\Expression\DateAdd;
 use MakinaCorpus\QueryBuilder\Expression\DateInterval;
 use MakinaCorpus\QueryBuilder\Expression\DateSub;
@@ -37,6 +38,12 @@ class SQLiteWriter extends Writer
     protected function formatCurrentDatabase(CurrentDatabase $expression, WriterContext $context): string
     {
         return "'main'";
+    }
+
+    #[\Override]
+    protected function formatCurrentSchema(CurrentSchema $expression, WriterContext $context): string
+    {
+        return "'public'";
     }
 
     /**

@@ -11,6 +11,7 @@ use MakinaCorpus\QueryBuilder\Expression\Aggregate;
 use MakinaCorpus\QueryBuilder\Expression\Concat;
 use MakinaCorpus\QueryBuilder\Expression\ConstantTable;
 use MakinaCorpus\QueryBuilder\Expression\CurrentDatabase;
+use MakinaCorpus\QueryBuilder\Expression\CurrentSchema;
 use MakinaCorpus\QueryBuilder\Expression\CurrentTimestamp;
 use MakinaCorpus\QueryBuilder\Expression\DateAdd;
 use MakinaCorpus\QueryBuilder\Expression\DateInterval;
@@ -80,6 +81,12 @@ class MySQLWriter extends Writer
     protected function formatCurrentDatabase(CurrentDatabase $expression, WriterContext $context): string
     {
         return 'DATABASE()';
+    }
+
+    #[\Override]
+    protected function formatCurrentSchema(CurrentSchema $expression, WriterContext $context): string
+    {
+        return "'public'";
     }
 
     #[\Override]

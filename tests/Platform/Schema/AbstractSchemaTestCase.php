@@ -261,7 +261,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
     {
         $this
             ->getSchemaManager()
-            ->modify('test_db')
+            ->modify()
                 ->query(
                     fn (QueryBuilder $queryBuilder) => $queryBuilder
                         ->select()
@@ -278,7 +278,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
     {
         $this
             ->getSchemaManager()
-            ->modify('test_db')
+            ->modify()
                 ->ifCallback(
                     fn (QueryBuilder $queryBuilder) => (bool) $queryBuilder
                         ->select()
@@ -314,7 +314,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
     {
         $this
             ->getSchemaManager()
-            ->modify('test_db')
+            ->modify()
                 ->addColumn('users', 'age', 'int', true)
             ->commit()
         ;
@@ -334,7 +334,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
     {
         $this
             ->getSchemaManager()
-            ->modify('test_db')
+            ->modify()
                 ->addColumn('users', 'age', 'int', true, '12')
             ->commit()
         ;
@@ -354,7 +354,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
     {
         $this
             ->getSchemaManager()
-            ->modify('test_db')
+            ->modify()
                 ->addColumn('users', 'age', 'int', false)
             ->commit()
         ;
@@ -374,7 +374,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
     {
         $this
             ->getSchemaManager()
-            ->modify('test_db')
+            ->modify()
                 ->addColumn('users', 'age', 'int', false, '12')
             ->commit()
         ;
@@ -396,7 +396,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
         $this
             ->getSchemaManager()
-            ->modify('test_db')
+            ->modify()
                 ->modifyColumn(
                     table: 'user_address',
                     name: 'country',
@@ -428,7 +428,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
         $this
             ->getSchemaManager()
-            ->modify('test_db')
+            ->modify()
                 ->modifyColumn(
                     table: 'user_address',
                     name: 'country',
@@ -459,7 +459,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
         $this
             ->getSchemaManager()
-            ->modify('test_db')
+            ->modify()
                 ->modifyColumn(
                     table: 'user_address',
                     name: 'country',
@@ -489,7 +489,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
         $this
             ->getSchemaManager()
-            ->modify('test_db')
+            ->modify()
                 ->modifyColumn(
                     table: 'user_address',
                     name: 'country',
@@ -519,7 +519,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
         $this
             ->getSchemaManager()
-            ->modify('test_db')
+            ->modify()
                 ->modifyColumn(
                     table: 'user_address',
                     name: 'country',
@@ -551,7 +551,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
         $this
             ->getSchemaManager()
-            ->modify('test_db')
+            ->modify()
                 ->modifyColumn(
                     table: 'user_address',
                     name: 'country',
@@ -585,7 +585,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
     {
         $this
             ->getSchemaManager()
-            ->modify('test_db')
+            ->modify()
                 ->renameColumn('user_address', 'city', 'locality')
             ->commit()
         ;
@@ -622,7 +622,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
         $this
             ->getSchemaManager()
-            ->modify('test_db')
+            ->modify()
                 ->addForeignKey('user_address', ['org_id'], 'org', ['id'])
             ->commit()
         ;
@@ -644,14 +644,14 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
         $this
             ->getSchemaManager()
-            ->modify('test_db')
+            ->modify()
                 ->addForeignKey('user_address', ['org_id'], 'org', ['id'], 'user_address_org_org_id_fk')
             ->commit()
         ;
 
         $this
             ->getSchemaManager()
-            ->modify('test_db')
+            ->modify()
                 ->dropForeignKey('user_address', 'user_address_org_org_id_fk')
             ->commit()
         ;
@@ -669,7 +669,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
     {
         $this
             ->getSchemaManager()
-            ->modify('test_db')
+            ->modify()
                 ->createIndex('users', ['email'], 'users_email_idx')
             ->commit()
         ;
@@ -681,14 +681,14 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
     {
         $this
             ->getSchemaManager()
-            ->modify('test_db')
+            ->modify()
                 ->createIndex('users', ['email'], 'users_email_idx')
             ->commit()
         ;
 
         $this
             ->getSchemaManager()
-            ->modify('test_db')
+            ->modify()
                 ->dropIndex('users', 'users_email_idx')
             ->commit()
         ;
@@ -700,14 +700,14 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
     {
         $this
             ->getSchemaManager()
-            ->modify('test_db')
+            ->modify()
                 ->createIndex('no_pk_table', ['id'], 'my_foo_unique_index')
             ->commit()
         ;
 
         $this
             ->getSchemaManager()
-            ->modify('test_db')
+            ->modify()
                 ->dropIndex('no_pk_table', 'my_foo_unique_index')
             ->commit()
         ;
@@ -722,7 +722,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
         $this
             ->getSchemaManager()
-            ->modify('test_db')
+            ->modify()
                 ->addPrimaryKey('no_pk_table', ['id'])
             ->commit()
         ;
@@ -742,14 +742,14 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
         $this
             ->getSchemaManager()
-            ->modify('test_db')
+            ->modify()
                 ->addPrimaryKey('no_pk_table', ['id'], 'no_pk_table_pkey_with_name')
             ->commit()
         ;
 
         $this
             ->getSchemaManager()
-            ->modify('test_db')
+            ->modify()
                 ->dropPrimaryKey('no_pk_table', 'no_pk_table_pkey_with_name')
             ->commit()
         ;
@@ -767,7 +767,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
     {
         $this
             ->getSchemaManager()
-            ->modify('test_db')
+            ->modify()
                 ->createTable('test_table')
                     ->column('foo', 'int8', false)
                     ->column('bar', 'text', true)
@@ -791,7 +791,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
         $this
             ->getSchemaManager()
-            ->modify('test_db')
+            ->modify()
                 ->createTable('test_table_tmp')
                     ->temporary()
                     ->column('foo', 'int8', false)
@@ -807,7 +807,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
     {
         $this
             ->getSchemaManager()
-            ->modify('test_db')
+            ->modify()
                 ->createTable('test_table_pk')
                     ->column('foo', 'int8', false)
                     ->column('bar', 'varchar(255)', true)
@@ -829,7 +829,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
     {
         $this
             ->getSchemaManager()
-            ->modify('test_db')
+            ->modify()
                 ->createTable('test_table_fk')
                     ->column('foo', 'int', false)
                     ->column('bar', 'text', true)
@@ -853,7 +853,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
     {
         $this
             ->getSchemaManager()
-            ->modify('test_db')
+            ->modify()
                 ->createTable('test_table_fk')
                     ->column('foo', 'int', false)
                     ->column('bar', 'varchar(255)', true)
@@ -870,7 +870,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
     {
         $this
             ->getSchemaManager()
-            ->modify('test_db')
+            ->modify()
                 ->createTable('test_table_fk')
                     ->column('foo', 'int', false)
                     ->column('bar', 'varchar(255)', true)
@@ -895,7 +895,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
     {
         $this
             ->getSchemaManager()
-            ->modify('test_db')
+            ->modify()
                 ->dropTable('user_address')
             ->commit()
         ;
@@ -912,7 +912,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
     {
         $this
             ->getSchemaManager()
-            ->modify('test_db')
+            ->modify()
                 ->renameTable('renamed_table', 'renamed_table_new_name')
             ->commit()
         ;
@@ -936,7 +936,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
     {
         $this
             ->getSchemaManager()
-            ->modify('test_db')
+            ->modify()
                 ->addUniqueKey('users', ['username'])
             ->commit()
         ;
@@ -948,7 +948,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
     {
         $this
             ->getSchemaManager()
-            ->modify('test_db')
+            ->modify()
                 ->addUniqueKey('users', ['username'], 'users_unique_username_idx')
             ->commit()
         ;
@@ -960,14 +960,14 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
     {
         $this
             ->getSchemaManager()
-            ->modify('test_db')
+            ->modify()
                 ->addUniqueKey('users', ['username'], 'users_unique_username_idx')
             ->commit()
         ;
 
         $this
             ->getSchemaManager()
-            ->modify('test_db')
+            ->modify()
                 ->dropUniqueKey('users', 'users_unique_username_idx')
             ->commit()
         ;
@@ -979,7 +979,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
     {
         $this
             ->getSchemaManager()
-            ->modify('test_db')
+            ->modify()
                 ->ifTableExists('org')
                     ->addColumn('org', 'if_added_col', 'text', true)
                 ->endIf()
@@ -1003,7 +1003,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
     {
         $this
             ->getSchemaManager()
-            ->modify('test_db')
+            ->modify()
                 ->ifColumnExists('org', 'role')
                     ->addColumn('org', 'if_added_col_2', 'text', true)
                 ->endIf()
