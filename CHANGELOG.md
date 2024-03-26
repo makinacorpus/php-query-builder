@@ -1,5 +1,22 @@
 # Changelog
 
+## Next
+
+Lots of internal refactor and fixes. The `MakinaCorpus\QueryBuilder\QueryExecutor`
+interface is now know as the `MakinaCorpus\QueryBuilder\DatabaseSession` and is
+meant to be used directly for users. It now holds `getCurrentDatabase(): string`
+and `getDefaultSchema(): string` methods for getting some session context
+information.
+
+The schema manager, still experimental, can now from the API point of view only
+work in the current session database only. Due to some specific vendor restrictions
+we chose to restrict all vendors to this.
+
+* [feature] ⭐️ Add `CurrentDatabase` and `CurrentSchema` expression.
+* [feature] ⭐️ Add `getCurrentDatabase()` and `getDefaultSchema()` methods on the `DatabaseSession` interface.
+* [bc] `QueryExecutor` is now known as `DatabaseSession`
+* [internal] Lots of missing unit tests added.
+
 ## 1.2.0
 
 Main feature of 1.2.0 is an internal complete rewrite of SQL data type
