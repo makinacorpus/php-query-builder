@@ -103,6 +103,18 @@ class SelectFunctionalTest extends DoctrineTestCase
         }
     }
 
+    public function testCurrentDatabase(): void
+    {
+        $select = new Select();
+        $expr = $select->expression();
+
+        $select->column($expr->currentDatabase());
+
+        $value = $this->executeQuery($select)->fetchRow()->get(0, 'string');
+
+        self::assertSame('test_db', $value);
+    }
+
     public function testSelectInt(): void
     {
         $select = new Select();

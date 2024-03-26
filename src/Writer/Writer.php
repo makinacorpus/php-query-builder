@@ -21,6 +21,7 @@ use MakinaCorpus\QueryBuilder\Expression\ColumnName;
 use MakinaCorpus\QueryBuilder\Expression\Comparison;
 use MakinaCorpus\QueryBuilder\Expression\Concat;
 use MakinaCorpus\QueryBuilder\Expression\ConstantTable;
+use MakinaCorpus\QueryBuilder\Expression\CurrentDatabase;
 use MakinaCorpus\QueryBuilder\Expression\CurrentTimestamp;
 use MakinaCorpus\QueryBuilder\Expression\DataType;
 use MakinaCorpus\QueryBuilder\Expression\DateAdd;
@@ -251,6 +252,7 @@ class Writer
                     Comparison::class => $this->formatComparison($expression, $context),
                     Concat::class => $this->formatConcat($expression, $context),
                     ConstantTable::class => $this->formatConstantTable($expression, $context),
+                    CurrentDatabase::class => $this->formatCurrentDatabase($expression, $context),
                     CurrentTimestamp::class => $this->formatCurrentTimestamp($expression, $context),
                     DataType::class => $this->formatDataType($expression, $context),
                     DateAdd::class => $this->formatDateAdd($expression, $context),
@@ -856,6 +858,14 @@ class Writer
             'md5' => 'md5(' . $this->format($value, $context) . ')',
             default => 'digest(' . $this->format($value, $context) . ', ' . $escapedAlgo . ')',
         };
+    }
+
+    /**
+     * Current database. No standard here, only dialects.
+     */
+    protected function formatCurrentDatabase(CurrentDatabase $expression, WriterContext $context): string
+    {
+        return 'CURRENT_DATABASE()';
     }
 
     /**

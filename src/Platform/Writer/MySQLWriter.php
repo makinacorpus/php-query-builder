@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Platform\Writer;
 
-use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Error\UnsupportedFeatureError;
+use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Expression\Aggregate;
 use MakinaCorpus\QueryBuilder\Expression\Concat;
 use MakinaCorpus\QueryBuilder\Expression\ConstantTable;
+use MakinaCorpus\QueryBuilder\Expression\CurrentDatabase;
 use MakinaCorpus\QueryBuilder\Expression\CurrentTimestamp;
 use MakinaCorpus\QueryBuilder\Expression\DateAdd;
 use MakinaCorpus\QueryBuilder\Expression\DateInterval;
@@ -23,11 +24,11 @@ use MakinaCorpus\QueryBuilder\Query\Delete;
 use MakinaCorpus\QueryBuilder\Query\Merge;
 use MakinaCorpus\QueryBuilder\Query\Query;
 use MakinaCorpus\QueryBuilder\Query\Update;
+use MakinaCorpus\QueryBuilder\Type\InternalType;
 use MakinaCorpus\QueryBuilder\Type\Type;
 use MakinaCorpus\QueryBuilder\Type\TypeConverter;
 use MakinaCorpus\QueryBuilder\Writer\Writer;
 use MakinaCorpus\QueryBuilder\Writer\WriterContext;
-use MakinaCorpus\QueryBuilder\Type\InternalType;
 
 /**
  * MySQL <= 5.7.
@@ -73,6 +74,12 @@ class MySQLWriter extends Writer
             'sha2' => 'sha2(' . $this->format($value, $context) . ')',
             default => throw new QueryBuilderError("Unsupported arbitrary user given algorithm for MySQL."),
         };
+    }
+
+    #[\Override]
+    protected function formatCurrentDatabase(CurrentDatabase $expression, WriterContext $context): string
+    {
+        return 'DATABASE()';
     }
 
     #[\Override]

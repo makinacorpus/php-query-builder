@@ -11,6 +11,7 @@ use MakinaCorpus\QueryBuilder\Expression\Cast;
 use MakinaCorpus\QueryBuilder\Expression\ColumnName;
 use MakinaCorpus\QueryBuilder\Expression\Concat;
 use MakinaCorpus\QueryBuilder\Expression\ConstantTable;
+use MakinaCorpus\QueryBuilder\Expression\CurrentDatabase;
 use MakinaCorpus\QueryBuilder\Expression\CurrentTimestamp;
 use MakinaCorpus\QueryBuilder\Expression\DateAdd;
 use MakinaCorpus\QueryBuilder\Expression\DateInterval;
@@ -95,6 +96,14 @@ class ExpressionFactory
     public static function column(string $column, ?string $table = null, bool $noAutomaticNamespace = false): ColumnName
     {
         return new ColumnName($column, $table, $noAutomaticNamespace);
+    }
+
+    /**
+     * Current database name expression.
+     */
+    public static function currentDatabase(): CurrentDatabase
+    {
+        return new CurrentDatabase();
     }
 
     /**

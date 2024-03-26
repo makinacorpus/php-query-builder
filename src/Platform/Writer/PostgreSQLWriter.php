@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Platform\Writer;
 
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
+use MakinaCorpus\QueryBuilder\Expression\CurrentDatabase;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\Platform\Type\PostgreSQLTypeConverter;
 use MakinaCorpus\QueryBuilder\Query\Merge;
@@ -24,6 +25,12 @@ class PostgreSQLWriter extends Writer
     protected function createTypeConverter(): TypeConverter
     {
         return new PostgreSQLTypeConverter();
+    }
+
+    #[\Override]
+    protected function formatCurrentDatabase(CurrentDatabase $expression, WriterContext $context): string
+    {
+        return 'CURRENT_DATABASE()';
     }
 
     #[\Override]

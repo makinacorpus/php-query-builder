@@ -18,6 +18,16 @@ use MakinaCorpus\QueryBuilder\Transaction\Transaction;
 interface DatabaseSession extends QueryBuilder
 {
     /**
+     * Get current database name.
+     */
+    public function getCurrentDatabase(): string;
+
+    /**
+     * Get default schema name.
+     */
+    public function getDefaultSchema(): string;
+
+    /**
      * Execute query and return result.
      */
     public function executeQuery(string|Expression $expression = null, mixed $arguments = null): Result;
