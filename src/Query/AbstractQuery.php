@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Query;
 
+use MakinaCorpus\QueryBuilder\DatabaseSession;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\ExpressionFactory;
 use MakinaCorpus\QueryBuilder\OptionsBag;
 use MakinaCorpus\QueryBuilder\Query\Partial\AliasHolderTrait;
 use MakinaCorpus\QueryBuilder\Query\Partial\WithClauseTrait;
-use MakinaCorpus\QueryBuilder\QueryExecutor;
 use MakinaCorpus\QueryBuilder\Result\Result;
 use MakinaCorpus\QueryBuilder\Type\Type;
 
@@ -18,7 +18,7 @@ abstract class AbstractQuery implements Query
     use AliasHolderTrait;
     use WithClauseTrait;
 
-    private ?QueryExecutor $queryExecutor = null;
+    private ?DatabaseSession $session = null;
     private ?string $identifier = null;
     private ?OptionsBag $options = null;
     private ?ExpressionFactory $expressionFactory = null;
@@ -27,9 +27,9 @@ abstract class AbstractQuery implements Query
      * @internal
      *   For bridges only.
      */
-    public function setQueryExecutor(QueryExecutor $queryExecutor): void
+    public function setDatabaseSession(DatabaseSession $session): void
     {
-        $this->queryExecutor = $queryExecutor;
+        $this->session = $session;
     }
 
     #[\Override]
@@ -89,20 +89,20 @@ abstract class AbstractQuery implements Query
     #[\Override]
     public function executeQuery(): Result
     {
-        if (!$this->queryExecutor) {
-            throw new QueryBuilderError("Query executor is not set.");
+        if (!$this->session) {
+            throw new QueryBuilderError("Database session is not set.");
         }
 
-        return $this->queryExecutor->executeQuery($this);
+        return $this->session->executeQuery($this);
     }
 
     #[\Override]
     public function executeStatement(): int
     {
-        if (!$this->queryExecutor) {
-            throw new QueryBuilderError("Query executor is not set.");
+        if (!$this->session) {
+            throw new QueryBuilderError("Database session is not set.");
         }
 
-        return $this->queryExecutor->executeStatement($this);
+        return $this->session->executeStatement($this);
     }
 }

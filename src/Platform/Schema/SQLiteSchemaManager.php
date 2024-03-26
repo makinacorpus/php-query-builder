@@ -69,7 +69,7 @@ class SQLiteSchemaManager extends SchemaManager
         }
 
         return $this
-            ->queryExecutor
+            ->session
             ->executeQuery(
                 <<<SQL
                 SELECT
@@ -121,7 +121,7 @@ class SQLiteSchemaManager extends SchemaManager
          * @todo
          *
         $defaultCollation = $this
-            ->queryExecutor
+            ->session
             ->executeQuery(
                 <<<SQL
                 SELECT datcollate FROM pg_database WHERE datname = ?
@@ -134,7 +134,7 @@ class SQLiteSchemaManager extends SchemaManager
         $defaultCollation = 'binary';
 
         return $this
-            ->queryExecutor
+            ->session
             ->executeQuery(
                 <<<SQL
                 PRAGMA table_info(?::table)
@@ -190,7 +190,7 @@ class SQLiteSchemaManager extends SchemaManager
         }
 
         $result = $this
-            ->queryExecutor
+            ->session
             ->executeQuery(
                 <<<SQL
                 PRAGMA index_list(?::table);
@@ -211,7 +211,7 @@ class SQLiteSchemaManager extends SchemaManager
         }
 
         $result = $this
-            ->queryExecutor
+            ->session
             ->executeQuery(
                 <<<SQL
                 PRAGMA table_info(?::table);
@@ -246,7 +246,7 @@ class SQLiteSchemaManager extends SchemaManager
         }
 
         $result = $this
-            ->queryExecutor
+            ->session
             ->executeQuery(
                 <<<SQL
                 PRAGMA foreign_key_list(?::table);

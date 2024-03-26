@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Bridge;
 
-use MakinaCorpus\QueryBuilder\QueryBuilder;
-use MakinaCorpus\QueryBuilder\QueryExecutor;
+use MakinaCorpus\QueryBuilder\DatabaseSession;
 use MakinaCorpus\QueryBuilder\Schema\SchemaManager;
 use MakinaCorpus\QueryBuilder\Writer\Writer;
 
-interface Bridge extends QueryExecutor, QueryBuilder
+interface Bridge extends DatabaseSession
 {
     /**
      * Disable error converter. Must be called prior to initilization.

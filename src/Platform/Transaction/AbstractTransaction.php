@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Platform\Transaction;
 
-use MakinaCorpus\QueryBuilder\QueryExecutor;
+use MakinaCorpus\QueryBuilder\DatabaseSession;
 use MakinaCorpus\QueryBuilder\Error\Bridge\TransactionError;
 use MakinaCorpus\QueryBuilder\Transaction\Transaction;
 use MakinaCorpus\QueryBuilder\Transaction\TransactionSavepoint;
@@ -25,7 +25,7 @@ abstract class AbstractTransaction implements Transaction
     private array $savepoints = [];
  
     final public function __construct(
-        protected readonly QueryExecutor $executor,
+        protected readonly DatabaseSession $session,
         int $isolationLevel = self::REPEATABLE_READ
     ) {
         $this->level($isolationLevel);

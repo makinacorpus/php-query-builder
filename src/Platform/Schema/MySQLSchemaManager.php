@@ -52,7 +52,7 @@ class MySQLSchemaManager extends SchemaManager
     public function listDatabases(): array
     {
         return $this
-            ->queryExecutor
+            ->session
             ->executeQuery(
                 <<<SQL
                 SHOW DATABASES
@@ -76,7 +76,7 @@ class MySQLSchemaManager extends SchemaManager
         }
 
         return $this
-            ->queryExecutor
+            ->session
             ->executeQuery(
                 <<<SQL
                 SELECT
@@ -101,7 +101,7 @@ class MySQLSchemaManager extends SchemaManager
         }
 
         return (bool) $this
-            ->queryExecutor
+            ->session
             ->executeQuery(
                 <<<SQL
                 SELECT
@@ -123,7 +123,7 @@ class MySQLSchemaManager extends SchemaManager
     protected function getTableComment(string $database, string $schema, string $name): ?string
     {
         return $this
-            ->queryExecutor
+            ->session
             ->executeQuery(
                 <<<SQL
                 SELECT
@@ -145,7 +145,7 @@ class MySQLSchemaManager extends SchemaManager
     {
         /*
         $defaultCollation = $this
-            ->queryExecutor
+            ->session
             ->executeQuery(
                 <<<SQL
                 SELECT datcollate FROM pg_database WHERE datname = ?
@@ -159,7 +159,7 @@ class MySQLSchemaManager extends SchemaManager
 
         // @see https://dev.mysql.com/doc/refman/8.0/en/information-schema-columns-table.html
         return $this
-            ->queryExecutor
+            ->session
             ->executeQuery(
                 <<<SQL
                 SELECT
@@ -234,7 +234,7 @@ class MySQLSchemaManager extends SchemaManager
     protected function getTablePrimaryKey(string $database, string $schema, string $name): ?Key
     {
         $primaryKeyColumns = $this
-            ->queryExecutor
+            ->session
             ->executeQuery(
                 <<<SQL
                 SELECT
@@ -300,7 +300,7 @@ class MySQLSchemaManager extends SchemaManager
         $ret = [];
 
         $foreignKeyInfo = $this
-            ->queryExecutor
+            ->session
             ->executeQuery(
                 <<<SQL
                 SELECT
@@ -323,7 +323,7 @@ class MySQLSchemaManager extends SchemaManager
             $constraintName = $row->get('constraint_name', 'string');
             $constraintTable = $row->get('table_name', 'string');
 
-            $keyColumns = $this->queryExecutor->executeQuery(
+            $keyColumns = $this->session->executeQuery(
                 <<<SQL
                 SELECT column_name, referenced_column_name
                 FROM information_schema.key_column_usage

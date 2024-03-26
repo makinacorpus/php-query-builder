@@ -12,37 +12,37 @@ class SQLServerTransaction extends AbstractTransaction
     protected function doTransactionStart(int $isolationLevel): void
     {
         $this->doChangeLevel($isolationLevel);
-        $this->executor->executeStatement("BEGIN TRANSACTION");
+        $this->session->executeStatement("BEGIN TRANSACTION");
     }
 
     #[\Override]
     protected function doChangeLevel(int $isolationLevel): void
     {
-        $this->executor->executeStatement("SET TRANSACTION ISOLATION LEVEL ?", new Raw(self::getIsolationLevelString($isolationLevel)));
+        $this->session->executeStatement("SET TRANSACTION ISOLATION LEVEL ?", new Raw(self::getIsolationLevelString($isolationLevel)));
     }
 
     #[\Override]
     protected function doCreateSavepoint(string $name): void
     {
-        $this->executor->executeStatement("SAVE TRANSACTION ?::id", $name);
+        $this->session->executeStatement("SAVE TRANSACTION ?::id", $name);
     }
 
     #[\Override]
     protected function doRollbackToSavepoint(string $name): void
     {
-        $this->executor->executeStatement("ROLLBACK TRANSACTION ?::id", $name);
+        $this->session->executeStatement("ROLLBACK TRANSACTION ?::id", $name);
     }
 
     #[\Override]
     protected function doRollback(): void
     {
-        $this->executor->executeStatement("ROLLBACK TRANSACTION");
+        $this->session->executeStatement("ROLLBACK TRANSACTION");
     }
 
     #[\Override]
     protected function doCommit(): void
     {
-        $this->executor->executeStatement("COMMIT TRANSACTION");
+        $this->session->executeStatement("COMMIT TRANSACTION");
     }
 
     #[\Override]

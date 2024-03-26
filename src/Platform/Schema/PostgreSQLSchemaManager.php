@@ -32,7 +32,7 @@ class PostgreSQLSchemaManager extends SchemaManager
     public function listDatabases(): array
     {
         return $this
-            ->queryExecutor
+            ->session
             ->executeQuery(
                 <<<SQL
                 SELECT datname
@@ -48,7 +48,7 @@ class PostgreSQLSchemaManager extends SchemaManager
     public function listSchemas(string $database): array
     {
         return $this
-            ->queryExecutor
+            ->session
             ->executeQuery(
                 <<<SQL
                 SELECT
@@ -70,7 +70,7 @@ class PostgreSQLSchemaManager extends SchemaManager
     protected function doListTables(string $database, string $schema): array
     {
         return $this
-            ->queryExecutor
+            ->session
             ->executeQuery(
                 <<<SQL
                 SELECT
@@ -94,7 +94,7 @@ class PostgreSQLSchemaManager extends SchemaManager
     protected function doTableExists(string $database, string $schema, string $name): bool
     {
         return (bool) $this
-            ->queryExecutor
+            ->session
             ->executeQuery(
                 <<<SQL
                 SELECT
@@ -116,7 +116,7 @@ class PostgreSQLSchemaManager extends SchemaManager
     protected function getTableComment(string $database, string $schema, string $name): ?string
     {
         return $this
-            ->queryExecutor
+            ->session
             ->executeQuery(
                 <<<SQL
                 SELECT
@@ -139,7 +139,7 @@ class PostgreSQLSchemaManager extends SchemaManager
     protected function getTableColumns(string $database, string $schema, string $name): array
     {
         $defaultCollation = $this
-            ->queryExecutor
+            ->session
             ->executeQuery(
                 <<<SQL
                 SELECT datcollate FROM pg_database WHERE datname = ?
@@ -150,7 +150,7 @@ class PostgreSQLSchemaManager extends SchemaManager
         ;
 
         return $this
-            ->queryExecutor
+            ->session
             ->executeQuery(
                 <<<SQL
                 SELECT
@@ -284,7 +284,7 @@ class PostgreSQLSchemaManager extends SchemaManager
     private function getAllTableKeysInfo(string $database, string $schema, string $name): Result
     {
         return $this
-            ->queryExecutor
+            ->session
             ->executeQuery(
                 <<<SQL
                 SELECT

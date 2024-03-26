@@ -39,7 +39,7 @@ class SchemaWriterLogVisitor extends ChangeLogVisitor
         $this->dieIfTransaction();
 
         if ($this->schema->supportsTransaction()) {
-            $this->transaction = $this->schema->getQueryExecutor()->beginTransaction(Transaction::SERIALIZABLE);
+            $this->transaction = $this->schema->getDatabaseSession()->beginTransaction(Transaction::SERIALIZABLE);
         }
     }
 

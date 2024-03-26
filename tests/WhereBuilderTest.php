@@ -310,7 +310,7 @@ class WhereBuilderTest extends UnitTestCase
     public function testIsLess(): void
     {
         $expression = new Where();
-        $expression->isLess('foo.bar', 1, 2);
+        $expression->isLess('foo.bar', 1);
 
         self::assertSameSql(
             <<<SQL
@@ -323,7 +323,7 @@ class WhereBuilderTest extends UnitTestCase
     public function testIsGreaterOrEqual(): void
     {
         $expression = new Where();
-        $expression->isGreaterOrEqual('foo.bar', 1, 2);
+        $expression->isGreaterOrEqual('foo.bar', 1);
 
         self::assertSameSql(
             <<<SQL
@@ -336,7 +336,7 @@ class WhereBuilderTest extends UnitTestCase
     public function testIsLessOrEqual(): void
     {
         $expression = new Where();
-        $expression->isLessOrEqual('foo.bar', 1, 2);
+        $expression->isLessOrEqual('foo.bar', 1);
 
         self::assertSameSql(
             <<<SQL

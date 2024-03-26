@@ -13,7 +13,7 @@ class PostgreSQLTransaction extends AbstractTransaction
     {
         // Set immediate constraint fail per default to be ISO with
         // backends that don't support deferable constraints
-        $this->executor->executeStatement("START TRANSACTION ISOLATION LEVEL ? READ WRITE", new Raw(self::getIsolationLevelString($isolationLevel)));
+        $this->session->executeStatement("START TRANSACTION ISOLATION LEVEL ? READ WRITE", new Raw(self::getIsolationLevelString($isolationLevel)));
     }
 
     #[\Override]
@@ -21,54 +21,54 @@ class PostgreSQLTransaction extends AbstractTransaction
     {
         // Set immediate constraint fail per default to be ISO with
         // backends that don't support deferable constraints
-        $this->executor->executeStatement("SET TRANSACTION ISOLATION LEVEL ?", new Raw(self::getIsolationLevelString($isolationLevel)));
+        $this->session->executeStatement("SET TRANSACTION ISOLATION LEVEL ?", new Raw(self::getIsolationLevelString($isolationLevel)));
     }
 
     #[\Override]
     protected function doCreateSavepoint(string $name): void
     {
-        $this->executor->executeStatement("SAVEPOINT ?::id", $name);
+        $this->session->executeStatement("SAVEPOINT ?::id", $name);
     }
 
     #[\Override]
     protected function doRollbackToSavepoint(string $name): void
     {
-        $this->executor->executeStatement("ROLLBACK TO SAVEPOINT ?::id", $name);
+        $this->session->executeStatement("ROLLBACK TO SAVEPOINT ?::id", $name);
     }
 
     #[\Override]
     protected function doRollback(): void
     {
-        $this->executor->executeStatement("ROLLBACK");
+        $this->session->executeStatement("ROLLBACK");
     }
 
     #[\Override]
     protected function doCommit(): void
     {
-        $this->executor->executeStatement("COMMIT");
+        $this->session->executeStatement("COMMIT");
     }
 
     #[\Override]
     protected function doDeferConstraints(array $constraints): void
     {
-        $this->executor->executeStatement("SET CONSTRAINTS ?::id[] DEFERRED", $constraints);
+        $this->session->executeStatement("SET CONSTRAINTS ?::id[] DEFERRED", $constraints);
     }
 
     #[\Override]
     protected function doDeferAll(): void
     {
-        $this->executor->executeStatement("SET CONSTRAINTS ALL DEFERRED");
+        $this->session->executeStatement("SET CONSTRAINTS ALL DEFERRED");
     }
 
     #[\Override]
     protected function doImmediateConstraints(array $constraints): void
     {
-        $this->executor->executeStatement("SET CONSTRAINTS ?::id[] IMMEDIATE", $constraints);
+        $this->session->executeStatement("SET CONSTRAINTS ?::id[] IMMEDIATE", $constraints);
     }
 
     #[\Override]
     protected function doImmediateAll(): void
     {
-        $this->executor->executeStatement("SET CONSTRAINTS ALL IMMEDIATE");
+        $this->session->executeStatement("SET CONSTRAINTS ALL IMMEDIATE");
     }
 }

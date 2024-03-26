@@ -12,7 +12,7 @@ class SQLiteTransaction extends AbstractTransaction
         // SQLite transaction are per default all SERIALIZABLE and this cannot
         // be changed.
         // @see https://sqlite.org/isolation.html
-        $this->executor->executeStatement("BEGIN TRANSACTION");
+        $this->session->executeStatement("BEGIN TRANSACTION");
     }
 
     #[\Override]
@@ -24,25 +24,25 @@ class SQLiteTransaction extends AbstractTransaction
     #[\Override]
     protected function doCreateSavepoint(string $name): void
     {
-        $this->executor->executeStatement("SAVEPOINT ?::id", $name);
+        $this->session->executeStatement("SAVEPOINT ?::id", $name);
     }
 
     #[\Override]
     protected function doRollbackToSavepoint(string $name): void
     {
-        $this->executor->executeStatement("ROLLBACK TO SAVEPOINT ?::id", $name);
+        $this->session->executeStatement("ROLLBACK TO SAVEPOINT ?::id", $name);
     }
 
     #[\Override]
     protected function doRollback(): void
     {
-        $this->executor->executeStatement("ROLLBACK");
+        $this->session->executeStatement("ROLLBACK");
     }
 
     #[\Override]
     protected function doCommit(): void
     {
-        $this->executor->executeStatement("COMMIT");
+        $this->session->executeStatement("COMMIT");
     }
 
     #[\Override]

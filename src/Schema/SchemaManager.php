@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Schema;
 
+use MakinaCorpus\QueryBuilder\DatabaseSession;
 use MakinaCorpus\QueryBuilder\Error\Bridge\TableDoesNotExistError;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Error\UnsupportedFeatureError;
 use MakinaCorpus\QueryBuilder\Expression;
+use MakinaCorpus\QueryBuilder\Expression\DataType;
 use MakinaCorpus\QueryBuilder\ExpressionFactory;
-use MakinaCorpus\QueryBuilder\QueryBuilder;
-use MakinaCorpus\QueryBuilder\QueryExecutor;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Browser\ChangeLogBrowser;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Browser\SchemaWriterLogVisitor;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\AbstractChange;
@@ -50,7 +50,6 @@ use MakinaCorpus\QueryBuilder\Type\Type;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\NullLogger;
-use MakinaCorpus\QueryBuilder\Expression\DataType;
 
 // @todo Because IDE bug, sorry.
 \class_exists(Column::class);
@@ -77,8 +76,7 @@ abstract class SchemaManager implements LoggerAwareInterface
     use LoggerAwareTrait;
 
     public function __construct(
-        protected readonly QueryBuilder $queryBuilder,
-        protected readonly QueryExecutor $queryExecutor,
+        protected readonly DatabaseSession $session,
         protected readonly ?string $defaultSchema = null,
     ) {
         $this->setLogger(new NullLogger());
@@ -101,27 +99,15 @@ abstract class SchemaManager implements LoggerAwareInterface
     }
 
     /**
-     * Get instance query builder.
+     * Get database session.
      *
      * @internal
      *   In most cases, you should not use this, it will servce for some edge
      *   cases, such as transaction handling in the schema writer visitor.
      */
-    public function getQueryBuilder(): QueryBuilder
+    public function getDatabaseSession(): DatabaseSession
     {
-        return $this->queryBuilder;
-    }
-
-    /**
-     * Get instance query executor.
-     *
-     * @internal
-     *   In most cases, you should not use this, it will servce for some edge
-     *   cases, such as transaction handling in the schema writer visitor.
-     */
-    public function getQueryExecutor(): QueryExecutor
-    {
-        return $this->queryExecutor;
+        return $this->session;
     }
 
     /**
@@ -864,7 +850,7 @@ abstract class SchemaManager implements LoggerAwareInterface
      */
     protected function executeCallbackChange(CallbackChange $change): void
     {
-        ($change->getCallback())($this->getQueryBuilder());
+        ($change->getCallback())($this->getDatabaseSession());
     }
 
     /**
@@ -884,7 +870,7 @@ abstract class SchemaManager implements LoggerAwareInterface
      */
     protected function evaluateConditionCallbackCondition(CallbackCondition $condition): bool
     {
-        return (bool) ($condition->getCallback())($this->getQueryBuilder());
+        return (bool) ($condition->getCallback())($this->getDatabaseSession());
     }
 
     /**
@@ -979,7 +965,7 @@ abstract class SchemaManager implements LoggerAwareInterface
 
         if ($expressions) {
             foreach (\is_iterable($expressions) ? $expressions : [$expressions] as $expression) {
-                $this->queryExecutor->executeStatement($expression);
+                $this->session->executeStatement($expression);
             }
         }
     }

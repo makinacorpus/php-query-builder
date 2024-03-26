@@ -35,7 +35,7 @@ final class WriterBench
 
         $this->queryWithJoin = $queryBuilder
             ->select('users')
-            ->join('login', (new Where())->isEqual('users.id', $expr->raw('?::column'), ['login.user_id']))
+            ->join('login', (new Where())->isEqual('users.id', $expr->raw('?::column', ['login.user_id'])))
             ->where('login.last_login', $expr->currentTimestamp(), '<')
         ;
 

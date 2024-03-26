@@ -10,6 +10,18 @@ use MakinaCorpus\QueryBuilder\Tests\Bridge\Doctrine\DoctrineTestCase;
 
 class DateFunctionalTest extends DoctrineTestCase
 {
+    public function testCurrentTimestamp(): void
+    {
+        $select = new Select();
+        $expr = $select->expression();
+
+        $select->column($expr->currentTimestamp());
+
+        $value = $this->executeQuery($select)->fetchRow()->get(0, \DateTimeImmutable::class);
+
+        self::assertInstanceOf(\DateTimeInterface::class, $value);
+    }
+
     public function testDateAdd(): void
     {
         $select = new Select();

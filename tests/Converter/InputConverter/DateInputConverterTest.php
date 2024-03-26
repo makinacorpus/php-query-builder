@@ -55,7 +55,7 @@ class DateInputConverterTest extends UnitTestCase
         $instance = new DateInputConverter();
 
         self::assertSame(
-            $instance->toSQL(Type::time(true), $date, $context),
+            $instance->toSQL(Type::time(), $date, $context),
             '11:42:34.000000'
         );
     }

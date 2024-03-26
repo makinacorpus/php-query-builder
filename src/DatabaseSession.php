@@ -9,11 +9,13 @@ use MakinaCorpus\QueryBuilder\Result\Result;
 use MakinaCorpus\QueryBuilder\Transaction\Transaction;
 
 /**
- * Executes query.
+ * Represent an active connected session.
+ *
+ * Mostly gives you some link state information and executes queries.
  *
  * This is part of bridges, avoiding the hard dependency.
  */
-interface QueryExecutor
+interface DatabaseSession extends QueryBuilder
 {
     /**
      * Execute query and return result.

@@ -24,7 +24,7 @@ class TypeTest extends TestCase
 
     public function testRaw(): void
     {
-        $type = Type::raw('bigint', true);
+        $type = Type::raw('bigint');
         self::assertSame(InternalType::UNKNOWN, $type->internal);
         self::assertSame('bigint', $type->name);
         self::assertNull($type->length);

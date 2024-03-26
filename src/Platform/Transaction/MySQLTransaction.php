@@ -17,7 +17,7 @@ class MySQLTransaction extends AbstractTransaction
         try {
             // Transaction level cannot be changed while in the transaction,
             // so it must set before starting the transaction
-            $this->executor->executeStatement("SET TRANSACTION ISOLATION LEVEL ?", new Raw($levelString));
+            $this->session->executeStatement("SET TRANSACTION ISOLATION LEVEL ?", new Raw($levelString));
         } catch (ServerError $e) {
             // Gracefully continue without changing the transaction isolation
             // level, MySQL don't support it, but we cannot penalize our users;
@@ -32,7 +32,7 @@ class MySQLTransaction extends AbstractTransaction
             throw $e;
         }
 
-        $this->executor->executeStatement("BEGIN");
+        $this->session->executeStatement("BEGIN");
     }
 
     #[\Override]
@@ -45,25 +45,25 @@ class MySQLTransaction extends AbstractTransaction
     #[\Override]
     protected function doCreateSavepoint(string $name): void
     {
-        $this->executor->executeStatement("SAVEPOINT ?::id", $name);
+        $this->session->executeStatement("SAVEPOINT ?::id", $name);
     }
 
     #[\Override]
     protected function doRollbackToSavepoint(string $name): void
     {
-        $this->executor->executeStatement("ROLLBACK TO SAVEPOINT ?::id", $name);
+        $this->session->executeStatement("ROLLBACK TO SAVEPOINT ?::id", $name);
     }
 
     #[\Override]
     protected function doRollback(): void
     {
-        $this->executor->executeStatement("ROLLBACK");
+        $this->session->executeStatement("ROLLBACK");
     }
 
     #[\Override]
     protected function doCommit(): void
     {
-        $this->executor->executeStatement("COMMIT");
+        $this->session->executeStatement("COMMIT");
     }
 
     #[\Override]
