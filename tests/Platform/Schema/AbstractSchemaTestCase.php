@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Tests\Platform\Schema;
 
-use MakinaCorpus\QueryBuilder\Error\Bridge\TableDoesNotExistError;
+use MakinaCorpus\QueryBuilder\Error\Bridge\DatabaseObjectDoesNotExistError;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Error\UnsupportedFeatureError;
 use MakinaCorpus\QueryBuilder\Platform;
@@ -20,7 +20,6 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
     protected function createSchema(): void
     {
         $this->skipIfDatabase(Platform::SQLITE);
-        $this->skipIfDatabase(Platform::SQLSERVER);
 
         $bridge = $this->getBridge();
 
@@ -40,7 +39,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
         ] as $table) {
             try {
                 $bridge->executeStatement('DROP TABLE ?::table', [$table]);
-            } catch (TableDoesNotExistError) {}
+            } catch (DatabaseObjectDoesNotExistError) {}
         }
 
         switch ($bridge->getServerFlavor()) {
@@ -108,7 +107,64 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                 break;
 
             case Platform::SQLSERVER:
-                self::markTestIncomplete();
+                $bridge->executeStatement(
+                    <<<SQL
+                    CREATE TABLE org (
+                        id int UNIQUE NOT NULL,
+                        dept nvarchar(255) NOT NULL,
+                        role nvarchar(255) NOT NULL,
+                        name nvarchar(max) DEFAULT NULL,
+                        balance decimal(10,2) NOT NULL DEFAULT 0.0,
+                        employes int NOT NULL DEFAULT 0,
+                        PRIMARY KEY (dept, role)
+                    )
+                    SQL
+                );
+                $bridge->executeStatement(
+                    <<<SQL
+                    CREATE TABLE users (
+                        id int IDENTITY NOT NULL PRIMARY KEY,
+                        org_id INT DEFAULT NULL,
+                        name nvarchar(max) DEFAULT NULL,
+                        username nvarchar(255) DEFAULT NULL,
+                        email nvarchar(255) UNIQUE NOT NULL,
+                        date datetime2 DEFAULT current_timestamp,
+                        CONSTRAINT users_org_id FOREIGN KEY (org_id)
+                            REFERENCES org (id)
+                            ON DELETE CASCADE
+                    )
+                    SQL
+                );
+                $bridge->executeStatement(
+                    <<<SQL
+                    CREATE TABLE user_address (
+                        id int IDENTITY NOT NULL PRIMARY KEY,
+                        org_id int DEFAULT NULL,
+                        user_id int NOT NULL,
+                        city nvarchar(max) NOT NULL,
+                        country nvarchar(6) NOT NULL DEFAULT 'fr',
+                        CONSTRAINT user_address_user_id_fk FOREIGN KEY (user_id)
+                            REFERENCES users (id)
+                            ON DELETE CASCADE
+                    )
+                    SQL
+                );
+                $bridge->executeStatement(
+                    <<<SQL
+                    CREATE TABLE no_pk_table (
+                        id int UNIQUE NOT NULL,
+                        name ntext DEFAULT NULL
+                    )
+                    SQL
+                );
+                $bridge->executeStatement(
+                    <<<SQL
+                    CREATE TABLE renamed_table (
+                        id int UNIQUE NOT NULL,
+                        name ntext DEFAULT NULL
+                    )
+                    SQL
+                );
                 break;
 
             case Platform::SQLITE:
@@ -254,6 +310,9 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
             // existing in all tested containers.
             return 'fr-FR-x-icu';
         }
+        if ($this->ifDatabase(Platform::SQLSERVER)) {
+            return 'Latin1_General_100_CI_AS_KS_SC_UTF8';
+        }
         return 'utf8';
     }
 
@@ -393,6 +452,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
     public function testColumnModifyType(): void
     {
         $this->skipIfDatabase(Platform::SQLITE);
+        $this->skipIfDatabase(Platform::SQLSERVER, 'SQL Server cannot change type when there is a default, see testColumnModifyTypeAndDefault().');
 
         $this
             ->getSchemaManager()
@@ -401,6 +461,37 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                     table: 'user_address',
                     name: 'country',
                     type: 'text',
+                )
+            ->commit()
+        ;
+
+        $column = $this
+            ->getSchemaManager()
+            ->getTable('test_db', 'user_address')
+            ->getColumn('country')
+        ;
+
+        // This changed.
+        self::assertSameType(Type::text(), $column->getValueType());
+
+        // This didn't.
+        self::assertFalse($column->isNullable());
+        //self::assertSame("'fr'", $column->getDefault()); // @todo
+        //self::assertNotSame('C', $column->getCollation()); // @todo
+    }
+
+    public function testColumnModifyTypeAndDefault(): void
+    {
+        $this->skipIfDatabase(Platform::SQLITE);
+
+        $this
+            ->getSchemaManager()
+            ->modify()
+                ->modifyColumn(
+                    table: 'user_address',
+                    name: 'country',
+                    type: 'text',
+                    default: "'fr'",
                 )
             ->commit()
         ;
@@ -901,7 +992,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
         ;
 
         self::expectException(QueryBuilderError::class);
-        self::expectExceptionMessage("Table 'test_db.public.user_address' does not exist");
+        self::expectExceptionMessageMatches("/Table 'test_db\..*\.user_address' does not exist/");
         $this
             ->getSchemaManager()
             ->getTable('test_db', 'user_address')
@@ -925,7 +1016,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
         self::assertSame('renamed_table_new_name', $table->getName());
 
         self::expectException(QueryBuilderError::class);
-        self::expectExceptionMessage("Table 'test_db.public.renamed_table' does not exist");
+        self::expectExceptionMessageMatches("/Table 'test_db\..*\.renamed_table' does not exist/");
         $this
             ->getSchemaManager()
             ->getTable('test_db', 'renamed_table')
@@ -1064,8 +1155,8 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
         // self::assertNotEmpty($column->getCollation());
         self::assertSameType(Type::decimal(10, 2), $column->getValueType());
         self::assertSame('org', $column->getTable());
-        self::assertSame('public', $column->getSchema());
-        self::assertSame('column:test_db.public.org.balance', $column->toString());
+        self::assertSame($this->getSchemaManager()->getDefaultSchema(), $column->getSchema());
+        self::assertMatchesRegularExpression('/^column:test_db\..*\.org.balance$/', $column->toString());
         self::assertFalse($column->isNullable());
     }
 
@@ -1096,8 +1187,8 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
         self::assertNotEmpty($column->getCollation());
         self::assertSameType(Type::text(), $column->getValueType());
         self::assertSame('org', $column->getTable());
-        self::assertSame('public', $column->getSchema());
-        self::assertSame('column:test_db.public.org.name', $column->toString());
+        self::assertSame($this->getSchemaManager()->getDefaultSchema(), $column->getSchema());
+        self::assertMatchesRegularExpression('/^column:test_db\..*\.org.name$/', $column->toString());
         self::assertTrue($column->isNullable());
     }
 

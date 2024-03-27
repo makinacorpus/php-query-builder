@@ -161,6 +161,14 @@ class Type
     }
 
     /**
+     * Integer (small).
+     */
+    public static function intTiny(): self
+    {
+        return new self(internal: InternalType::INT_TINY);
+    }
+
+    /**
      * JSON data.
      *
      * Warning: will fallback on "text" type for most vendors.
@@ -371,6 +379,7 @@ class Type
             InternalType::INT => 'int',
             InternalType::INT_BIG => 'int_big',
             InternalType::INT_SMALL => 'int_small',
+            InternalType::INT_TINY => 'int_tiny',
             InternalType::JSON => 'json',
             InternalType::NULL => 'null',
             InternalType::SERIAL => 'serial',

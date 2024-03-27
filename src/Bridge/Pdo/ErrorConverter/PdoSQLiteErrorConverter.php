@@ -17,8 +17,13 @@ class PdoSQLiteErrorConverter implements ErrorConverter
 {
     public static function createErrorFromMessage(\Throwable $error, ?string $sql = null, ?string $message = null): \Throwable
     {
-        $message = $error->getMessage();
+        $serverMessage = $error->getMessage();
         $errorCode = $error->errorInfo[1] ?? $error->getCode();
+
+        $message ??= $serverMessage;
+        if ($sql) {
+            $message .= "\nQuery was: " . $sql;
+        }
 
         // Missing:
         //   - Connexion error
@@ -29,36 +34,36 @@ class PdoSQLiteErrorConverter implements ErrorConverter
         //   - Syntax error
         //   - Table exists
 
-        if (\str_contains($message, 'database is locked') !== false) {
+        if (\str_contains($serverMessage, 'database is locked') !== false) {
             return new TransactionDeadlockError($message, $errorCode, $error);
         }
 
         if (
-            \str_contains($message, 'must be unique') !== false ||
-            \str_contains($message, 'is not unique') !== false ||
-            \str_contains($message, 'are not unique') !== false ||
-            \str_contains($message, 'UNIQUE constraint failed') !== false
+            \str_contains($serverMessage, 'must be unique') !== false ||
+            \str_contains($serverMessage, 'is not unique') !== false ||
+            \str_contains($serverMessage, 'are not unique') !== false ||
+            \str_contains($serverMessage, 'UNIQUE constraint failed') !== false
         ) {
             return new UniqueConstraintViolationError($message, $errorCode, $error);
         }
 
         if (
-            \str_contains($message, 'may not be NULL') !== false ||
-            \str_contains($message, 'NOT NULL constraint failed') !== false
+            \str_contains($serverMessage, 'may not be NULL') !== false ||
+            \str_contains($serverMessage, 'NOT NULL constraint failed') !== false
         ) {
             return new NotNullConstraintViolationError($message, $errorCode, $error);
         }
 
-        if (\str_contains($message, 'no such table:') !== false) {
+        if (\str_contains($serverMessage, 'no such table:') !== false) {
             return new TableDoesNotExistError($message, $errorCode, $error);
         }
 
-        if (\str_contains($message, 'no such column:') !== false) {
+        if (\str_contains($serverMessage, 'no such column:') !== false) {
             return new ColumnDoesNotExistError($message, $errorCode, $error);
         }
 
         /*
-        if (\str_contains($message, 'already exists') !== false) {
+        if (\str_contains($serverMessage, 'already exists') !== false) {
             return new TableExistsException($exception, $query);
         }
          */
@@ -69,12 +74,12 @@ class PdoSQLiteErrorConverter implements ErrorConverter
         }
          */
 
-        if (\str_contains($message, 'ambiguous column name') !== false) {
+        if (\str_contains($serverMessage, 'ambiguous column name') !== false) {
             return new AmbiguousIdentifierError($message, $errorCode, $error);
         }
 
         /*
-        if (\str_contains($message, 'syntax error') !== false) {
+        if (\str_contains($serverMessage, 'syntax error') !== false) {
             return new SyntaxErrorException($exception, $query);
         }
          */
@@ -86,7 +91,7 @@ class PdoSQLiteErrorConverter implements ErrorConverter
          */
 
         /*
-        if (\str_contains($message, 'unable to open database file') !== false) {
+        if (\str_contains($serverMessage, 'unable to open database file') !== false) {
             return new ConnectionException($exception, $query);
         }
          */

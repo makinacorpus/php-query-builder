@@ -87,15 +87,7 @@ abstract class SchemaManager implements LoggerAwareInterface
      */
     public function getDefaultSchema(): string
     {
-        return $this->defaultSchema ?? $this->getVendorDefaultSchema();
-    }
-
-    /**
-     * Get vendor-specific default schema.
-     */
-    protected function getVendorDefaultSchema(): string
-    {
-        return 'public';
+        return $this->defaultSchema ?? $this->session->getDefaultSchema();
     }
 
     /**

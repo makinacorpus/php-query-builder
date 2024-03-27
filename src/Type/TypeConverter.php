@@ -50,6 +50,7 @@ class TypeConverter
             InternalType::INT => $this->getIntType(),
             InternalType::INT_BIG => $this->getBigIntType(),
             InternalType::INT_SMALL => $this->getSmallIntType(),
+            InternalType::INT_TINY => $this->getTinyIntType(),
             InternalType::JSON => $this->getJsonType(),
             InternalType::NULL => 'null',
             InternalType::SERIAL => $this->getSerialType(),
@@ -76,6 +77,14 @@ class TypeConverter
      * Get integer type.
      */
     public function getSmallIntType(): string
+    {
+        return 'smallint';
+    }
+
+    /**
+     * Get integer type.
+     */
+    public function getTinyIntType(): string
     {
         return 'smallint';
     }

@@ -8,25 +8,25 @@ use MakinaCorpus\QueryBuilder\Type\TypeConverter;
 
 class PostgreSQLTypeConverter extends TypeConverter
 {
-    /**
-     * Get integer type.
-     */
+    #[\Override]
+    public function getTinyIntType(): string
+    {
+        return 'smallint';
+    }
+
+    #[\Override]
     public function getSmallFloatType(): string
     {
         return 'float4';
     }
 
-    /**
-     * Get integer type.
-     */
+    #[\Override]
     public function getFloatType(): string
     {
         return 'float';
     }
 
-    /**
-     * Get integer type.
-     */
+    #[\Override]
     public function getBigFloatType(): string
     {
         return 'float8';

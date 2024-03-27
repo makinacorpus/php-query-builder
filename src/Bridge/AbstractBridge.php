@@ -22,6 +22,7 @@ use MakinaCorpus\QueryBuilder\Platform\Escaper\StandardEscaper;
 use MakinaCorpus\QueryBuilder\Platform\Schema\MySQLSchemaManager;
 use MakinaCorpus\QueryBuilder\Platform\Schema\PostgreSQLSchemaManager;
 use MakinaCorpus\QueryBuilder\Platform\Schema\SQLiteSchemaManager;
+use MakinaCorpus\QueryBuilder\Platform\Schema\SQLServerSchemaManager;
 use MakinaCorpus\QueryBuilder\Platform\Transaction\MySQLTransaction;
 use MakinaCorpus\QueryBuilder\Platform\Transaction\PostgreSQLTransaction;
 use MakinaCorpus\QueryBuilder\Platform\Transaction\SQLiteTransaction;
@@ -262,7 +263,7 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
         try {
             return $this->doExecuteQuery($prepared->toString(), $prepared->getArguments()->getAll());
         } catch (\Throwable $e) {
-            throw $this->getErrorConverter()->convertError($e);
+            throw $this->getErrorConverter()->convertError($e, $prepared->toString());
         }
     }
 
@@ -288,7 +289,7 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
         try {
             return $this->doExecuteStatement($prepared->toString(), $prepared->getArguments()->getAll());
         } catch (\Throwable $e) {
-            throw $this->getErrorConverter()->convertError($e);
+            throw $this->getErrorConverter()->convertError($e, $prepared->toString());
         }
     }
 
@@ -445,6 +446,10 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
 
         if (Platform::SQLITE === $serverFlavor) {
             return new SQLiteSchemaManager($this);
+        }
+
+        if (Platform::SQLSERVER === $serverFlavor) {
+            return new SQLServerSchemaManager($this);
         }
 
         throw new UnsupportedFeatureError(\sprintf("Schema manager is not implemented yet for vendor '%s'", $serverFlavor));

@@ -18,7 +18,7 @@ trait FunctionalPdoTestCaseTrait
             match ($params['driver']) {
                 'pdo_mysql' => $this->createPdoConnectionMySQL($params),
                 'pdo_pgsql' => $this->createPdoConnectionPostgreSQL($params),
-                default => self::markTestSkipped(\sprintf("Unsupported 'DBAL_DRIVER' value '%s' for doctrine/dbal bridge.", $params['driver'])),
+                default => self::markTestSkipped(\sprintf("Unsupported 'DBAL_DRIVER' value '%s' for PDO bridge.", $params['driver'])),
             },
         );
     }

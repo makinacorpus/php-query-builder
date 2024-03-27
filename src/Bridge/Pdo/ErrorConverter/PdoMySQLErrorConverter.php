@@ -34,15 +34,20 @@ class PdoMySQLErrorConverter implements ErrorConverter
             return $error;
         }
 
+        $message ??= $error->getMessage();
+        if ($sql) {
+            $message .= "\nQuery was: " . $sql;
+        }
+
         $errorCode = $error->errorInfo[1] ?? $error->getCode();
 
         switch ($errorCode) {
 
             case '1213':
-                return new TransactionDeadlockError($error->getMessage(), $errorCode, $error);
+                return new TransactionDeadlockError($message, $errorCode, $error);
 
             case '1205':
-                return new TransactionLockWaitTimeoutError($error->getMessage(), $errorCode, $error);
+                return new TransactionLockWaitTimeoutError($message, $errorCode, $error);
 
             /*
             case '1050':
@@ -51,23 +56,23 @@ class PdoMySQLErrorConverter implements ErrorConverter
 
             case '1051':
             case '1146':
-                return new TableDoesNotExistError($error->getMessage(), $errorCode, $error);
+                return new TableDoesNotExistError($message, $errorCode, $error);
 
             case '1216':
             case '1217':
             case '1451':
             case '1452':
             case '1701':
-                return new ForeignKeyConstraintViolationError($error->getMessage(), $errorCode, $error);
+                return new ForeignKeyConstraintViolationError($message, $errorCode, $error);
 
             case '1062':
             case '1557':
             case '1569':
             case '1586':
-                return new UniqueConstraintViolationError($error->getMessage(), $errorCode, $error);
+                return new UniqueConstraintViolationError($message, $errorCode, $error);
 
             case '1054':
-                return new ColumnDoesNotExistError($error->getMessage(), $errorCode, $error);
+                return new ColumnDoesNotExistError($message, $errorCode, $error);
 
             /*
             case '1166':
@@ -78,7 +83,7 @@ class PdoMySQLErrorConverter implements ErrorConverter
             case '1052':
             case '1060':
             case '1110':
-                return new AmbiguousIdentifierError($error->getMessage(), $errorCode, $error);
+                return new AmbiguousIdentifierError($message, $errorCode, $error);
 
             /*
             case '1064':
@@ -120,9 +125,9 @@ class PdoMySQLErrorConverter implements ErrorConverter
             case '1263':
             case '1364':
             case '1566':
-                return new NotNullConstraintViolationError($error->getMessage(), $errorCode, $error);
+                return new NotNullConstraintViolationError($message, $errorCode, $error);
         }
 
-        return new ServerError($error->getMessage(), $errorCode, $error);
+        return new ServerError($message, $errorCode, $error);
     }
 }

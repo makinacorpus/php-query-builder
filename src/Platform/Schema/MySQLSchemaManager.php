@@ -195,7 +195,9 @@ class MySQLSchemaManager extends SchemaManager
                 //   - 10 => Normal
                 //   - 19 => Big
                 if ($precision && 'int' === $typeName) {
-                    if ($precision <= 5) {
+                    if ($precision <= 3) {
+                        $typeName = 'tinyint';
+                    } else if ($precision <= 5) {
                         $typeName = 'smallint';
                     } else if ($precision <= 10) {
                         $typeName = 'int';

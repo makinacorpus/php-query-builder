@@ -33,6 +33,11 @@ class PdoPostgreSQLErrorConverter implements ErrorConverter
             return $error;
         }
 
+        $message ??= $error->getMessage();
+        if ($sql) {
+            $message .= "\nQuery was: " . $sql;
+        }
+
         $errorCode = $error->errorInfo[1] ?? $error->getCode();
         $sqlState = $error->errorInfo[0] ?? $error->getCode();
 
@@ -40,25 +45,25 @@ class PdoPostgreSQLErrorConverter implements ErrorConverter
 
             case '40001':
             case '40P01':
-                return new TransactionDeadlockError($error->getMessage(), $errorCode, $error);
+                return new TransactionDeadlockError($message, $errorCode, $error);
 
             case '0A000':
                 // Foreign key constraint violations during a TRUNCATE operation
                 // are considered "feature not supported" in PostgreSQL.
                 if (\strpos($error->getMessage(), 'truncate') !== false) {
-                    return new ForeignKeyConstraintViolationError($error->getMessage(), $errorCode, $error);
+                    return new ForeignKeyConstraintViolationError($message, $errorCode, $error);
                 }
 
                 break;
 
             case '23502':
-                return new NotNullConstraintViolationError($error->getMessage(), $errorCode, $error);
+                return new NotNullConstraintViolationError($message, $errorCode, $error);
 
             case '23503':
-                return new ForeignKeyConstraintViolationError($error->getMessage(), $errorCode, $error);
+                return new ForeignKeyConstraintViolationError($message, $errorCode, $error);
 
             case '23505':
-                return new UniqueConstraintViolationError($error->getMessage(), $errorCode, $error);
+                return new UniqueConstraintViolationError($message, $errorCode, $error);
 
             /*
             case '42601':
@@ -66,10 +71,10 @@ class PdoPostgreSQLErrorConverter implements ErrorConverter
              */
 
             case '42702':
-                return new AmbiguousIdentifierError($error->getMessage(), $errorCode, $error);
+                return new AmbiguousIdentifierError($message, $errorCode, $error);
 
             case '42703':
-                return new ColumnDoesNotExistError($error->getMessage(), $errorCode, $error);
+                return new ColumnDoesNotExistError($message, $errorCode, $error);
 
             /*
             case '42703':
@@ -77,7 +82,7 @@ class PdoPostgreSQLErrorConverter implements ErrorConverter
              */
 
             case '42P01':
-                return new TableDoesNotExistError($error->getMessage(), $errorCode, $error);
+                return new TableDoesNotExistError($message, $errorCode, $error);
 
             /*
             case '42P07':
@@ -101,9 +106,9 @@ class PdoPostgreSQLErrorConverter implements ErrorConverter
         switch (\substr($sqlState, 2)) {
 
             case '40':
-                return new TransactionError($error->getMessage(), $errorCode, $error);
+                return new TransactionError($message, $errorCode, $error);
         }
 
-        return new ServerError($error->getMessage(), $errorCode, $error);
+        return new ServerError($message, $errorCode, $error);
     }
 }

@@ -59,6 +59,9 @@ enum InternalType
     /** Small integer. */
     case INT_SMALL;
 
+    /** Tiny integer. */
+    case INT_TINY;
+
     /** JSON. */
     case JSON;
 
@@ -110,6 +113,9 @@ enum InternalType
             /*
              * Numeric types
              */
+
+            case 'tinyint':
+                return InternalType::INT_TINY;
 
             case 'int2': // PostgreSQL
             case 'smallint':
@@ -273,7 +279,7 @@ enum InternalType
         return
             $this === self::DECIMAL ||
             $this === self::FLOAT || $this === self::FLOAT_BIG || $this === self::FLOAT_SMALL ||
-            $this === self::INT || $this === self::INT_BIG || $this === self::INT_SMALL ||
+            $this === self::INT || $this === self::INT_BIG || $this === self::INT_SMALL || $this === self::INT_TINY ||
             $this === self::IDENTITY || $this === self::IDENTITY_BIG || $this === self::IDENTITY_SMALL ||
             $this === self::SERIAL || $this === self::SERIAL_BIG || $this === self::SERIAL_SMALL
         ;

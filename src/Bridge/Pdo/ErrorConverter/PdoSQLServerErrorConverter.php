@@ -24,6 +24,11 @@ class PdoSQLServerErrorConverter implements ErrorConverter
             return $error;
         }
 
+        $message ??= $error->getMessage();
+        if ($sql) {
+            $message .= "\nQuery was: " . $sql;
+        }
+
         $errorCode = $error->errorInfo[1] ?? $error->getCode();
 
         switch ($errorCode) {

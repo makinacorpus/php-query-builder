@@ -2,16 +2,19 @@
 
 ## Next
 
+SQL Server is now fully supported by the schema manager, this is still in an
+experimental state.
+
+Schema manager can now only work in current session connected database due to
+some vendor-specific vendor restrictions.
+
 Lots of internal refactor and fixes. The `MakinaCorpus\QueryBuilder\QueryExecutor`
 interface is now know as the `MakinaCorpus\QueryBuilder\DatabaseSession` and is
 meant to be used directly for users. It now holds `getCurrentDatabase(): string`
 and `getDefaultSchema(): string` methods for getting some session context
 information.
 
-The schema manager, still experimental, can now from the API point of view only
-work in the current session database only. Due to some specific vendor restrictions
-we chose to restrict all vendors to this.
-
+* [feature] ⭐️ Add SQL Server schema manager support.
 * [feature] ⭐️ Add `CurrentDatabase` and `CurrentSchema` expression.
 * [feature] ⭐️ Add `getCurrentDatabase()` and `getDefaultSchema()` methods on the `DatabaseSession` interface.
 * [bc] `QueryExecutor` is now known as `DatabaseSession`

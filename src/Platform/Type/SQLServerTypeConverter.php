@@ -15,6 +15,12 @@ class SQLServerTypeConverter extends TypeConverter
     }
 
     #[\Override]
+    public function getTinyIntType(): string
+    {
+        return 'tinyint';
+    }
+
+    #[\Override]
     public function getFloatType(): string
     {
         return 'real';
@@ -23,13 +29,13 @@ class SQLServerTypeConverter extends TypeConverter
     #[\Override]
     public function getJsonType(): string
     {
-        return 'ntext';
+        return 'binary';
     }
 
     #[\Override]
     public function getDateIntervalType(): string
     {
-        return 'ntext';
+        return 'nvarchar';
     }
 
     #[\Override]
@@ -53,7 +59,7 @@ class SQLServerTypeConverter extends TypeConverter
     #[\Override]
     public function getTextType(): string
     {
-        return 'ntext';
+        return 'nvarchar(max)';
     }
 
     #[\Override]
@@ -66,5 +72,11 @@ class SQLServerTypeConverter extends TypeConverter
     public function getUuidType(): string
     {
         return 'uniqueidentifier';
+    }
+
+    #[\Override]
+    public function getTextCastType(): string
+    {
+        return 'nvarchar';
     }
 }

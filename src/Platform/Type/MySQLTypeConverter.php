@@ -11,13 +11,19 @@ class MySQLTypeConverter extends TypeConverter
     #[\Override]
     public function getBoolType(): string
     {
-        return 'int';
+        return 'tinyint';
     }
 
     #[\Override]
     public function getSmallFloatType(): string
     {
         return 'float';
+    }
+
+    #[\Override]
+    public function getTinyIntType(): string
+    {
+        return 'tinyint';
     }
 
     #[\Override]

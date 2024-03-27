@@ -403,7 +403,7 @@ class MySQLWriter extends Writer
 
         // Do not use "unsigned" on behalf of the user, or it would proceed
         // accidentally to transparent data alteration.
-        if (\in_array($type->internal, [InternalType::INT, InternalType::INT_BIG, InternalType::INT_SMALL])) {
+        if (\in_array($type->internal, [InternalType::INT, InternalType::INT_BIG, InternalType::INT_SMALL, InternalType::INT_TINY])) {
             $typeString = 'SIGNED';
         } else if ($type->isText()) {
             $typeString = 'CHAR';
