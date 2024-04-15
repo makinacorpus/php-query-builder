@@ -1,6 +1,6 @@
 # Changelog
 
-## Next
+## 1.3.0
 
 SQL Server is now fully supported by the schema manager, this is still in an
 experimental state.
