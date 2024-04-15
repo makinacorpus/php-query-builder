@@ -65,15 +65,22 @@ class DoctrineQueryBuilder extends AbstractBridge
             return $this->doctrineServerVersion;
         }
 
-        // doctrine/dbal > 3, maybe, don't really know.
+        // doctrine/dbal:^3.17 only.
         $driver = $this->connection->getDriver();
         if ((\interface_exists(ServerInfoAwareConnection::class) && $driver instanceof ServerInfoAwareConnection) || \method_exists($driver, 'getServerVersion')) {
+            // @phpstan-ignore-next-line
             return $this->doctrineServerVersion = $driver->getServerVersion();
         }
+        if (\method_exists($this->connection, 'getWrappedConnection')) {
+            $driverConnection = $this->connection->getWrappedConnection();
+            if ((\interface_exists(ServerInfoAwareConnection::class) && $driverConnection instanceof ServerInfoAwareConnection) || \method_exists($driverConnection, 'getServerVersion')) {
+                return $this->doctrineServerVersion = $driverConnection->getServerVersion();
+            }
+        }
 
-        $driverConnection = $this->connection->getWrappedConnection();
-        if ((\interface_exists(ServerInfoAwareConnection::class) && $driverConnection instanceof ServerInfoAwareConnection) || \method_exists($driverConnection, 'getServerVersion')) {
-            return $this->doctrineServerVersion = $driverConnection->getServerVersion();
+        // doctrine/dbal:^4.0 only.
+        if (\method_exists($this->connection, 'getServerVersion')) {
+            return $this->doctrineServerVersion = $this->connection->getServerVersion();
         }
 
         return $this->doctrineServerVersion = 'unknown';

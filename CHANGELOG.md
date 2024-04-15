@@ -17,7 +17,8 @@ information.
 * [feature] ⭐️ Add SQL Server schema manager support.
 * [feature] ⭐️ Add `CurrentDatabase` and `CurrentSchema` expression.
 * [feature] ⭐️ Add `getCurrentDatabase()` and `getDefaultSchema()` methods on the `DatabaseSession` interface.
-* [bc] `QueryExecutor` is now known as `DatabaseSession`
+* [feature] ⭐️ Add `doctrine/dbal:^4.0` support
+* [bc] ⚠️ `QueryExecutor` is now known as `DatabaseSession`
 * [internal] Lots of missing unit tests added.
 
 ## 1.2.0
