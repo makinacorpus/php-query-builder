@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.2
+
+* [feature] ⭐️ Experimental identity column handling in schema manager.
+* [fix] Regression in schema manager.
+
 ## 1.3.1
 
 * [feature] ⭐️ `$database` parameter on schema manager methods is now always optional.

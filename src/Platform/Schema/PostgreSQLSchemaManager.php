@@ -45,7 +45,7 @@ class PostgreSQLSchemaManager extends SchemaManager
     }
 
     #[\Override]
-    public function listSchemas(string $database): array
+    public function listSchemas(?string $database = null): array
     {
         return $this
             ->session
@@ -60,7 +60,7 @@ class PostgreSQLSchemaManager extends SchemaManager
                     AND schema_name != 'information_schema'
                 ORDER BY schema_name ASC
                 SQL,
-                [$database]
+                [$database ?? $this->session->getCurrentDatabase()]
             )
             ->fetchFirstColumn()
         ;
@@ -334,6 +334,13 @@ class PostgreSQLSchemaManager extends SchemaManager
                 [$schema, $name, $name]
             )
         ;
+    }
+
+    #[\Override]
+    protected function doWriteColumnSerial(Type $type): ?Expression
+    {
+        // Nothing to do, serial is already a sequence in pgsql.
+        return null;
     }
 
     #[\Override]

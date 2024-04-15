@@ -22,6 +22,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
         $bridge = $this->getBridge();
 
         foreach ([
+            'new_table',
             'no_pk_table',
             'renamed_table',
             'renamed_table_new_name',
@@ -363,7 +364,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
         $columnNames = $this
             ->getSchemaManager()
-            ->getTable('test_db', 'org')
+            ->getTable('org')
             ->getColumnNames()
         ;
 
@@ -382,13 +383,76 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
         $column = $this
             ->getSchemaManager()
-            ->getTable('test_db', 'users')
+            ->getTable('users')
             ->getColumn('age')
         ;
 
         // @todo missing default
         self::assertTrue($column->isNullable());
         self::assertSameType('int', $column->getValueType());
+    }
+
+    public function testColumnAddIdentity(): void
+    {
+        $this->skipIfDatabase(Platform::MARIADB, 'MariaDB requires AUTO_INCREMENT to be PRIMARY KEY, cannot simply be added this way');
+        $this->skipIfDatabase(Platform::MYSQL, 'MySQL requires AUTO_INCREMENT to be PRIMARY KEY, cannot simply be added this way');
+        $this->skipIfDatabase(Platform::SQLITE, 'This will never be implemented in SQLite');
+
+        $this
+            ->getSchemaManager()
+            ->modify()
+                ->createTable('new_table')
+                    ->column('foo', Type::text(), true, 'NULL')
+                ->endTable()
+            ->commit()
+        ;
+
+        $this
+            ->getSchemaManager()
+            ->modify()
+                ->addColumn('new_table', 'id', Type::identity(), true)
+            ->commit()
+        ;
+
+        $column = $this
+            ->getSchemaManager()
+            ->getTable('new_table')
+            ->getColumn('id')
+        ;
+
+        self::assertFalse($column->isNullable());
+        // self::assertSameType(Type::identity(), $column->getValueType());
+    }
+
+    public function testColumnAddSerial(): void
+    {
+        $this->skipIfDatabase(Platform::MARIADB, 'MariaDB requires AUTO_INCREMENT to be PRIMARY KEY, cannot simply be added this way');
+        $this->skipIfDatabase(Platform::MYSQL, 'MySQL requires AUTO_INCREMENT to be PRIMARY KEY, cannot simply be added this way');
+        $this->skipIfDatabase(Platform::SQLITE, 'This will never be implemented in SQLite');
+
+        $this
+            ->getSchemaManager()
+            ->modify()
+                ->createTable('new_table')
+                ->endTable()
+            ->commit()
+        ;
+
+        $this
+            ->getSchemaManager()
+            ->modify()
+                ->addColumn('new_table', 'id', Type::serial(), true)
+            ->commit()
+        ;
+
+        $column = $this
+            ->getSchemaManager()
+            ->getTable('new_table')
+            ->getColumn('id')
+        ;
+
+        self::assertFalse($column->isNullable());
+        // self::assertSameType(Type::identity(), $column->getValueType());
     }
 
     public function testColumnAddNullableWithDefault(): void
@@ -402,7 +466,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
         $column = $this
             ->getSchemaManager()
-            ->getTable('test_db', 'users')
+            ->getTable('users')
             ->getColumn('age')
         ;
 
@@ -422,7 +486,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
         $column = $this
             ->getSchemaManager()
-            ->getTable('test_db', 'users')
+            ->getTable('users')
             ->getColumn('age')
         ;
 
@@ -442,7 +506,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
         $column = $this
             ->getSchemaManager()
-            ->getTable('test_db', 'users')
+            ->getTable('users')
             ->getColumn('age')
         ;
 
@@ -469,7 +533,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
         $column = $this
             ->getSchemaManager()
-            ->getTable('test_db', 'user_address')
+            ->getTable('user_address')
             ->getColumn('country')
         ;
 
@@ -500,7 +564,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
         $column = $this
             ->getSchemaManager()
-            ->getTable('test_db', 'user_address')
+            ->getTable('user_address')
             ->getColumn('country')
         ;
 
@@ -533,7 +597,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
         $column = $this
             ->getSchemaManager()
-            ->getTable('test_db', 'user_address')
+            ->getTable('user_address')
             ->getColumn('country')
         ;
 
@@ -563,7 +627,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
         $column = $this
             ->getSchemaManager()
-            ->getTable('test_db', 'user_address')
+            ->getTable('user_address')
             ->getColumn('country')
         ;
 
@@ -593,7 +657,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
         $column = $this
             ->getSchemaManager()
-            ->getTable('test_db', 'user_address')
+            ->getTable('user_address')
             ->getColumn('country')
         ;
 
@@ -623,7 +687,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
         $column = $this
             ->getSchemaManager()
-            ->getTable('test_db', 'user_address')
+            ->getTable('user_address')
             ->getColumn('country')
         ;
 
@@ -658,7 +722,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
         $column = $this
             ->getSchemaManager()
-            ->getTable('test_db', 'user_address')
+            ->getTable('user_address')
             ->getColumn('country')
         ;
 
@@ -679,7 +743,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
         $table = $this
             ->getSchemaManager()
-            ->getTable('test_db', 'users')
+            ->getTable('users')
         ;
 
         self::assertSame(['id', 'org_id', 'name', 'username', 'email', 'date'], $table->getColumnNames());
@@ -698,7 +762,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
         $table = $this
             ->getSchemaManager()
-            ->getTable('test_db', 'users')
+            ->getTable('users')
         ;
 
         self::assertSame(['id', 'org_id', 'name', 'username', 'email', 'no_constraint_col'], $table->getColumnNames());
@@ -718,7 +782,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
         $table = $this
             ->getSchemaManager()
-            ->getTable('test_db', 'users')
+            ->getTable('users')
         ;
 
         self::assertSame(['id', 'org_id', 'name', 'username', 'date', 'no_constraint_col'], $table->getColumnNames());
@@ -735,7 +799,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
         $table = $this
             ->getSchemaManager()
-            ->getTable('test_db', 'user_address')
+            ->getTable('user_address')
         ;
 
         self::assertSame(['id', 'org_id', 'user_id', 'locality', 'country'], $table->getColumnNames());
@@ -872,7 +936,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
         $primaryKey = $this
             ->getSchemaManager()
-            ->getTable('test_db', 'no_pk_table')
+            ->getTable('no_pk_table')
             ->getPrimaryKey()
         ;
 
@@ -899,7 +963,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
         $primaryKey = $this
             ->getSchemaManager()
-            ->getTable('test_db', 'no_pk_table')
+            ->getTable('no_pk_table')
             ->getPrimaryKey()
         ;
 
@@ -920,12 +984,60 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
         $column = $this
             ->getSchemaManager()
-            ->getTable('test_db', 'test_table')
+            ->getTable('test_table')
             ->getColumn('bar')
         ;
 
         self::assertTrue($column->isNullable());
         self::assertSameType('text', $column->getValueType());
+    }
+
+    public function testTableCreateWithIdentity(): void
+    {
+        $this->skipIfDatabase(Platform::SQLITE);
+
+        $this
+            ->getSchemaManager()
+            ->modify()
+                ->createTable('new_table')
+                    ->column('id', Type::identity(), false)
+                    ->primaryKey(['id'])
+                ->endTable()
+            ->commit()
+        ;
+
+        $column = $this
+            ->getSchemaManager()
+            ->getTable('new_table')
+            ->getColumn('id')
+        ;
+
+        self::assertFalse($column->isNullable());
+        // self::assertSameType(Type::identity(), $column->getValueType());
+    }
+
+    public function testTableCreateWithSerial(): void
+    {
+        $this->skipIfDatabase(Platform::SQLITE);
+
+        $this
+            ->getSchemaManager()
+            ->modify()
+                ->createTable('new_table')
+                    ->column('id', Type::serial(), false)
+                    ->primaryKey(['id'])
+                ->endTable()
+            ->commit()
+        ;
+
+        $column = $this
+            ->getSchemaManager()
+            ->getTable('new_table')
+            ->getColumn('id')
+        ;
+
+        self::assertFalse($column->isNullable());
+        // self::assertSameType(Type::serial(), $column->getValueType());
     }
 
     public function testTableCreateTemporary(): void
@@ -961,7 +1073,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
         $primaryKey = $this
             ->getSchemaManager()
-            ->getTable('test_db', 'test_table_pk')
+            ->getTable('test_table_pk')
             ->getPrimaryKey()
         ;
 
@@ -983,7 +1095,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
         $firstForeignKey = $this
             ->getSchemaManager()
-            ->getTable('test_db', 'test_table_fk')
+            ->getTable('test_table_fk')
             ->getForeignKeys()[0] ?? null
         ;
         \assert($firstForeignKey instanceof ForeignKey);
@@ -1047,7 +1159,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
         self::expectExceptionMessageMatches("/Table 'test_db\..*\.user_address' does not exist/");
         $this
             ->getSchemaManager()
-            ->getTable('test_db', 'user_address')
+            ->getTable('user_address')
         ;
     }
 
@@ -1062,7 +1174,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
         $table = $this
             ->getSchemaManager()
-            ->getTable('test_db', 'renamed_table_new_name')
+            ->getTable('renamed_table_new_name')
         ;
 
         self::assertSame('renamed_table_new_name', $table->getName());
@@ -1071,7 +1183,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
         self::expectExceptionMessageMatches("/Table 'test_db\..*\.renamed_table' does not exist/");
         $this
             ->getSchemaManager()
-            ->getTable('test_db', 'renamed_table')
+            ->getTable('renamed_table')
         ;
     }
 
@@ -1134,7 +1246,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
         $columnNames = $this
             ->getSchemaManager()
-            ->getTable('test_db', 'org')
+            ->getTable('org')
             ->getColumnNames()
         ;
 
@@ -1164,7 +1276,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
         $columnNames = $this
             ->getSchemaManager()
-            ->getTable('test_db', 'org')
+            ->getTable('org')
             ->getColumnNames()
         ;
 
@@ -1190,7 +1302,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
         $this
             ->getSchemaManager()
-            ->getTable('test_db', 'org')
+            ->getTable('org')
             ->getColumn('non_existing_column')
         ;
     }
@@ -1199,7 +1311,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
     {
         $column = $this
             ->getSchemaManager()
-            ->getTable('test_db', 'org')
+            ->getTable('org')
             ->getColumn('balance')
         ;
 
@@ -1221,7 +1333,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
         }
 
         $column = $schemaManager
-            ->getTable('test_db', 'org')
+            ->getTable('org')
             ->getColumn('employes')
         ;
 
@@ -1232,7 +1344,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
     {
         $column = $this
             ->getSchemaManager()
-            ->getTable('test_db', 'org')
+            ->getTable('org')
             ->getColumn('name')
         ;
 
@@ -1253,7 +1365,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
     {
         $table = $this
             ->getSchemaManager()
-            ->getTable('test_db', 'org')
+            ->getTable('org')
         ;
 
         self::assertSame(['dept', 'role'], $table->getPrimaryKey()?->getColumnNames());
@@ -1272,7 +1384,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
         $this
             ->getSchemaManager()
-            ->getTable('test_db', 'non_existing_table')
+            ->getTable('non_existing_table')
         ;
     }
 
@@ -1280,7 +1392,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
     {
         $table = $this
             ->getSchemaManager()
-            ->getTable('test_db', 'users')
+            ->getTable('users')
         ;
 
         self::assertNotNull($foreignKey = ($table->getForeignKeys()[0] ?? null));

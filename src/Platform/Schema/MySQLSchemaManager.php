@@ -63,7 +63,7 @@ class MySQLSchemaManager extends SchemaManager
     }
 
     #[\Override]
-    public function listSchemas(string $database): array
+    public function listSchemas(?string $database = null): array
     {
         return ['public'];
     }
@@ -370,6 +370,18 @@ class MySQLSchemaManager extends SchemaManager
 
         // @todo SQL injection possibility
         return $this->raw('CHARACTER SET ? COLLATE ?', [$characterSet, $collation]);
+    }
+
+    #[\Override]
+    protected function doWriteColumnIdentity(Type $type): ?Expression
+    {
+        return $this->raw('auto_increment');
+    }
+
+    #[\Override]
+    protected function doWriteColumnSerial(Type $type): ?Expression
+    {
+        return $this->raw('auto_increment');
     }
 
     #[\Override]

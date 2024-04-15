@@ -13,7 +13,9 @@ class Type
 {
     public readonly ?string $name;
     private ?bool $isDate = null;
+    private ?bool $isIdentity = null;
     private ?bool $isNumeric = null;
+    private ?bool $isSerial = null;
     private ?bool $isText = null;
 
     public function __construct(
@@ -399,9 +401,19 @@ class Type
         return $this->isDate ??= $this->internal->isDate();
     }
 
+    public function isIdentity(): bool
+    {
+        return $this->isIdentity ??= $this->internal->isIdentity();
+    }
+
     public function isNumeric(): bool
     {
         return $this->isNumeric ??= $this->internal->isNumeric();
+    }
+
+    public function isSerial(): bool
+    {
+        return $this->isSerial ??= $this->internal->isSerial();
     }
 
     public function isText(): bool

@@ -54,7 +54,7 @@ class SQLiteSchemaManager extends SchemaManager
     }
 
     #[\Override]
-    public function listSchemas(string $database): array
+    public function listSchemas(?string $database = null): array
     {
         // @see https://www.sqlite.org/lang_attach.html
         //   We do not support attached databases yet.
@@ -289,6 +289,18 @@ class SQLiteSchemaManager extends SchemaManager
         }
 
         return []; // @todo
+    }
+
+    #[\Override]
+    protected function doWriteColumnIdentity(Type $type): ?Expression
+    {
+        throw new UnsupportedFeatureError("This requires to rewrite the CREATE TABLE statement as well.");
+    }
+
+    #[\Override]
+    protected function doWriteColumnSerial(Type $type): ?Expression
+    {
+        throw new UnsupportedFeatureError("This requires to rewrite the CREATE TABLE statement as well.");
     }
 
     #[\Override]

@@ -274,6 +274,11 @@ enum InternalType
         return $this === self::DATE || $this === self::TIMESTAMP;
     }
 
+    public function isIdentity(): bool
+    {
+        return $this === self::IDENTITY || $this === self::IDENTITY_BIG || $this === self::IDENTITY_SMALL;
+    }
+
     public function isNumeric(): bool
     {
         return
@@ -283,6 +288,11 @@ enum InternalType
             $this === self::IDENTITY || $this === self::IDENTITY_BIG || $this === self::IDENTITY_SMALL ||
             $this === self::SERIAL || $this === self::SERIAL_BIG || $this === self::SERIAL_SMALL
         ;
+    }
+
+    public function isSerial(): bool
+    {
+        return $this === self::SERIAL || $this === self::SERIAL_BIG || $this === self::SERIAL_SMALL;
     }
 
     public function isText(): bool

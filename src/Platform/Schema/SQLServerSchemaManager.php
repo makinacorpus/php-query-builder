@@ -24,8 +24,6 @@ use MakinaCorpus\QueryBuilder\Schema\Read\ForeignKey;
 use MakinaCorpus\QueryBuilder\Schema\Read\Key;
 use MakinaCorpus\QueryBuilder\Type\InternalType;
 use MakinaCorpus\QueryBuilder\Type\Type;
-use MakinaCorpus\QueryBuilder\Where;
-use MakinaCorpus\QueryBuilder\Expression\Raw;
 
 /**
  * Warning: when using SQL Server, most "sys".* tables will restrict results
@@ -61,7 +59,7 @@ class SQLServerSchemaManager extends SchemaManager
     }
 
     #[\Override]
-    public function listSchemas(string $database): array
+    public function listSchemas(?string $database = null): array
     {
         // SCHEMA_NAME() gives current schema.
 
@@ -79,7 +77,7 @@ class SQLServerSchemaManager extends SchemaManager
                     AND schemata.schema_name != 'guest'
                 ORDER BY schemata.schema_name ASC
                 SQL,
-                [$database]
+                [$database ?? $this->session->getCurrentDatabase()]
             )
             ->fetchFirstColumn()
         ;
@@ -486,6 +484,18 @@ class SQLServerSchemaManager extends SchemaManager
     protected function doWriteColumnCollation(string $collation): Expression
     {
         return $this->raw('COLLATE ' . $collation);
+    }
+
+    #[\Override]
+    protected function doWriteColumnIdentity(Type $type): ?Expression
+    {
+        return $this->raw('IDENTITY(1, 1)');
+    }
+
+    #[\Override]
+    protected function doWriteColumnSerial(Type $type): ?Expression
+    {
+        return $this->raw('IDENTITY(1, 1)');
     }
 
     #[\Override]
