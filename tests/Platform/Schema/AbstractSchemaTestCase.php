@@ -19,8 +19,6 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
     /** @before */
     protected function createSchema(): void
     {
-        $this->skipIfDatabase(Platform::SQLITE);
-
         $bridge = $this->getBridge();
 
         foreach ([
@@ -68,6 +66,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                         username varchar(255) DEFAULT NULL,
                         email varchar(255) UNIQUE NOT NULL,
                         date datetime DEFAULT now(),
+                        no_constraint_col text,
                         CONSTRAINT users_org_id FOREIGN KEY (org_id)
                             REFERENCES org (id)
                             ON DELETE CASCADE
@@ -129,6 +128,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                         username nvarchar(255) DEFAULT NULL,
                         email nvarchar(255) UNIQUE NOT NULL,
                         date datetime2 DEFAULT current_timestamp,
+                        no_constraint_col nvarchar(max),
                         CONSTRAINT users_org_id FOREIGN KEY (org_id)
                             REFERENCES org (id)
                             ON DELETE CASCADE
@@ -190,6 +190,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                         username varchar(255) DEFAULT NULL,
                         email varchar(255) UNIQUE NOT NULL,
                         date timestamp with time zone DEFAULT current_timestamp,
+                        no_constraint_col text,
                         CONSTRAINT users_org_id FOREIGN KEY (org_id)
                             REFERENCES org (id)
                             ON DELETE CASCADE
@@ -251,6 +252,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                         username varchar(255) DEFAULT NULL,
                         email varchar(255) UNIQUE NOT NULL,
                         date timestamp with time zone DEFAULT current_timestamp,
+                        no_constraint_col text,
                         CONSTRAINT users_org_id FOREIGN KEY (org_id)
                             REFERENCES org (id)
                             ON DELETE CASCADE
@@ -668,8 +670,58 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
     public function testColumnDrop(): void
     {
-        self::markTestIncomplete();
-        self::expectNotToPerformAssertions();
+        $this
+            ->getSchemaManager()
+            ->modify()
+                ->dropColumn('users', 'no_constraint_col')
+            ->commit()
+        ;
+
+        $table = $this
+            ->getSchemaManager()
+            ->getTable('test_db', 'users')
+        ;
+
+        self::assertSame(['id', 'org_id', 'name', 'username', 'email', 'date'], $table->getColumnNames());
+    }
+
+    public function testColumnDropWithDefault(): void
+    {
+        $this->skipIfDatabase(Platform::SQLSERVER, 'SQL Server drop a column with constraints');
+
+        $this
+            ->getSchemaManager()
+            ->modify()
+                ->dropColumn('users', 'date')
+            ->commit()
+        ;
+
+        $table = $this
+            ->getSchemaManager()
+            ->getTable('test_db', 'users')
+        ;
+
+        self::assertSame(['id', 'org_id', 'name', 'username', 'email', 'no_constraint_col'], $table->getColumnNames());
+    }
+
+    public function testColumnDropWhenConstraint(): void
+    {
+        $this->skipIfDatabase(Platform::SQLITE, 'SQLite cannot drop a column with a default');
+        $this->skipIfDatabase(Platform::SQLSERVER, 'SQL Server drop a column with constraints');
+
+        $this
+            ->getSchemaManager()
+            ->modify()
+                ->dropColumn('users', 'email')
+            ->commit()
+        ;
+
+        $table = $this
+            ->getSchemaManager()
+            ->getTable('test_db', 'users')
+        ;
+
+        self::assertSame(['id', 'org_id', 'name', 'username', 'date', 'no_constraint_col'], $table->getColumnNames());
     }
 
     public function testColumnRename(): void

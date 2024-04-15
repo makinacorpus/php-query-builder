@@ -147,8 +147,9 @@ abstract class SchemaManager implements LoggerAwareInterface
      *
      * If no schema given, use the default schema name.
      */
-    public function listTables(string $database, ?string $schema = null): array
+    public function listTables(?string $database = null, ?string $schema = null): array
     {
+        $database ??= $this->session->getCurrentDatabase();
         $schema ??= $this->getDefaultSchema();
 
         return $this->doListTables($database, $schema);
@@ -159,8 +160,9 @@ abstract class SchemaManager implements LoggerAwareInterface
      *
      * If no schema given, use the default schema name.
      */
-    public function tableExists(string $database, string $name, ?string $schema = null): bool
+    public function tableExists(?string $database = null, string $name, ?string $schema = null): bool
     {
+        $database ??= $this->session->getCurrentDatabase();
         list($schema, $name) = $this->detectSchema($name, $schema);
 
         return $this->doTableExists($database, $schema, $name);
@@ -171,8 +173,9 @@ abstract class SchemaManager implements LoggerAwareInterface
      *
      * If no schema given, use the default schema name.
      */
-    public function getTable(string $database, string $name, ?string $schema = null): Table
+    public function getTable(?string $database = null, string $name, ?string $schema = null): Table
     {
+        $database ??= $this->session->getCurrentDatabase();
         list($schema, $name) = $this->detectSchema($name, $schema);
 
         if (!$this->tableExists($database, $name, $schema)) {

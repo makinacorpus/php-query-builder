@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.1
+
+* [feature] ⭐️ `$database` parameter on schema manager methods is now always optional.
+
 ## 1.3.0
 
 SQL Server is now fully supported by the schema manager, this is still in an
