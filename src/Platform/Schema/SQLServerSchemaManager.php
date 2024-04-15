@@ -424,7 +424,7 @@ class SQLServerSchemaManager extends SchemaManager
             )->fetchAllKeyValue();
 
             $ret[] = new ForeignKey(
-                columnNames: \array_keys($keyColumns), 
+                columnNames: \array_keys($keyColumns),
                 comment: null, // @todo
                 database: $database,
                 foreignColumnNames: \array_values($keyColumns),

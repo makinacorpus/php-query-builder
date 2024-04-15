@@ -9,20 +9,20 @@ namespace MakinaCorpus\QueryBuilder\Schema\Diff\Change;
  */
 class ForeignKeyAdd extends AbstractChange
 {
-    const INITIALLY_DEFERRED = 'deferred';
-    const INITIALLY_IMMEDIATE = 'immediate';
+    public const INITIALLY_DEFERRED = 'deferred';
+    public const INITIALLY_IMMEDIATE = 'immediate';
 
-    const ON_DELETE_CASCADE = 'cascade';
-    const ON_DELETE_NO_ACTION = 'no action';
-    const ON_DELETE_RESTRICT = 'restrict';
-    const ON_DELETE_SET_DEFAULT = 'set default';
-    const ON_DELETE_SET_NULL = 'set null';
+    public const ON_DELETE_CASCADE = 'cascade';
+    public const ON_DELETE_NO_ACTION = 'no action';
+    public const ON_DELETE_RESTRICT = 'restrict';
+    public const ON_DELETE_SET_DEFAULT = 'set default';
+    public const ON_DELETE_SET_NULL = 'set null';
 
-    const ON_UPDATE_CASCADE = 'cascade';
-    const ON_UPDATE_NO_ACTION = 'no action';
-    const ON_UPDATE_RESTRICT = 'restrict';
-    const ON_UPDATE_SET_DEFAULT = 'set default';
-    const ON_UPDATE_SET_NULL = 'set null';
+    public const ON_UPDATE_CASCADE = 'cascade';
+    public const ON_UPDATE_NO_ACTION = 'no action';
+    public const ON_UPDATE_RESTRICT = 'restrict';
+    public const ON_UPDATE_SET_DEFAULT = 'set default';
+    public const ON_UPDATE_SET_NULL = 'set null';
 
     public function __construct(
         string $schema,

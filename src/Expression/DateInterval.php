@@ -28,19 +28,19 @@ use MakinaCorpus\QueryBuilder\Type\Type;
  */
 class DateInterval implements Expression
 {
-    const UNIT_MILLISECOND = 'millisecond';
-    const UNIT_MICROSECOND = 'microsecond';
-    const UNIT_SECOND = 'second';
-    const UNIT_MINUTE = 'minute';
-    const UNIT_HOUR = 'hour';
-    const UNIT_DAY = 'day';
-    const UNIT_WEEK = 'week';
-    const UNIT_MONTH = 'month';
-    const UNIT_QUARTER = 'quarter';
-    const UNIT_YEAR = 'year';
-    const UNIT_DECADE = 'decade';
-    const UNIT_CENTURY = 'century';
-    const UNIT_MILLENIUM = 'millenium';
+    public const UNIT_MILLISECOND = 'millisecond';
+    public const UNIT_MICROSECOND = 'microsecond';
+    public const UNIT_SECOND = 'second';
+    public const UNIT_MINUTE = 'minute';
+    public const UNIT_HOUR = 'hour';
+    public const UNIT_DAY = 'day';
+    public const UNIT_WEEK = 'week';
+    public const UNIT_MONTH = 'month';
+    public const UNIT_QUARTER = 'quarter';
+    public const UNIT_YEAR = 'year';
+    public const UNIT_DECADE = 'decade';
+    public const UNIT_CENTURY = 'century';
+    public const UNIT_MILLENIUM = 'millenium';
 
     /** @var array<string,int> */
     private array $raw = [];

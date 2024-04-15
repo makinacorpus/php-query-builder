@@ -303,7 +303,7 @@ class Type
             $matches,
         )) {
             if ($matches[1]) {
-               $unsigned = true; 
+                $unsigned = true;
             }
             if ($matches[7]) {
                 $array = true;

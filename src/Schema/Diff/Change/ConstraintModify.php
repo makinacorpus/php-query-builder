@@ -9,8 +9,8 @@ namespace MakinaCorpus\QueryBuilder\Schema\Diff\Change;
  */
 class ConstraintModify extends AbstractChange
 {
-    const INITIALLY_DEFERRED = 'deferred';
-    const INITIALLY_IMMEDIATE = 'immediate';
+    public const INITIALLY_DEFERRED = 'deferred';
+    public const INITIALLY_IMMEDIATE = 'immediate';
 
     public function __construct(
         string $schema,

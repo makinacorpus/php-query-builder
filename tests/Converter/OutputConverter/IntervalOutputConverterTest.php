@@ -10,7 +10,7 @@ use MakinaCorpus\QueryBuilder\Converter\InputConverter\IntervalInputConverter;
 
 class IntervalOutputConverterTest extends UnitTestCase
 {
-    static public function getValidFromSQLData()
+    public static function getValidFromSQLData()
     {
         return [
             ['1 year 2 days 00:01:00', 'P1Y2DT1M'],

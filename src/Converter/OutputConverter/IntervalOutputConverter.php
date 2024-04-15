@@ -20,7 +20,7 @@ class IntervalOutputConverter implements OutputConverter
     /**
      * Convert PostgreSQL formatted string to \DateInterval.
      */
-    public static function extractPostgreSQLAsInterval(string $value) : \DateInterval
+    public static function extractPostgreSQLAsInterval(string $value): \DateInterval
     {
         if ('P' === $value[0] && !\strpos(' ', $value)) {
             return new \DateInterval($value);

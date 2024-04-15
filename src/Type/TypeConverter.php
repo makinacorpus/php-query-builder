@@ -265,7 +265,7 @@ class TypeConverter
     }
 
     /**
-     * Get character varying type. 
+     * Get character varying type.
      */
     public function getVarcharType(): string
     {

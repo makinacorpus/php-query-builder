@@ -10,7 +10,7 @@ use MakinaCorpus\QueryBuilder\Tests\UnitTestCase;
 
 class DateOutputConverterTest extends UnitTestCase
 {
-    static public function dataPhpType()
+    public static function dataPhpType()
     {
         return [[\DateTime::class], [\DateTimeImmutable::class], [\DateTimeInterface::class]];
     }

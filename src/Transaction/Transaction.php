@@ -8,10 +8,10 @@ use MakinaCorpus\QueryBuilder\Error\Bridge\TransactionError;
 
 interface Transaction
 {
-    const READ_UNCOMMITED = 1;
-    const READ_COMMITED = 2;
-    const REPEATABLE_READ = 3;
-    const SERIALIZABLE = 4;
+    public const READ_UNCOMMITED = 1;
+    public const READ_COMMITED = 2;
+    public const REPEATABLE_READ = 3;
+    public const SERIALIZABLE = 4;
 
     /**
      * Change transaction level.

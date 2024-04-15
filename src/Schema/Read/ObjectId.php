@@ -6,11 +6,11 @@ namespace MakinaCorpus\QueryBuilder\Schema\Read;
 
 class ObjectId
 {
-    const TYPE_COLUMN = 'column';
-    const TYPE_FOREIGN_KEY = 'fkey';
-    const TYPE_INDEX = 'index';
-    const TYPE_KEY = 'key';
-    const TYPE_TABLE = 'table';
+    public const TYPE_COLUMN = 'column';
+    public const TYPE_FOREIGN_KEY = 'fkey';
+    public const TYPE_INDEX = 'index';
+    public const TYPE_KEY = 'key';
+    public const TYPE_TABLE = 'table';
 
     /** Internal string representation of the identifier. */
     private ?string $repr = null;
@@ -91,7 +91,7 @@ class ObjectId
     /**
      * Get unique and reproducible string representation.
      */
-    public final function __toString(): string
+    final public function __toString(): string
     {
         return $this->toString();
     }

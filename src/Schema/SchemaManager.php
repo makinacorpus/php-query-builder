@@ -105,7 +105,7 @@ abstract class SchemaManager implements LoggerAwareInterface
     /**
      * Does this platform supports DDL transactions.
      */
-    public abstract function supportsTransaction(): bool;
+    abstract public function supportsTransaction(): bool;
 
     /**
      * Does this platform supports schema.
@@ -133,14 +133,14 @@ abstract class SchemaManager implements LoggerAwareInterface
      *
      * @return string[]
      */
-    public abstract function listDatabases(): array;
+    abstract public function listDatabases(): array;
 
     /**
      * List all schemas in the given database.
      *
      * @return string[]
      */
-    public abstract function listSchemas(string $database): array;
+    abstract public function listSchemas(string $database): array;
 
     /**
      * List all tables in given database and schema.
@@ -195,43 +195,43 @@ abstract class SchemaManager implements LoggerAwareInterface
     /**
      * List all tables in given database and schema.
      */
-    protected abstract function doListTables(string $database, string $schema): array;
+    abstract protected function doListTables(string $database, string $schema): array;
 
     /**
      * Does table exist.
      */
-    protected abstract function doTableExists(string $database, string $schema, string $name): bool;
+    abstract protected function doTableExists(string $database, string $schema, string $name): bool;
 
     /**
      * Get table comment.
      */
-    protected abstract function getTableComment(string $database, string $schema, string $name): ?string;
+    abstract protected function getTableComment(string $database, string $schema, string $name): ?string;
 
     /**
      * Get table columns.
      *
      * @return Column[]
      */
-    protected abstract function getTableColumns(string $database, string $schema, string $name): array;
+    abstract protected function getTableColumns(string $database, string $schema, string $name): array;
 
     /**
      * Get table primary key.
      */
-    protected abstract function getTablePrimaryKey(string $database, string $schema, string $name): ?Key;
+    abstract protected function getTablePrimaryKey(string $database, string $schema, string $name): ?Key;
 
     /**
      * Get table foreign keys.
      *
      * @return ForeignKey[]
      */
-    protected abstract function getTableForeignKeys(string $database, string $schema, string $name): array;
+    abstract protected function getTableForeignKeys(string $database, string $schema, string $name): array;
 
     /**
      * Get table reverse foreign keys.
      *
      * @return ForeignKey[]
      */
-    protected abstract function getTableReverseForeignKeys(string $database, string $schema, string $name): array;
+    abstract protected function getTableReverseForeignKeys(string $database, string $schema, string $name): array;
 
     /**
      * Start a transaction for schema manipulation.

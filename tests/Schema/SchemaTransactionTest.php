@@ -46,8 +46,7 @@ class SchemaTransactionTest extends TestCase
             ->commit()
         ;
 
-        $visitor = new class () extends ChangeLogVisitor
-        {
+        $visitor = new class () extends ChangeLogVisitor {
             private array $lines = [];
 
             #[\Override]

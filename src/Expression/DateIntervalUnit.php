@@ -28,19 +28,19 @@ use MakinaCorpus\QueryBuilder\Type\Type;
  */
 class DateIntervalUnit implements Expression
 {
-    const MILLISECOND = 'millisecond';
-    const MICROSECOND = 'microsecond';
-    const SECOND = 'second';
-    const MINUTE = 'minute';
-    const HOUR = 'hour';
-    const DAY = 'day';
-    const WEEK = 'week';
-    const MONTH = 'month';
-    const QUARTER = 'quarter';
-    const YEAR = 'year';
-    const DECADE = 'decade';
-    const CENTURY = 'century';
-    const MILLENIUM = 'millenium';
+    public const MILLISECOND = 'millisecond';
+    public const MICROSECOND = 'microsecond';
+    public const SECOND = 'second';
+    public const MINUTE = 'minute';
+    public const HOUR = 'hour';
+    public const DAY = 'day';
+    public const WEEK = 'week';
+    public const MONTH = 'month';
+    public const QUARTER = 'quarter';
+    public const YEAR = 'year';
+    public const DECADE = 'decade';
+    public const CENTURY = 'century';
+    public const MILLENIUM = 'millenium';
 
     private Expression $value;
 
@@ -83,7 +83,7 @@ class DateIntervalUnit implements Expression
 
         // Proceed to some safe conversions.
         return match ($unit) {
-            self::MILLENIUM => [$value * 1000, self::YEAR], 
+            self::MILLENIUM => [$value * 1000, self::YEAR],
             self::CENTURY => [$value * 100, self::YEAR],
             self::DECADE => [$value * 10, self::YEAR],
             self::QUARTER => [$value * 3, self::MONTH],

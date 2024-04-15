@@ -12,7 +12,7 @@ use MakinaCorpus\QueryBuilder\Result\Result;
 
 /**
  * Functional test case trait for API third-party packages that require
- * a database for testing. 
+ * a database for testing.
  */
 trait FunctionalTestCaseTrait
 {

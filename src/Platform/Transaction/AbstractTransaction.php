@@ -15,7 +15,7 @@ use MakinaCorpus\QueryBuilder\Transaction\TransactionSavepoint;
 abstract class AbstractTransaction implements Transaction
 {
     /** Default savepoint name prefix */
-    const SAVEPOINT_PREFIX = 'gsp_';
+    public const SAVEPOINT_PREFIX = 'gsp_';
 
     private bool $started = false;
     private int $count = 1;
@@ -23,7 +23,7 @@ abstract class AbstractTransaction implements Transaction
     private int $savepoint = 0;
     /** @var string[] */
     private array $savepoints = [];
- 
+
     final public function __construct(
         protected readonly DatabaseSession $session,
         int $isolationLevel = self::REPEATABLE_READ
