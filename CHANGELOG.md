@@ -1,6 +1,6 @@
 # Changelog
 
-## Next
+## 1.3.3
 
 * [feature] ⭐️ Experimental table index list in schema manager.
 * [internal] Enable SQLite via PDO in unit tests.

@@ -490,11 +490,6 @@ class SQLServerSchemaManager extends SchemaManager
     {
         $ret = [];
 
-        // pg_index.indkey is an int2vector, this a deprecated type that must
-        // not be used in pgsql. There are no functions to convert it to array
-        // and it simply return a space-separated list of values we need then
-        // to explode in order to extract column numbers. This is the only way
-        // in the catalog to get indexes keys *in order*.
         $result = $this
             ->session
             ->executeQuery(
