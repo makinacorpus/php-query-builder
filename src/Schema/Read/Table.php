@@ -16,6 +16,8 @@ class Table extends AbstractObject
     private ?array $foreignKeys = null;
     private ?\Closure $fetchReverseForeignKeys = null;
     private ?array $reverseForeignKeys = null;
+    private ?\Closure $fetchIndexes = null;
+    private ?array $indexes = null;
 
     /**
      * @param callable|ForeignKey[] $foreignKeys
@@ -31,7 +33,8 @@ class Table extends AbstractObject
         /** @var Column[] */
         private readonly array $columns,
         null|array|callable $foreignKeys,
-        null|array|callable $reverseForeignKeys
+        null|array|callable $reverseForeignKeys,
+        null|array|callable $indexes,
     ) {
         parent::__construct(
             comment: $comment,
@@ -58,6 +61,16 @@ class Table extends AbstractObject
                 $this->fetchReverseForeignKeys = $reverseForeignKeys(...);
             } else if (\is_array($reverseForeignKeys)) {
                 $this->reverseForeignKeys = $reverseForeignKeys;
+            } else {
+                throw new \InvalidArgumentException(\sprintf("\$reverseForeignKeys must be a callable or an array of %s instances.", ForeignKey::class));
+            }
+        }
+
+        if (null !== $indexes) {
+            if (\is_callable($indexes)) {
+                $this->fetchIndexes = $indexes(...);
+            } else if (\is_array($indexes)) {
+                $this->indexes = $indexes;
             } else {
                 throw new \InvalidArgumentException(\sprintf("\$reverseForeignKeys must be a callable or an array of %s instances.", ForeignKey::class));
             }
@@ -116,6 +129,25 @@ class Table extends AbstractObject
         }
 
         return $this->reverseForeignKeys;
+    }
+
+    /**
+     * Get foreign keys from another tables pointing to this one.
+     *
+     * @return Index[]
+     */
+    public function getIndexes(): array
+    {
+        if (null !== $this->indexes) {
+            return $this->indexes;
+        }
+
+        if ($this->fetchIndexes) {
+            $this->indexes = ($this->fetchIndexes)() ?? [];
+            $this->fetchIndexes = null;
+        }
+
+        return $this->indexes;
     }
 
     /**

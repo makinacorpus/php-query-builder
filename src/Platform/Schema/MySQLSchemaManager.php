@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Platform\Schema;
 
+use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Error\UnsupportedFeatureError;
-use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Result\ResultRow;
+use MakinaCorpus\QueryBuilder\Schema\SchemaManager;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\ColumnModify;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\ForeignKeyAdd;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\IndexCreate;
@@ -18,8 +19,8 @@ use MakinaCorpus\QueryBuilder\Schema\Diff\Change\UniqueKeyAdd;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\UniqueKeyDrop;
 use MakinaCorpus\QueryBuilder\Schema\Read\Column;
 use MakinaCorpus\QueryBuilder\Schema\Read\ForeignKey;
+use MakinaCorpus\QueryBuilder\Schema\Read\Index;
 use MakinaCorpus\QueryBuilder\Schema\Read\Key;
-use MakinaCorpus\QueryBuilder\Schema\SchemaManager;
 use MakinaCorpus\QueryBuilder\Type\InternalType;
 use MakinaCorpus\QueryBuilder\Type\Type;
 
@@ -349,6 +350,49 @@ class MySQLSchemaManager extends SchemaManager
                 options: [],
                 schema: 'public',
                 table: $constraintTable,
+            );
+        }
+
+        return $ret;
+    }
+
+    #[\Override]
+    protected function getTableIndexes(string $database, string $schema, string $name): array
+    {
+        $ret = [];
+
+        $result = $this
+            ->session
+            ->executeQuery(
+                <<<SQL
+                SELECT
+                    INDEX_NAME AS index_name,
+                    GROUP_CONCAT(COLUMN_NAME SEPARATOR ' ') AS column_names
+                FROM (
+                    SELECT
+                        INDEX_NAME,
+                        COLUMN_NAME
+                    FROM INFORMATION_SCHEMA.STATISTICS
+                    WHERE
+                        TABLE_SCHEMA = ?
+                        AND TABLE_NAME = ?
+                    ORDER BY SEQ_IN_INDEX
+                ) AS a
+                GROUP BY INDEX_NAME
+                SQL,
+                [$database, $name]
+            )
+        ;
+
+        while ($row = $result->fetchRow()) {
+            $ret[] = new Index(
+                columnNames: \explode(' ', $row->get('column_names', 'string')),
+                comment: null, // @todo
+                database: $database,
+                name: $row->get('index_name', 'string'),
+                options: [],
+                schema: $schema,
+                table: $name,
             );
         }
 

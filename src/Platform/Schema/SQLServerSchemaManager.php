@@ -21,6 +21,7 @@ use MakinaCorpus\QueryBuilder\Schema\Diff\Change\UniqueKeyAdd;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\UniqueKeyDrop;
 use MakinaCorpus\QueryBuilder\Schema\Read\Column;
 use MakinaCorpus\QueryBuilder\Schema\Read\ForeignKey;
+use MakinaCorpus\QueryBuilder\Schema\Read\Index;
 use MakinaCorpus\QueryBuilder\Schema\Read\Key;
 use MakinaCorpus\QueryBuilder\Type\InternalType;
 use MakinaCorpus\QueryBuilder\Type\Type;
@@ -478,6 +479,63 @@ class SQLServerSchemaManager extends SchemaManager
             SQL,
             [$schema . '.' . $table, $column]
         )->fetchOne();
+    }
+
+/*
+
+           */
+
+    #[\Override]
+    protected function getTableIndexes(string $database, string $schema, string $name): array
+    {
+        $ret = [];
+
+        // pg_index.indkey is an int2vector, this a deprecated type that must
+        // not be used in pgsql. There are no functions to convert it to array
+        // and it simply return a space-separated list of values we need then
+        // to explode in order to extract column numbers. This is the only way
+        // in the catalog to get indexes keys *in order*.
+        $result = $this
+            ->session
+            ->executeQuery(
+                <<<SQL
+                SELECT
+                    a.index_name,
+                    string_agg(a.column_name, ' ') AS column_names
+                FROM (
+                    SELECT
+                        i.name AS index_name,
+                        c.name AS column_name
+                    FROM sys.indexes i
+                    INNER JOIN sys.index_columns ic
+                        ON i.index_id = ic.index_id
+                        AND i.object_id = ic.object_id
+                    INNER JOIN sys.columns c
+                        ON c.column_id = ic.column_id
+                        AND c.object_id = i.object_id
+                    WHERE
+                        i.object_id = OBJECT_ID(?)
+                    ORDER BY i.name, ic.key_ordinal OFFSET 0 ROWS
+                ) AS a
+                GROUP BY a.index_name
+                SQL,
+                [$schema . '.' . $name]
+            )
+        ;
+
+        while ($row = $result->fetchRow()) {
+            $ret[] = new Index(
+                columnNames: \explode(' ', $row->get('column_names', 'string')),
+                comment: null, // @todo
+                database: $database,
+                name: $row->get('index_name', 'string'),
+                options: [],
+                schema: $schema,
+                table: $name,
+            );
+        }
+
+        return $ret;
     }
 
     #[\Override]

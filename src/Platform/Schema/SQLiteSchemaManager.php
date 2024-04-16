@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Platform\Schema;
 
-use MakinaCorpus\QueryBuilder\Error\UnsupportedFeatureError;
 use MakinaCorpus\QueryBuilder\Expression;
+use MakinaCorpus\QueryBuilder\Error\UnsupportedFeatureError;
 use MakinaCorpus\QueryBuilder\Result\ResultRow;
+use MakinaCorpus\QueryBuilder\Schema\SchemaManager;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\ColumnModify;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\ConstraintDrop;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\ConstraintModify;
@@ -22,8 +23,8 @@ use MakinaCorpus\QueryBuilder\Schema\Diff\Change\PrimaryKeyDrop;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\UniqueKeyAdd;
 use MakinaCorpus\QueryBuilder\Schema\Read\Column;
 use MakinaCorpus\QueryBuilder\Schema\Read\ForeignKey;
+use MakinaCorpus\QueryBuilder\Schema\Read\Index;
 use MakinaCorpus\QueryBuilder\Schema\Read\Key;
-use MakinaCorpus\QueryBuilder\Schema\SchemaManager;
 use MakinaCorpus\QueryBuilder\Type\InternalType;
 use MakinaCorpus\QueryBuilder\Type\Type;
 
@@ -289,6 +290,57 @@ class SQLiteSchemaManager extends SchemaManager
         }
 
         return []; // @todo
+    }
+
+    #[\Override]
+    protected function getTableIndexes(string $database, string $schema, string $name): array
+    {
+        $ret = [];
+
+        // pg_index.indkey is an int2vector, this a deprecated type that must
+        // not be used in pgsql. There are no functions to convert it to array
+        // and it simply return a space-separated list of values we need then
+        // to explode in order to extract column numbers. This is the only way
+        // in the catalog to get indexes keys *in order*.
+        $result = $this
+            ->session
+            ->executeQuery(
+                <<<SQL
+                SELECT
+                    index_name,
+                    group_concat(column_name, ' ') AS column_names
+                FROM (
+                    SELECT DISTINCT
+                        il.name AS index_name,
+                        ii.name AS column_name
+                    FROM
+                        sqlite_schema AS m,
+                        pragma_index_list(m.name) AS il,
+                        pragma_index_info(il.name) AS ii
+                    WHERE
+                        m.type = 'table'
+                        AND m.name = ?
+                    ORDER BY il.name, ii.seqno
+                ) AS a
+                GROUP BY index_name
+                SQL,
+                [$name]
+            )
+        ;
+
+        while ($row = $result->fetchRow()) {
+            $ret[] = new Index(
+                columnNames: \explode(' ', $row->get('column_names', 'string')),
+                comment: null, // @todo
+                database: $database,
+                name: $row->get('index_name', 'string'),
+                options: [],
+                schema: $schema,
+                table: $name,
+            );
+        }
+
+        return $ret;
     }
 
     #[\Override]

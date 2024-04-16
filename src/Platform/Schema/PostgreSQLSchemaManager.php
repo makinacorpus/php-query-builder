@@ -7,11 +7,12 @@ namespace MakinaCorpus\QueryBuilder\Platform\Schema;
 use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Result\Result;
 use MakinaCorpus\QueryBuilder\Result\ResultRow;
+use MakinaCorpus\QueryBuilder\Schema\SchemaManager;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\IndexRename;
 use MakinaCorpus\QueryBuilder\Schema\Read\Column;
 use MakinaCorpus\QueryBuilder\Schema\Read\ForeignKey;
+use MakinaCorpus\QueryBuilder\Schema\Read\Index;
 use MakinaCorpus\QueryBuilder\Schema\Read\Key;
-use MakinaCorpus\QueryBuilder\Schema\SchemaManager;
 use MakinaCorpus\QueryBuilder\Type\InternalType;
 use MakinaCorpus\QueryBuilder\Type\Type;
 
@@ -334,6 +335,63 @@ class PostgreSQLSchemaManager extends SchemaManager
                 [$schema, $name, $name]
             )
         ;
+    }
+
+    #[\Override]
+    protected function getTableIndexes(string $database, string $schema, string $name): array
+    {
+        $ret = [];
+
+        // pg_index.indkey is an int2vector, this a deprecated type that must
+        // not be used in pgsql. There are no functions to convert it to array
+        // and it simply return a space-separated list of values we need then
+        // to explode in order to extract column numbers. This is the only way
+        // in the catalog to get indexes keys *in order*.
+        $result = $this
+            ->session
+            ->executeQuery(
+                <<<SQL
+                SELECT
+                    i.relname AS index_name,
+                    (
+                        SELECT array_agg(attname)
+                        FROM (
+                            SELECT a.attname
+                            FROM (
+                                SELECT colnum, row_number() over() AS rownum
+                                FROM (
+                                    SELECT unnest(string_to_array(ix.indkey::text, ' ')) AS colnum
+                                ) AS c
+                            ) AS b, pg_attribute a
+                            WHERE a.attrelid = t.oid AND a.attnum = b.colnum::int
+                            ORDER BY b.rownum
+                        ) AS d
+                    ) AS column_names
+                FROM pg_catalog.pg_class t
+                JOIN pg_catalog.pg_index ix ON ix.indrelid = t.oid
+                JOIN pg_catalog.pg_class i ON i.oid = ix.indexrelid
+                WHERE
+                    t.relkind = 'r'
+                    AND t.relnamespace = to_regnamespace(?)
+                    AND t.relname = ?
+                SQL,
+                [$schema, $name]
+            )
+        ;
+
+        while ($row = $result->fetchRow()) {
+            $ret[] = new Index(
+                columnNames: $row->get('column_names', 'string[]'),
+                comment: null, // @todo
+                database: $database,
+                name: $row->get('index_name', 'string'),
+                options: [],
+                schema: $schema,
+                table: $name,
+            );
+        }
+
+        return $ret;
     }
 
     #[\Override]

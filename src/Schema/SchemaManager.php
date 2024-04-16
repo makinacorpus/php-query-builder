@@ -44,6 +44,7 @@ use MakinaCorpus\QueryBuilder\Schema\Diff\Condition\TableExists;
 use MakinaCorpus\QueryBuilder\Schema\Diff\SchemaTransaction;
 use MakinaCorpus\QueryBuilder\Schema\Read\Column;
 use MakinaCorpus\QueryBuilder\Schema\Read\ForeignKey;
+use MakinaCorpus\QueryBuilder\Schema\Read\Index;
 use MakinaCorpus\QueryBuilder\Schema\Read\Key;
 use MakinaCorpus\QueryBuilder\Schema\Read\Table;
 use MakinaCorpus\QueryBuilder\Type\Type;
@@ -54,6 +55,7 @@ use Psr\Log\NullLogger;
 // @todo Because IDE bug, sorry.
 \class_exists(Column::class);
 \class_exists(ForeignKey::class);
+\class_exists(Index::class);
 
 /**
  * Most SQL here tries to be the closest possible to SQL standard.
@@ -187,6 +189,7 @@ abstract class SchemaManager implements LoggerAwareInterface
             comment: $this->getTableComment($database, $schema, $name),
             database: $database,
             foreignKeys: $this->getTableForeignKeys($database, $schema, $name),
+            indexes: $this->getTableIndexes($database, $schema, $name),
             name: $name,
             options: [],
             primaryKey: $this->getTablePrimaryKey($database, $schema, $name),
@@ -235,6 +238,13 @@ abstract class SchemaManager implements LoggerAwareInterface
      * @return ForeignKey[]
      */
     abstract protected function getTableReverseForeignKeys(string $database, string $schema, string $name): array;
+
+    /**
+     * Get table indexes.
+     *
+     * @return Index[]
+     */
+    abstract protected function getTableIndexes(string $database, string $schema, string $name): array;
 
     /**
      * Start a transaction for schema manipulation.
@@ -327,9 +337,9 @@ abstract class SchemaManager implements LoggerAwareInterface
     {
         $existing = $this
             ->getTable(
-                $this->session->getCurrentDatabase(),
-                $change->getTable(),
-                $change->getSchema(),
+                database: $this->session->getCurrentDatabase(),
+                name: $change->getTable(),
+                schema: $change->getSchema(),
             )
             ->getColumn($change->getName())
         ;
@@ -899,9 +909,9 @@ abstract class SchemaManager implements LoggerAwareInterface
                 $condition->getColumn(),
                 $this
                     ->getTable(
-                        $this->session->getCurrentDatabase(),
-                        $condition->getTable(),
-                        $condition->getSchema()
+                        database: $this->session->getCurrentDatabase(),
+                        name: $condition->getTable(),
+                        schema: $condition->getSchema(),
                     )
                     ->getColumnNames()
             );
@@ -923,7 +933,11 @@ abstract class SchemaManager implements LoggerAwareInterface
      */
     protected function evaluateConditionTableExists(TableExists $condition): bool
     {
-        return $this->tableExists($this->session->getCurrentDatabase(), $condition->getTable(), $condition->getSchema());
+        return $this->tableExists(
+            database: $this->session->getCurrentDatabase(),
+            name: $condition->getTable(),
+            schema: $condition->getSchema(),
+        );
     }
 
     /**

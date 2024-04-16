@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Tests\Platform\Schema;
 
-use MakinaCorpus\QueryBuilder\Error\Bridge\DatabaseObjectDoesNotExistError;
-use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
-use MakinaCorpus\QueryBuilder\Error\UnsupportedFeatureError;
 use MakinaCorpus\QueryBuilder\Platform;
 use MakinaCorpus\QueryBuilder\QueryBuilder;
-use MakinaCorpus\QueryBuilder\Schema\Read\ForeignKey;
+use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
+use MakinaCorpus\QueryBuilder\Error\UnsupportedFeatureError;
+use MakinaCorpus\QueryBuilder\Error\Bridge\DatabaseObjectDoesNotExistError;
 use MakinaCorpus\QueryBuilder\Schema\SchemaManager;
+use MakinaCorpus\QueryBuilder\Schema\Read\ForeignKey;
+use MakinaCorpus\QueryBuilder\Schema\Read\Index;
 use MakinaCorpus\QueryBuilder\Tests\FunctionalTestCase;
 use MakinaCorpus\QueryBuilder\Type\Type;
 
@@ -54,7 +55,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                         name text DEFAULT NULL,
                         balance decimal(10,2) NOT NULL DEFAULT 0.0,
                         employes int unsigned NOT NULL DEFAULT 0, 
-                        PRIMARY KEY (dept, role)
+                        PRIMARY KEY (role, dept)
                     )
                     SQL
                 );
@@ -116,7 +117,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                         name nvarchar(max) DEFAULT NULL,
                         balance decimal(10,2) NOT NULL DEFAULT 0.0,
                         employes int NOT NULL DEFAULT 0,
-                        PRIMARY KEY (dept, role)
+                        PRIMARY KEY (role, dept)
                     )
                     SQL
                 );
@@ -178,7 +179,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                         name text DEFAULT NULL,
                         balance decimal(10,2) NOT NULL DEFAULT 0.0,
                         employes int NOT NULL DEFAULT 0,
-                        PRIMARY KEY (dept, role)
+                        PRIMARY KEY (role, dept)
                     )
                     SQL
                 );
@@ -240,7 +241,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                         name text DEFAULT NULL,
                         balance decimal(10,2) NOT NULL DEFAULT 0.0,
                         employes int NOT NULL DEFAULT 0,
-                        PRIMARY KEY (dept, role)
+                        PRIMARY KEY (role, dept)
                     )
                     SQL
                 );
@@ -1361,16 +1362,46 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
         self::markTestIncomplete();
     }
 
-    public function testTable(): void
+    public function testTableGet(): void
     {
         $table = $this
             ->getSchemaManager()
             ->getTable('org')
         ;
 
-        self::assertSame(['dept', 'role'], $table->getPrimaryKey()?->getColumnNames());
+        // Order is not always guaranteed here.
+        $pKeyColumns = $table->getPrimaryKey()?->getColumnNames() ?? [];
+        \sort($pKeyColumns);
+        self::assertEquals(['dept', 'role'], $pKeyColumns);
         self::assertCount(6, $table->getColumns());
         self::assertEmpty($table->getForeignKeys());
+
+        $found = true;
+        foreach ($table->getIndexes() as $index) {
+            \assert($index instanceof Index);
+
+            $indexName = $index->getName();
+            $indexColumns = $index->getColumnNames();
+
+            if ('org_pkey' === $indexName) { // Postgresql
+                $found = true;
+                self::assertSame(['role', 'dept'], $indexColumns);
+            }
+            if ('PRIMARY' === $indexName) { // MySQL
+                $found = true;
+                self::assertSame(['role', 'dept'], $indexColumns);
+            }
+            if ('sqlite_autoindex_org_2' === $indexName) { // SQLite
+                $found = true;
+                self::assertSame(['role', 'dept'], $indexColumns);
+            }
+            if (\str_starts_with($indexName, 'UQ__') && 2 === \count($indexColumns)) { // SQL Server
+                $found = true;
+                self::assertSame(['role', 'dept'], $indexColumns);
+            }
+        }
+
+        self::assertTrue($found);
 
         if ($this->ifDatabaseNot(Platform::SQLITE)) {
             self::assertCount(1, $table->getReverseForeignKeys());

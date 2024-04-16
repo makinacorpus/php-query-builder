@@ -1,5 +1,10 @@
 # Changelog
 
+## Next
+
+* [feature] ⭐️ Experimental table index list in schema manager.
+* [internal] Enable SQLite via PDO in unit tests.
+
 ## 1.3.2
 
 * [feature] ⭐️ Experimental identity column handling in schema manager.
