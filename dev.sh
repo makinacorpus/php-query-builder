@@ -177,7 +177,7 @@ do_test_sqlite() {
     docker compose -p query_builder_test exec \
         -e DBAL_DRIVER=pdo_sqlite \
         -e DBAL_DBNAME=test_db \
-        -e DBAL_HOST=127.0.0.1 \
+        -e DBAL_HOST=:memory: \
         -e DATABASE_URL="pdo-sqlite:///:memory:" \
         phpunit vendor/bin/phpunit "$@"
 }

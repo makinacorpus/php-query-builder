@@ -18,6 +18,7 @@ trait FunctionalPdoTestCaseTrait
             match ($params['driver']) {
                 'pdo_mysql' => $this->createPdoConnectionMySQL($params),
                 'pdo_pgsql' => $this->createPdoConnectionPostgreSQL($params),
+                'pdo_sqlite' => $this->createPdoConnectionSQLite($params),
                 default => self::markTestSkipped(\sprintf("Unsupported 'DBAL_DRIVER' value '%s' for PDO bridge.", $params['driver'])),
             },
         );
@@ -59,5 +60,13 @@ trait FunctionalPdoTestCaseTrait
         }
 
         return new \PDO('pgsql:' . \implode(';', $dsn), $params['user'] ?? null, $params['password'] ?? null, [\PDO::ATTR_PERSISTENT => true]);
+    }
+
+    /**
+     * Create SQLite PDO connection.
+     */
+    private function createPdoConnectionSQLite(array $params): \PDO
+    {
+        return new \PDO('sqlite:' . $params['host']);
     }
 }
