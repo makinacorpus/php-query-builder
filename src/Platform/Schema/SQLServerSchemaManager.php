@@ -441,7 +441,7 @@ class SQLServerSchemaManager extends SchemaManager
     /**
      * Find column default value constraint name.
      */
-    private function findColumnContraintDefaultName(string $schema, string $table, string $column): ?string
+    private function findColumnConstraintDefaultName(string $schema, string $table, string $column): ?string
     {
         return $this->session->executeQuery(
             <<<SQL
@@ -519,7 +519,7 @@ class SQLServerSchemaManager extends SchemaManager
         // If type change, it will raise an error.
         // You can only add a default, not change it, it will raise an error.
         // In all case, we remove it, then set it back once column is altered.
-        if ($defaultConstraintName = $this->findColumnContraintDefaultName($change->getSchema(), $change->getTable(), $change->getName())) {
+        if ($defaultConstraintName = $this->findColumnConstraintDefaultName($change->getSchema(), $change->getTable(), $change->getName())) {
             \array_unshift($statements, $this->raw('ALTER TABLE ? DROP CONSTRAINT ?::id', [$tableExpr, $defaultConstraintName]));
         }
 
@@ -560,7 +560,7 @@ class SQLServerSchemaManager extends SchemaManager
     protected function doWriteForeignKey(ForeignKeyAdd $change): Expression
     {
         if ($change->isDeferrable()) {
-            // @todo log that MySQL doesn't support deferring?
+            // @todo log that SQL Server doesn't support deferring?
         }
 
         return $this->doWriteConstraint(
@@ -612,7 +612,6 @@ class SQLServerSchemaManager extends SchemaManager
     protected function writeUniqueKeyAdd(UniqueKeyAdd $change): iterable|Expression
     {
         if (!$change->isNullsDistinct()) {
-            // @todo Implement this with PostgreSQL.
             throw new UnsupportedFeatureError("UNIQUE NULLS NOT DISTINCT is not supported by this vendor.");
         }
 
