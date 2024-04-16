@@ -435,6 +435,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
             ->getSchemaManager()
             ->modify()
                 ->createTable('new_table')
+                    ->column('foo', 'text', true, 'null')
                 ->endTable()
             ->commit()
         ;
