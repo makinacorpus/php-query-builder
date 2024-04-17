@@ -996,8 +996,6 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
     public function testTableCreateWithIdentity(): void
     {
-        $this->skipIfDatabase(Vendor::SQLITE);
-
         $this
             ->getSchemaManager()
             ->modify()
@@ -1014,7 +1012,11 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
             ->getColumn('id')
         ;
 
-        self::assertFalse($column->isNullable());
+        if ($this->ifDatabase(Vendor::SQLITE)) {
+            self::assertTrue($column->isNullable());
+        } else {
+            self::assertFalse($column->isNullable());
+        }
         // self::assertSameType(Type::identity(), $column->getValueType());
     }
 

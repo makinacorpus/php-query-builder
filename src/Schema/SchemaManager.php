@@ -444,7 +444,7 @@ abstract class SchemaManager implements LoggerAwareInterface
         }
 
         if ($default = $change->getDefault()) {
-            $this->raw('DEFAULT ?', [$this->doWriteColumnDefault($change->getType(), $default)]);
+            $pieces[] = $this->raw('DEFAULT ?', [$this->doWriteColumnDefault($change->getType(), $default)]);
         }
 
         return $this->raw(

@@ -4,9 +4,11 @@
 
 * [feature] ⭐️ Added `DatabaseSession::getVendorName()`, `DatabaseSession::getVendorVersion()`,
   `DatabaseSession::vendorIs()` and `DatabaseSession::vendorVersionIs()` methods.
-* [deprecated] ⚠️ Deprecated `Bridge::getServerFlavor()`, `Bridge::getServerVersion()`,
-  `Bridge::isVersionLessThan()` and `Bridge::isVersionGreaterOrEqualThan()` methods,
-  they will be removed in 2.0 version.
+* [feature] ⭐️ Renamed the `Platform` class to `Vendor`..
+* [deprecation] ⚠️ Deprecated `Bridge::getServerFlavor()`, `Bridge::getServerVersion()`,
+  `Bridge::isVersionLessThan()` and `Bridge::isVersionGreaterOrEqualThan()` methods.
+* [deprecation] ⚠️ Deprecated the `Platform` class.
+* [fix] Table creation with an identity column now works in SQLite.
 
 ## 1.3.3
 

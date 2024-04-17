@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Platform\Schema;
 
-use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Error\UnsupportedFeatureError;
+use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Result\ResultRow;
-use MakinaCorpus\QueryBuilder\Schema\SchemaManager;
+use MakinaCorpus\QueryBuilder\Schema\Diff\Change\ColumnAdd;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\ColumnModify;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\ConstraintDrop;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\ConstraintModify;
@@ -20,11 +20,13 @@ use MakinaCorpus\QueryBuilder\Schema\Diff\Change\IndexCreate;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\IndexRename;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\PrimaryKeyAdd;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\PrimaryKeyDrop;
+use MakinaCorpus\QueryBuilder\Schema\Diff\Change\TableCreate;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\UniqueKeyAdd;
 use MakinaCorpus\QueryBuilder\Schema\Read\Column;
 use MakinaCorpus\QueryBuilder\Schema\Read\ForeignKey;
 use MakinaCorpus\QueryBuilder\Schema\Read\Index;
 use MakinaCorpus\QueryBuilder\Schema\Read\Key;
+use MakinaCorpus\QueryBuilder\Schema\SchemaManager;
 use MakinaCorpus\QueryBuilder\Type\InternalType;
 use MakinaCorpus\QueryBuilder\Type\Type;
 
@@ -408,6 +410,80 @@ class SQLiteSchemaManager extends SchemaManager
     protected function writeIndexRename(IndexRename $change): iterable|Expression
     {
         return $this->raw('ALTER INDEX ?::id RENAME TO ?::id', [$change->getName(), $change->getNewName()]);
+    }
+
+    /**
+     * SQLite requires the identity columns to be declared using the exact
+     * "colname INTEGER PRIMARY KEY AUTOINCREMENT" statement, otherwise it
+     * will not work as expected. We need to check if user defined primary
+     * key is the same column, then alter the CREATE TABLE statement for
+     * this column and drop the PRIMARY KEY statement at the end.
+     */
+    #[\Override]
+    protected function writeTableCreate(TableCreate $change): iterable|Expression
+    {
+        $pieces = [];
+
+        $identifierColumn = null;
+        foreach ($change->getColumns() as $column) {
+            \assert($column instanceof ColumnAdd);
+
+            if ($column->getType()->isIdentity() || $column->getType()->isSerial()) {
+                if ($identifierColumn) {
+                    throw new UnsupportedFeatureError(\sprintf(
+                        "Table '%s' column '%s': SQLite can have only one IDENTITY column per table, '%s' already defined",
+                        $change->getName(), $column->getName(), $identifierColumn,
+                    ));
+                }
+
+                if ($column->isNullable() || null !== $column->getDefault()) {
+                    throw new UnsupportedFeatureError(\sprintf(
+                        "Table '%s' column '%s': nullable or with default IDENTITY columns is unsupported with SQLite",
+                        $change->getName(), $column->getName(),
+                    ));
+                }
+
+                $identifierColumn = $column->getName();
+                $pieces[] = $this->raw('?::column INTEGER PRIMARY KEY AUTOINCREMENT', [$identifierColumn]);
+            } else {
+                $pieces[] = $this->doWriteColumn($column);
+            }
+        }
+
+        if ($primaryKey = $change->getPrimaryKey()) {
+            if ($identifierColumn) {
+                if ([$identifierColumn] !== $primaryKey->getColumns()) {
+                    throw new UnsupportedFeatureError(\sprintf(
+                        "Table '%s': PRIMARY KEY differs from the given IDENTIY column '%s' and is unsupported with SQLite",
+                        $change->getName(), $identifierColumn,
+                    ));
+                }
+                // Drop the PRIMARY KEY statement since it's already written
+                // in the column declaration.
+            } else {
+                $pieces[] = $this->doWritePrimaryKey($primaryKey);
+            }
+        }
+
+        // The rest is the same code as parent.
+        foreach ($change->getUniqueKeys() as $uniqueKey) {
+            $pieces[] = $this->doWriteTableCreateUniqueKey($uniqueKey);
+        }
+        foreach ($change->getForeignKeys() as $foreignKey) {
+            $pieces[] = $this->doWriteForeignKey($foreignKey);
+        }
+
+        $placeholder = \implode(', ', \array_fill(0, \count($pieces), '?'));
+
+        if ($change->isTemporary()) {
+            yield $this->raw('CREATE TEMPORARY TABLE ? (' . $placeholder . ')', [$this->table($change), ...$pieces]);
+        } else {
+            yield $this->raw('CREATE TABLE ? (' . $placeholder . ')', [$this->table($change), ...$pieces]);
+        }
+
+        foreach ($change->getIndexes() as $index) {
+            yield $this->writeIndexCreate($index);
+        }
     }
 
     #[\Override]
