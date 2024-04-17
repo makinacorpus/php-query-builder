@@ -14,7 +14,7 @@ use MakinaCorpus\QueryBuilder\Bridge\ErrorConverter;
 use MakinaCorpus\QueryBuilder\Converter\Converter;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Escaper\Escaper;
-use MakinaCorpus\QueryBuilder\Platform;
+use MakinaCorpus\QueryBuilder\Vendor;
 use MakinaCorpus\QueryBuilder\Result\IterableResult;
 use MakinaCorpus\QueryBuilder\Result\Result;
 use MakinaCorpus\QueryBuilder\Writer\Writer;
@@ -91,9 +91,9 @@ class DoctrineQueryBuilder extends AbstractBridge
     {
         $this->dieIfClosed();
 
-        return match ($this->getServerFlavor()) {
-            Platform::MARIADB => new DoctrineMySQLEscaper($this->connection),
-            Platform::MYSQL => new DoctrineMySQLEscaper($this->connection),
+        return match ($this->getVendorName()) {
+            Vendor::MARIADB => new DoctrineMySQLEscaper($this->connection),
+            Vendor::MYSQL => new DoctrineMySQLEscaper($this->connection),
             default => new DoctrineEscaper($this->connection),
         };
     }

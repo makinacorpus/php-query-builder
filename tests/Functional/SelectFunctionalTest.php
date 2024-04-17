@@ -12,10 +12,10 @@ use MakinaCorpus\QueryBuilder\Expression\Random;
 use MakinaCorpus\QueryBuilder\Expression\RandomInt;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\Expression\Value;
-use MakinaCorpus\QueryBuilder\Platform;
 use MakinaCorpus\QueryBuilder\Query\Query;
 use MakinaCorpus\QueryBuilder\Query\Select;
 use MakinaCorpus\QueryBuilder\Tests\Bridge\Doctrine\DoctrineTestCase;
+use MakinaCorpus\QueryBuilder\Vendor;
 
 class SelectFunctionalTest extends DoctrineTestCase
 {
@@ -38,10 +38,10 @@ class SelectFunctionalTest extends DoctrineTestCase
             );
         } catch (\Throwable) {}
 
-        switch ($this->getBridge()->getServerFlavor()) {
+        switch ($this->getBridge()->getVendorName()) {
 
-            case Platform::MARIADB:
-            case Platform::MYSQL:
+            case Vendor::MARIADB:
+            case Vendor::MYSQL:
                 $this->getBridge()->executeStatement(
                     <<<SQL
                     CREATE TABLE foo (
@@ -61,7 +61,7 @@ class SelectFunctionalTest extends DoctrineTestCase
                 );
                 break;
 
-            case Platform::SQLSERVER:
+            case Vendor::SQLSERVER:
                 $this->getBridge()->executeStatement(
                     <<<SQL
                     CREATE TABLE foo (
@@ -112,7 +112,7 @@ class SelectFunctionalTest extends DoctrineTestCase
 
         $value = $this->executeQuery($select)->fetchRow()->get(0, 'string');
 
-        if ($this->ifDatabase(Platform::SQLITE)) {
+        if ($this->ifDatabase(Vendor::SQLITE)) {
             self::assertSame('main', $value);
         } else {
             self::assertSame('test_db', $value);
@@ -128,7 +128,7 @@ class SelectFunctionalTest extends DoctrineTestCase
 
         $value = $this->executeQuery($select)->fetchRow()->get(0, 'string');
 
-        if (!$this->ifDatabase(Platform::SQLSERVER)) {
+        if (!$this->ifDatabase(Vendor::SQLSERVER)) {
             self::assertSame('public', $value);
         }
     }
@@ -273,10 +273,10 @@ class SelectFunctionalTest extends DoctrineTestCase
 
     public function testSelectFromConstantTable(): void
     {
-        $this->skipIfDatabase(Platform::MARIADB, 'MariaDB does not support VALUES column aliasing.');
-        $this->skipIfDatabase(Platform::SQLITE, 'SQLite requires you to convert VALUES in SELECT to VALUES in an aliased CTE');
-        $this->skipIfDatabaseLessThan(Platform::MARIADB, '10.3', 'MariaDB supports VALUES statement since version 10.3.');
-        $this->skipIfDatabaseLessThan(Platform::MYSQL, '8.0');
+        $this->skipIfDatabase(Vendor::MARIADB, 'MariaDB does not support VALUES column aliasing.');
+        $this->skipIfDatabase(Vendor::SQLITE, 'SQLite requires you to convert VALUES in SELECT to VALUES in an aliased CTE');
+        $this->skipIfDatabaseLessThan(Vendor::MARIADB, '10.3', 'MariaDB supports VALUES statement since version 10.3.');
+        $this->skipIfDatabaseLessThan(Vendor::MYSQL, '8.0');
 
         $table = new ConstantTable();
         $table->columns(['a', 'b' , 'c']);
@@ -326,10 +326,10 @@ class SelectFunctionalTest extends DoctrineTestCase
 
     public function testJoinConstantTable(): void
     {
-        $this->skipIfDatabase(Platform::MARIADB, 'MariaDB does not support VALUES column aliasing.');
-        $this->skipIfDatabase(Platform::SQLITE, 'SQLite requires you to convert VALUES in SELECT to VALUES in an aliased CTE');
-        $this->skipIfDatabaseLessThan(Platform::MARIADB, '10.3', 'MariaDB supports VALUES statement since version 10.3.');
-        $this->skipIfDatabaseLessThan(Platform::MYSQL, '8.0');
+        $this->skipIfDatabase(Vendor::MARIADB, 'MariaDB does not support VALUES column aliasing.');
+        $this->skipIfDatabase(Vendor::SQLITE, 'SQLite requires you to convert VALUES in SELECT to VALUES in an aliased CTE');
+        $this->skipIfDatabaseLessThan(Vendor::MARIADB, '10.3', 'MariaDB supports VALUES statement since version 10.3.');
+        $this->skipIfDatabaseLessThan(Vendor::MYSQL, '8.0');
 
         $table = new ConstantTable();
         $table->columns(['a', 'b' , 'c']);
@@ -347,7 +347,7 @@ class SelectFunctionalTest extends DoctrineTestCase
 
     public function testWithJoin(): void
     {
-        $this->skipIfDatabaseLessThan(Platform::MYSQL, '8.0');
+        $this->skipIfDatabaseLessThan(Vendor::MYSQL, '8.0');
 
         $nested = new Select('bar');
 
@@ -363,8 +363,8 @@ class SelectFunctionalTest extends DoctrineTestCase
     public function testWithConstantTableJoin(): void
     {
         // https://learn.microsoft.com/en-us/sql/t-sql/queries/table-value-constructor-transact-sql?view=sql-server-ver16
-        $this->skipIfDatabase(Platform::SQLSERVER, 'SQL Server only accepts Table Value Constructor in SELECT, FROM and INSERT.');
-        $this->skipIfDatabaseLessThan(Platform::MYSQL, '8.0');
+        $this->skipIfDatabase(Vendor::SQLSERVER, 'SQL Server only accepts Table Value Constructor in SELECT, FROM and INSERT.');
+        $this->skipIfDatabaseLessThan(Vendor::MYSQL, '8.0');
 
         $table = new ConstantTable();
         $table->columns(['a', 'b' , 'c']);
@@ -397,7 +397,7 @@ class SelectFunctionalTest extends DoctrineTestCase
 
     public function testAggregateOverPartitionBy(): void
     {
-        $this->skipIfDatabaseLessThan(Platform::MYSQL, '8.0');
+        $this->skipIfDatabaseLessThan(Vendor::MYSQL, '8.0');
 
         $select = new Select('foo');
 
@@ -413,7 +413,7 @@ class SelectFunctionalTest extends DoctrineTestCase
 
     public function testAggregateOverOrderBy(): void
     {
-        $this->skipIfDatabaseLessThan(Platform::MYSQL, '8.0');
+        $this->skipIfDatabaseLessThan(Vendor::MYSQL, '8.0');
 
         $select = new Select('foo');
 
@@ -430,7 +430,7 @@ class SelectFunctionalTest extends DoctrineTestCase
 
     public function testAggregateOverPartitionByOrderBy(): void
     {
-        $this->skipIfDatabaseLessThan(Platform::MYSQL, '8.0');
+        $this->skipIfDatabaseLessThan(Vendor::MYSQL, '8.0');
 
         $select = new Select('foo');
 
@@ -448,7 +448,7 @@ class SelectFunctionalTest extends DoctrineTestCase
 
     public function testAggregateOverEmpty(): void
     {
-        $this->skipIfDatabaseLessThan(Platform::MYSQL, '8.0');
+        $this->skipIfDatabaseLessThan(Vendor::MYSQL, '8.0');
 
         $select = new Select('foo');
 
@@ -464,7 +464,7 @@ class SelectFunctionalTest extends DoctrineTestCase
 
     public function testAggregateFilterOver(): void
     {
-        $this->skipIfDatabaseLessThan(Platform::MYSQL, '8.0');
+        $this->skipIfDatabaseLessThan(Vendor::MYSQL, '8.0');
 
         $select = new Select('foo');
 
@@ -481,8 +481,8 @@ class SelectFunctionalTest extends DoctrineTestCase
 
     public function testWindowAfterFrom(): void
     {
-        $this->skipIfDatabase(Platform::SQLSERVER);
-        $this->skipIfDatabaseLessThan(Platform::MYSQL, '8.0');
+        $this->skipIfDatabase(Vendor::SQLSERVER);
+        $this->skipIfDatabaseLessThan(Vendor::MYSQL, '8.0');
 
         $select = new Select('foo');
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Tests\Bridge;
 
-use MakinaCorpus\QueryBuilder\Platform;
+use MakinaCorpus\QueryBuilder\Vendor;
 use MakinaCorpus\QueryBuilder\Error\Bridge\AmbiguousIdentifierError;
 use MakinaCorpus\QueryBuilder\Error\Bridge\ColumnDoesNotExistError;
 use MakinaCorpus\QueryBuilder\Error\Bridge\ForeignKeyConstraintViolationError;
@@ -34,10 +34,10 @@ abstract class AbstractErrorConverterTestCase extends FunctionalTestCase
             );
         } catch (\Throwable) {}
 
-        switch ($this->getBridge()->getServerFlavor()) {
+        switch ($this->getBridge()->getVendorName()) {
 
-            case Platform::MARIADB:
-            case Platform::MYSQL:
+            case Vendor::MARIADB:
+            case Vendor::MYSQL:
                 $this->getBridge()->executeStatement(
                     <<<SQL
                     CREATE TABLE foo (
@@ -61,7 +61,7 @@ abstract class AbstractErrorConverterTestCase extends FunctionalTestCase
                 );
                 break;
 
-            case Platform::SQLSERVER:
+            case Vendor::SQLSERVER:
                 $this->getBridge()->executeStatement(
                     <<<SQL
                     CREATE TABLE foo (
@@ -85,7 +85,7 @@ abstract class AbstractErrorConverterTestCase extends FunctionalTestCase
                 );
                 break;
 
-            case Platform::SQLITE:
+            case Vendor::SQLITE:
                 $this->getBridge()->executeStatement(
                     <<<SQL
                     CREATE TABLE foo (
@@ -169,6 +169,8 @@ abstract class AbstractErrorConverterTestCase extends FunctionalTestCase
 
     public function testForeignKeyConstraintViolationError(): void
     {
+        self::skipIfDatabase(Vendor::SQLITE, 'There is a bug here, SQLite does not raise any error.');
+
         self::expectException(ForeignKeyConstraintViolationError::class);
 
         $this->getBridge()->executeStatement(

@@ -98,7 +98,7 @@ $someSavepoint->rollback();
 In all cases, it's your job to handle errors via exception catching.
 :::
 
-:::note
+:::info
 You can nest savepoints.
 :::
 

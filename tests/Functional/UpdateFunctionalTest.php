@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Tests\Functional;
 
-use MakinaCorpus\QueryBuilder\Platform;
 use MakinaCorpus\QueryBuilder\Query\Update;
 use MakinaCorpus\QueryBuilder\Tests\Bridge\Doctrine\DoctrineTestCase;
+use MakinaCorpus\QueryBuilder\Vendor;
 
 class UpdateFunctionalTest extends DoctrineTestCase
 {
@@ -29,10 +29,10 @@ class UpdateFunctionalTest extends DoctrineTestCase
             );
         } catch (\Throwable) {}
 
-        switch ($this->getBridge()->getServerFlavor()) {
+        switch ($this->getBridge()->getVendorName()) {
 
-            case Platform::MARIADB:
-            case Platform::MYSQL:
+            case Vendor::MARIADB:
+            case Vendor::MYSQL:
                 $this->getBridge()->executeStatement(
                     <<<SQL
                     CREATE TABLE foo (
@@ -52,7 +52,7 @@ class UpdateFunctionalTest extends DoctrineTestCase
                 );
                 break;
 
-            case Platform::SQLSERVER:
+            case Vendor::SQLSERVER:
                 $this->getBridge()->executeStatement(
                     <<<SQL
                     CREATE TABLE foo (
@@ -127,8 +127,8 @@ class UpdateFunctionalTest extends DoctrineTestCase
 
     public function testReturning(): void
     {
-        $this->skipIfDatabase(Platform::MARIADB, 'MariaDB does not support RETURNING|OUPUT');
-        $this->skipIfDatabase(Platform::MYSQL, 'MariaDB does not support RETURNING|OUPUT');
+        $this->skipIfDatabase(Vendor::MARIADB, 'MariaDB does not support RETURNING|OUPUT');
+        $this->skipIfDatabase(Vendor::MYSQL, 'MariaDB does not support RETURNING|OUPUT');
 
         $update = new Update('foo');
         $update
@@ -144,9 +144,9 @@ class UpdateFunctionalTest extends DoctrineTestCase
 
     public function testReturningExpression(): void
     {
-        $this->skipIfDatabase(Platform::MARIADB, 'MariaDB does not support RETURNING|OUPUT');
-        $this->skipIfDatabase(Platform::MYSQL, 'MariaDB does not support RETURNING|OUPUT');
-        $this->skipIfDatabase(Platform::SQLSERVER, 'SQL Server has its own test for this.');
+        $this->skipIfDatabase(Vendor::MARIADB, 'MariaDB does not support RETURNING|OUPUT');
+        $this->skipIfDatabase(Vendor::MYSQL, 'MariaDB does not support RETURNING|OUPUT');
+        $this->skipIfDatabase(Vendor::SQLSERVER, 'SQL Server has its own test for this.');
 
         $update = new Update('foo');
         $expr = $update->expression();
@@ -166,7 +166,7 @@ class UpdateFunctionalTest extends DoctrineTestCase
 
     public function testReturningExpressionSqlServer(): void
     {
-        $this->skipIfDatabaseNot(Platform::SQLSERVER);
+        $this->skipIfDatabaseNot(Vendor::SQLSERVER);
 
         $update = new Update('foo');
         $expr = $update->expression();
@@ -186,8 +186,8 @@ class UpdateFunctionalTest extends DoctrineTestCase
 
     public function testReturningStar(): void
     {
-        $this->skipIfDatabase(Platform::MARIADB, 'MariaDB does not support RETURNING|OUPUT');
-        $this->skipIfDatabase(Platform::MYSQL, 'MariaDB does not support RETURNING|OUPUT');
+        $this->skipIfDatabase(Vendor::MARIADB, 'MariaDB does not support RETURNING|OUPUT');
+        $this->skipIfDatabase(Vendor::MYSQL, 'MariaDB does not support RETURNING|OUPUT');
 
         $update = new Update('foo');
         $update->set('date', new \DateTimeImmutable('2012-08-21 12:32:54'));
@@ -211,8 +211,8 @@ class UpdateFunctionalTest extends DoctrineTestCase
 
     public function testFromWith(): void
     {
-        $this->skipIfDatabase(Platform::MARIADB);
-        $this->skipIfDatabaseLessThan(Platform::MYSQL, '8.0');
+        $this->skipIfDatabase(Vendor::MARIADB);
+        $this->skipIfDatabaseLessThan(Vendor::MYSQL, '8.0');
 
         $update = new Update('foo');
         $expr = $update->expression();
@@ -231,8 +231,8 @@ class UpdateFunctionalTest extends DoctrineTestCase
 
     public function testFromWithJoin(): void
     {
-        $this->skipIfDatabase(Platform::MARIADB);
-        $this->skipIfDatabaseLessThan(Platform::MYSQL, '8.0');
+        $this->skipIfDatabase(Vendor::MARIADB);
+        $this->skipIfDatabaseLessThan(Vendor::MYSQL, '8.0');
 
         $update = new Update('foo');
         $expr = $update->expression();
@@ -267,7 +267,7 @@ class UpdateFunctionalTest extends DoctrineTestCase
 
     public function testFromJoin(): void
     {
-        $this->skipIfDatabase(Platform::SQLSERVER, 'Temporarily disabled due to a bug');
+        $this->skipIfDatabase(Vendor::SQLSERVER, 'Temporarily disabled due to a bug');
 
         $update = new Update('foo');
         $expr = $update->expression();

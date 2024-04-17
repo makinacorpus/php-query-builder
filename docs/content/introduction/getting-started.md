@@ -107,7 +107,7 @@ See [the value converter documentation](../converter/converter) for supported da
 Install it using composer:
 
 ```sh
-composer require makinacorpus/query-builder doctrine/dbal:^3.7
+composer require makinacorpus/query-builder doctrine/dbal:'^3.7|^4.0'
 ```
 
 ### 2. Setup the query builder

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Tests\Functional;
 
-use MakinaCorpus\QueryBuilder\Platform;
 use MakinaCorpus\QueryBuilder\Expression\Concat;
 use MakinaCorpus\QueryBuilder\Expression\Lpad;
 use MakinaCorpus\QueryBuilder\Expression\Rpad;
@@ -12,6 +11,7 @@ use MakinaCorpus\QueryBuilder\Expression\StringHash;
 use MakinaCorpus\QueryBuilder\Expression\Value;
 use MakinaCorpus\QueryBuilder\Query\Select;
 use MakinaCorpus\QueryBuilder\Tests\Bridge\Doctrine\DoctrineTestCase;
+use MakinaCorpus\QueryBuilder\Vendor;
 
 class TextFunctionalTest extends DoctrineTestCase
 {
@@ -28,8 +28,8 @@ class TextFunctionalTest extends DoctrineTestCase
 
     public function testMd5(): void
     {
-        $this->skipIfDatabase(Platform::SQLITE, 'SQLite does not have any hash function.');
-        $this->skipIfDatabase(Platform::SQLSERVER, 'SQL Server actually returns a hash, but not the right one ?!');
+        $this->skipIfDatabase(Vendor::SQLITE, 'SQLite does not have any hash function.');
+        $this->skipIfDatabase(Vendor::SQLSERVER, 'SQL Server actually returns a hash, but not the right one ?!');
 
         $select = new Select();
         $select->columnRaw(new StringHash('foo', 'md5'));
@@ -42,9 +42,9 @@ class TextFunctionalTest extends DoctrineTestCase
 
     public function testSha1(): void
     {
-        $this->skipIfDatabase(Platform::POSTGRESQL, 'pgcrypto extension must be enabled.');
-        $this->skipIfDatabase(Platform::SQLITE, 'SQLite does not have any hash function.');
-        $this->skipIfDatabase(Platform::SQLSERVER, 'SQL Server actually returns a hash, but not the right one ?!');
+        $this->skipIfDatabase(Vendor::POSTGRESQL, 'pgcrypto extension must be enabled.');
+        $this->skipIfDatabase(Vendor::SQLITE, 'SQLite does not have any hash function.');
+        $this->skipIfDatabase(Vendor::SQLSERVER, 'SQL Server actually returns a hash, but not the right one ?!');
 
         $select = new Select();
         $select->columnRaw(new StringHash('foo', 'sha1'));

@@ -56,6 +56,7 @@ export default defineConfig({
               { text: 'PDO setup', link: '/introduction/getting-started#pdo-setup' },
               { text: 'Symfony setup', link: '/introduction/getting-started#symfony-setup' },
               { text: 'Error handling', link: '/bridges/error' },
+              { text: 'Vendor conditionals', link: '/introduction/vendor-conditionals' },
             ]
           },
           { text: 'Samples usages', link: '/introduction/usage' },

@@ -28,6 +28,48 @@ interface DatabaseSession extends QueryBuilder
     public function getDefaultSchema(): string;
 
     /**
+     * Get database vendor name.
+     *
+     * Returns 'unknown' when unknown.
+     */
+    public function getVendorName(): string;
+
+    /**
+     * Get database vendor version.
+     *
+     * Returns '0.0.0' when unknown.
+     */
+    public function getVendorVersion(): string;
+
+    /**
+     * Compare vendor name against given name.
+     *
+     * Allow to give a version constraint as well.
+     *
+     * @param string|string[] $name
+     *   One of the Vendor::* constant, eg. 'mysql', 'postgresql', ...
+     *   Bare string are allowed and it will attempt to overcome typo errors
+     *   but using constants is safer.
+     * @param null|string $version
+     *   Version to compare against, must be a valid semantic version string.
+     * @param string $operator
+     *   Operator for version comparison, can be one of: '>=', '>', '=', '<', '<='.
+     *   Any invalid operator will raise an exception.
+     */
+    public function vendorIs(string|array $name, ?string $version = null, string $operator = '>='): bool;
+
+    /**
+     * Compare vendor version against given one.
+     *
+     * @param string $version
+     *   Version to compare against, must be a valid semantic version string.
+     * @param string $operator
+     *   Operator for version comparison, can be one of: '>=', '>', '=', '<', '<='.
+     *   Any invalid operator will raise an exception.
+     */
+    public function vendorVersionIs(string $version, string $operator = '>='): bool;
+
+    /**
      * Execute query and return result.
      */
     public function executeQuery(string|Expression $expression = null, mixed $arguments = null): Result;
