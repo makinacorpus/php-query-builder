@@ -15,9 +15,9 @@ use MakinaCorpus\QueryBuilder\Bridge\Pdo\Escaper\PdoEscaper;
 use MakinaCorpus\QueryBuilder\Bridge\Pdo\Escaper\PdoMySQLEscaper;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Escaper\Escaper;
-use MakinaCorpus\QueryBuilder\Platform;
 use MakinaCorpus\QueryBuilder\Result\IterableResult;
 use MakinaCorpus\QueryBuilder\Result\Result;
+use MakinaCorpus\QueryBuilder\Vendor;
 
 class PdoQueryBuilder extends AbstractBridge
 {
@@ -36,12 +36,12 @@ class PdoQueryBuilder extends AbstractBridge
      */
     protected function createErrorConverter(): ErrorConverter
     {
-        return match ($this->getServerFlavor()) {
-            Platform::MARIADB => new PdoMySQLErrorConverter(),
-            Platform::MYSQL => new PdoMySQLErrorConverter(),
-            Platform::POSTGRESQL => new PdoPostgreSQLErrorConverter(),
-            Platform::SQLITE => new PdoSQLiteErrorConverter(),
-            Platform::SQLSERVER => new PdoSQLServerErrorConverter(),
+        return match ($this->getVendorName()) {
+            Vendor::MARIADB => new PdoMySQLErrorConverter(),
+            Vendor::MYSQL => new PdoMySQLErrorConverter(),
+            Vendor::POSTGRESQL => new PdoPostgreSQLErrorConverter(),
+            Vendor::SQLITE => new PdoSQLiteErrorConverter(),
+            Vendor::SQLSERVER => new PdoSQLServerErrorConverter(),
             default => new PassthroughErrorConverter(),
         };
     }
@@ -71,12 +71,12 @@ class PdoQueryBuilder extends AbstractBridge
         $this->dieIfClosed();
 
         $rawVersion = $this->connection->getAttribute(\PDO::ATTR_SERVER_VERSION);
-        $serverFlavor = $this->getServerFlavor();
+        $vendorName = $this->getVendorName();
 
         $matches = [];
 
         // PostgreSQL Example: 16.0 (Debian 16.0-1.pgdg120+1)
-        if (Platform::POSTGRESQL === $serverFlavor) {
+        if (Vendor::POSTGRESQL === $vendorName) {
             if (\preg_match('@^(\d+\.\d+(\.\d+))@i', $rawVersion, $matches)) {
                 return $matches[1];
             }
@@ -100,9 +100,9 @@ class PdoQueryBuilder extends AbstractBridge
     {
         $this->dieIfClosed();
 
-        return match ($this->getServerFlavor()) {
-            Platform::MARIADB => new PdoMySQLEscaper($this->connection),
-            Platform::MYSQL => new PdoMySQLEscaper($this->connection),
+        return match ($this->getVendorName()) {
+            Vendor::MARIADB => new PdoMySQLEscaper($this->connection),
+            Vendor::MYSQL => new PdoMySQLEscaper($this->connection),
             default => new PdoEscaper($this->connection),
         };
     }

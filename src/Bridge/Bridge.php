@@ -22,21 +22,33 @@ interface Bridge extends DatabaseSession
 
     /**
      * Get server product type.
+     *
+     * @deprecated
+     * @see DatabaseSession::getVendorName()
      */
     public function getServerFlavor(): ?string;
 
     /**
      * Get server version.
+     *
+     * @deprecated
+     * @see DatabaseSession::getVendorVersion()
      */
     public function getServerVersion(): ?string;
 
     /**
      * Version is less than given.
+     *
+     * @deprecated
+     * @see DatabaseSession::vendorVersionIs()
      */
     public function isVersionLessThan(string $version): bool;
 
     /**
      * Version is greater or equal than given.
+     *
+     * @deprecated
+     * @see DatabaseSession::vendorVersionIs()
      */
     public function isVersionGreaterOrEqualThan(string $version): bool;
 

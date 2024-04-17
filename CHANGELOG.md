@@ -1,5 +1,13 @@
 # Changelog
 
+## Next
+
+* [feature] ⭐️ Added `DatabaseSession::getVendorName()`, `DatabaseSession::getVendorVersion()`,
+  `DatabaseSession::vendorIs()` and `DatabaseSession::vendorVersionIs()` methods.
+* [deprecated] ⚠️ Deprecated `Bridge::getServerFlavor()`, `Bridge::getServerVersion()`,
+  `Bridge::isVersionLessThan()` and `Bridge::isVersionGreaterOrEqualThan()` methods,
+  they will be removed in 2.0 version.
+
 ## 1.3.3
 
 * [feature] ⭐️ Experimental table index list in schema manager.

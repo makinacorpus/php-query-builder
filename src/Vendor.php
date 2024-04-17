@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder;
 
 /**
- * @deprecated
- * @see Vendor
+ * RDMBS identification.
+ *
+ * One could have used an enum here, but we want server identification
+ * string to be arbitrary in various places in the code, to allow this
+ * API to remain extensible.
  */
-final class Platform extends Vendor
+/* final */ class Vendor
 {
     public const MARIADB = 'mariadb';
     public const MYSQL = 'mysql';

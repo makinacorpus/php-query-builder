@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Testing;
 
-use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Bridge\Bridge;
+use MakinaCorpus\QueryBuilder\DatabaseSession;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
+use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\Result\Result;
 
@@ -109,21 +110,28 @@ trait FunctionalTestCaseTrait
         }
     }
 
-
-    protected function ifDatabase(string $database): bool
+    /**
+     * @deprecated
+     * @see DatabaseSession::vendorIs()
+     */
+    protected function ifDatabase(string|array $database): bool
     {
-        return $this->getBridge()->getServerFlavor() === $database;
+        return $this->getBridge()->vendorIs($database);
     }
 
-    protected function ifDatabaseNot(string $database): bool
+    /**
+     * @deprecated
+     * @see DatabaseSession::vendorIs()
+     */
+    protected function ifDatabaseNot(string|array $database): bool
     {
-        return $this->getBridge()->getServerFlavor() !== $database;
+        return !$this->getBridge()->vendorIs($database);
     }
 
     /**
      * Skip for given database.
      */
-    protected function skipIfDatabase(string $database, ?string $message = null): void
+    protected function skipIfDatabase(string|array $database, ?string $message = null): void
     {
         if ($this->ifDatabase($database)) {
             self::markTestSkipped(\sprintf("Test disabled for database '%s'", $database));
@@ -133,7 +141,7 @@ trait FunctionalTestCaseTrait
     /**
      * Skip for given database.
      */
-    protected function skipIfDatabaseNot(string $database, ?string $message = null): void
+    protected function skipIfDatabaseNot(string|array $database, ?string $message = null): void
     {
         if ($this->ifDatabaseNot($database)) {
             self::markTestSkipped(\sprintf("Test disabled for database '%s'", $database));
@@ -143,11 +151,11 @@ trait FunctionalTestCaseTrait
     /**
      * Skip for given database, and greater than version.
      */
-    protected function skipIfDatabaseGreaterThan(string $database, string $version, ?string $message = null): void
+    protected function skipIfDatabaseGreaterThan(string|array $database, string $version, ?string $message = null): void
     {
         $this->skipIfDatabaseNot($database);
 
-        if ($this->getBridge()->isVersionGreaterOrEqualThan($version)) {
+        if ($this->getBridge()->vendorVersionIs($version)) {
             self::markTestSkipped($message ?? \sprintf("Test disabled for database '%s' at version >= '%s'", $database, $version));
         }
     }
@@ -155,11 +163,11 @@ trait FunctionalTestCaseTrait
     /**
      * Skip for given database, and lower than version.
      */
-    protected function skipIfDatabaseLessThan(string $database, string $version, ?string $message = null): void
+    protected function skipIfDatabaseLessThan(string|array $database, string $version, ?string $message = null): void
     {
         $this->skipIfDatabaseNot($database);
 
-        if ($this->getBridge()->isVersionLessThan($version)) {
+        if ($this->getBridge()->vendorVersionIs($version, '<')) {
             self::markTestSkipped($message ?? \sprintf("Test disabled for database '%s' at version <= '%s'", $database, $version));
         }
     }

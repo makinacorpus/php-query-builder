@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Tests\Functional;
 
-use MakinaCorpus\QueryBuilder\Platform;
 use MakinaCorpus\QueryBuilder\Error\Bridge\TransactionError;
 use MakinaCorpus\QueryBuilder\Error\Bridge\UniqueConstraintViolationError;
 use MakinaCorpus\QueryBuilder\Tests\Bridge\Doctrine\DoctrineTestCase;
 use MakinaCorpus\QueryBuilder\Transaction\Transaction;
 use MakinaCorpus\QueryBuilder\Transaction\TransactionSavepoint;
+use MakinaCorpus\QueryBuilder\Vendor;
 
 final class TransactionFunctionalTest extends DoctrineTestCase
 {
@@ -26,10 +26,10 @@ final class TransactionFunctionalTest extends DoctrineTestCase
             );
         } catch (\Throwable) {}
 
-        switch ($bridge->getServerFlavor()) {
+        switch ($bridge->getVendorName()) {
 
-            case Platform::MARIADB:
-            case Platform::MYSQL:
+            case Vendor::MARIADB:
+            case Vendor::MYSQL:
                 $bridge->executeStatement(
                     <<<SQL
                     CREATE TABLE transaction_test (
@@ -55,7 +55,7 @@ final class TransactionFunctionalTest extends DoctrineTestCase
                 );
                 break;
 
-            case Platform::SQLSERVER:
+            case Vendor::SQLSERVER:
                 $bridge->executeStatement(
                     <<<SQL
                     CREATE TABLE transaction_test (
@@ -81,7 +81,7 @@ final class TransactionFunctionalTest extends DoctrineTestCase
                 );
                 break;
 
-            case Platform::SQLITE:
+            case Vendor::SQLITE:
                 $bridge->executeStatement(
                     <<<SQL
                     CREATE TABLE transaction_test (
@@ -157,7 +157,7 @@ final class TransactionFunctionalTest extends DoctrineTestCase
         ;
 
         // @todo Row count doesn't work with SQLite and SQLServer
-        if ($this->ifDatabaseNot(Platform::SQLITE) && $this->ifDatabaseNot(Platform::SQLSERVER)) {
+        if ($this->ifDatabaseNot([Vendor::SQLITE, Vendor::SQLSERVER])) {
             self::assertSame(4, $result->rowCount());
         }
         self::assertSame('a', $result->fetchRow()->get('bar'));
@@ -207,7 +207,7 @@ final class TransactionFunctionalTest extends DoctrineTestCase
         ;
 
         // @todo Row count doesn't work with SQLite and SQLServer
-        if ($this->ifDatabaseNot(Platform::SQLITE) && $this->ifDatabaseNot(Platform::SQLSERVER)) {
+        if ($this->ifDatabaseNot([Vendor::SQLITE, Vendor::SQLSERVER])) {
             self::assertSame(2, $result->rowCount());
         }
         self::assertSame('g', $result->fetchRow()->get('bar'));
@@ -256,7 +256,7 @@ final class TransactionFunctionalTest extends DoctrineTestCase
         ;
 
         // @todo Row count doesn't work with SQLite and SQLServer
-        if ($this->ifDatabaseNot(Platform::SQLITE) && $this->ifDatabaseNot(Platform::SQLSERVER)) {
+        if ($this->ifDatabaseNot([Vendor::SQLITE, Vendor::SQLSERVER])) {
             self::assertSame(1, $result->rowCount());
         }
         self::assertSame('f', $result->fetchRow()->get('bar'));
@@ -268,8 +268,8 @@ final class TransactionFunctionalTest extends DoctrineTestCase
     public function testImmediateTransactionFail()
     {
         // @todo Support IMMEDIATE in the BEGIN statement for SQLite.
-        self::skipIfDatabase(Platform::SQLITE);
-        self::skipIfDatabase(Platform::SQLSERVER, 'SQL Server can not deffer constraints');
+        self::skipIfDatabase(Vendor::SQLITE);
+        self::skipIfDatabase(Vendor::SQLSERVER, 'SQL Server can not deffer constraints');
 
         self::expectNotToPerformAssertions();
 
@@ -317,8 +317,8 @@ final class TransactionFunctionalTest extends DoctrineTestCase
     public function testDeferredTransactionFail()
     {
         // @todo Support IMMEDIATE in the BEGIN statement for SQLite.
-        self::skipIfDatabase(Platform::SQLITE);
-        self::skipIfDatabase(Platform::SQLSERVER, 'SQL Server can not deffer constraints');
+        self::skipIfDatabase(Vendor::SQLITE);
+        self::skipIfDatabase(Vendor::SQLSERVER, 'SQL Server can not deffer constraints');
 
         self::expectNotToPerformAssertions();
 
@@ -432,7 +432,7 @@ final class TransactionFunctionalTest extends DoctrineTestCase
         ;
 
         // @todo Row count doesn't work with SQLite and SQLServer
-        if ($this->ifDatabaseNot(Platform::SQLITE) && $this->ifDatabaseNot(Platform::SQLSERVER)) {
+        if ($this->ifDatabaseNot([Vendor::SQLITE, Vendor::SQLSERVER])) {
             self::assertSame(3, $result->rowCount());
         } else {
             $count = 0;

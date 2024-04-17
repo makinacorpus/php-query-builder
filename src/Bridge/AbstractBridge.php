@@ -15,7 +15,6 @@ use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Expression\CurrentDatabase;
 use MakinaCorpus\QueryBuilder\Expression\CurrentSchema;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
-use MakinaCorpus\QueryBuilder\Platform;
 use MakinaCorpus\QueryBuilder\Platform\Converter\MySQLConverter;
 use MakinaCorpus\QueryBuilder\Platform\Escaper\MySQLEscaper;
 use MakinaCorpus\QueryBuilder\Platform\Escaper\StandardEscaper;
@@ -36,6 +35,7 @@ use MakinaCorpus\QueryBuilder\Platform\Writer\SQLServerWriter;
 use MakinaCorpus\QueryBuilder\Result\Result;
 use MakinaCorpus\QueryBuilder\Schema\SchemaManager;
 use MakinaCorpus\QueryBuilder\Transaction\Transaction;
+use MakinaCorpus\QueryBuilder\Vendor;
 use MakinaCorpus\QueryBuilder\Writer\Writer;
 
 abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
@@ -46,8 +46,8 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
     private ?string $serverName = null;
     private bool $serverNameLookedUp = false;
     private ?string $serverVersion = null;
-    private bool $serverVersionLookekUp = false;
-    private ?string $serverFlavor = null;
+    private bool $serverVersionLookedUp = false;
+    private ?string $vendorName = null;
     private ?Transaction $currentTransaction = null;
     private ?ErrorConverter $errorConverter = null;
     private ?SchemaManager $schemaManager = null;
@@ -93,8 +93,8 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
      */
     public function setServerInfo(?string $serverName = null, ?string $serverVersion = null): void
     {
-        $this->serverName = $serverName;
-        $this->serverVersion = $serverVersion;
+        $this->serverNameLookedUp = (null !== ($this->serverName = $serverName));
+        $this->serverVersionLookedUp = (null !== ($this->serverVersion = $serverVersion));
     }
 
     #[\Override]
@@ -144,51 +144,46 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
     }
 
     #[\Override]
-    public function getServerFlavor(): ?string
+    public function getVendorName(): string
     {
-        if (null !== $this->serverFlavor) {
-            return $this->serverFlavor;
+        if ($this->vendorName) {
+            return $this->vendorName;
         }
 
         $serverName = $this->getServerName();
 
         if (null === $serverName) {
-            return null;
+            return $this->vendorName = Vendor::UNKNOWN;
         }
 
-        $serverName = \strtolower($serverName);
+        $serverName = Vendor::vendorNameNormalize($serverName);
 
         if (\str_contains($serverName, 'pg') || \str_contains($serverName, 'postgres')) {
-            return Platform::POSTGRESQL;
+            return $this->vendorName = Vendor::POSTGRESQL;
         }
-
         if (\str_contains($serverName, 'maria')) {
-            return Platform::MARIADB;
+            return $this->vendorName = Vendor::MARIADB;
         }
-
         if (\str_contains($serverName, 'my')) {
-            return Platform::MYSQL;
+            return $this->vendorName = Vendor::MYSQL;
         }
-
         if (\str_contains($serverName, 'sqlite')) {
-            return Platform::SQLITE;
+            return $this->vendorName = Vendor::SQLITE;
         }
-
         if (\str_contains($serverName, 'sqlsrv') || \str_contains($serverName, 'sqlserver')) {
-            return Platform::SQLSERVER;
+            return $this->vendorName = Vendor::SQLSERVER;
         }
 
-        return $this->serverFlavor = $serverName;
+        return $this->vendorName = $serverName;
     }
 
     #[\Override]
-    public function getServerVersion(): ?string
+    public function getVendorVersion(): string
     {
-        if ($this->serverVersionLookekUp) {
+        if ($this->serverVersionLookedUp && $this->serverVersion) {
             return $this->serverVersion;
         }
-
-        $this->serverVersionLookekUp = true;
+        $this->serverVersionLookedUp = true;
 
         $serverVersion = $this->lookupServerVersion();
 
@@ -197,33 +192,58 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
             $serverVersion = $matches[0];
         }
 
-        return $this->serverVersion = $serverVersion;
+        return $this->serverVersion = $serverVersion ?? '0.0.0';
     }
 
+    #[\Override]
+    public function vendorIs(string|array $name, ?string $version = null, string $operator = '>='): bool
+    {
+        if (null !== $version && !$this->vendorVersionIs($version, $operator)) {
+            return false;
+        }
+
+        $vendorName = $this->getVendorName();
+        foreach ((array) $name as $candidate) {
+            if (Vendor::vendorNameNormalize($candidate) === $vendorName) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    #[\Override]
+    public function vendorVersionIs(string $version, string $operator = '>='): bool
+    {
+        return Vendor::versionCompare($version, $this->getVendorVersion(), $operator);
+    }
+
+    /** @deprecated */
+    #[\Override]
+    public function getServerFlavor(): ?string
+    {
+        return Vendor::UNKNOWN !== ($value = $this->getVendorName()) ? $value : null;
+    }
+
+    /** @deprecated */
+    #[\Override]
+    public function getServerVersion(): ?string
+    {
+        return '0.0.0' !== ($value = $this->getVendorVersion()) ? $value : null;
+    }
+
+    /** @deprecated */
     #[\Override]
     public function isVersionLessThan(string $version): bool
     {
-        if (!$serverVersion = $this->getServerVersion()) {
-            throw new \Exception(\sprintf("Database '%s', server version is null", $this->getServerFlavor()));
-        }
-
-        return 0 > \version_compare(
-            Platform::versionNormalize($serverVersion),
-            Platform::versionNormalize($version),
-        );
+        return $this->vendorVersionIs($version, '<');
     }
 
+    /** @deprecated */
     #[\Override]
     public function isVersionGreaterOrEqualThan(string $version): bool
     {
-        if (!$serverVersion = $this->getServerVersion()) {
-            throw new \Exception(\sprintf("Database '%s', server version is null", $this->getServerFlavor()));
-        }
-
-        return 0 <= \version_compare(
-            Platform::versionNormalize($serverVersion),
-            Platform::versionNormalize($version),
-        );
+        return $this->vendorVersionIs($version, '>=');
     }
 
     #[\Override]
@@ -313,13 +333,13 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
      */
     protected function doCreateTransaction(int $isolationLevel = Transaction::REPEATABLE_READ): Transaction
     {
-        return match ($this->getServerFlavor()) {
-            Platform::MARIADB => new MySQLTransaction($this, $isolationLevel),
-            Platform::MYSQL => new MySQLTransaction($this, $isolationLevel),
-            Platform::POSTGRESQL => new PostgreSQLTransaction($this, $isolationLevel),
-            Platform::SQLITE => new SQLiteTransaction($this, $isolationLevel),
-            Platform::SQLSERVER => new SQLServerTransaction($this, $isolationLevel),
-            default => throw new QueryBuilderError(\sprintf("Transactions are not supported yet for vendor '%s'", $this->getServerFlavor())),
+        return match ($this->getVendorName()) {
+            Vendor::MARIADB => new MySQLTransaction($this, $isolationLevel),
+            Vendor::MYSQL => new MySQLTransaction($this, $isolationLevel),
+            Vendor::POSTGRESQL => new PostgreSQLTransaction($this, $isolationLevel),
+            Vendor::SQLITE => new SQLiteTransaction($this, $isolationLevel),
+            Vendor::SQLSERVER => new SQLServerTransaction($this, $isolationLevel),
+            default => throw new QueryBuilderError(\sprintf("Transactions are not supported yet for vendor '%s'", $this->getVendorName())),
         };
     }
 
@@ -363,9 +383,9 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
      */
     protected function getConverter(): Converter
     {
-        $ret = match ($this->getServerFlavor()) {
-            Platform::MARIADB => new MySQLConverter(),
-            Platform::MYSQL => new MySQLConverter(),
+        $ret = match ($this->getVendorName()) {
+            Vendor::MARIADB => new MySQLConverter(),
+            Vendor::MYSQL => new MySQLConverter(),
             default => new Converter(),
         };
 
@@ -379,9 +399,9 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
      */
     protected function createEscaper(): Escaper
     {
-        return match ($this->getServerFlavor()) {
-            Platform::MARIADB => new MySQLEscaper(),
-            Platform::MYSQL => new MySQLEscaper(),
+        return match ($this->getVendorName()) {
+            Vendor::MARIADB => new MySQLEscaper(),
+            Vendor::MYSQL => new MySQLEscaper(),
             default => new StandardEscaper(),
         };
     }
@@ -391,28 +411,28 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
      */
     protected function createWriter(Escaper $escaper, Converter $converter): Writer
     {
-        $serverFlavor = $this->getServerFlavor();
+        $vendorName = $this->getVendorName();
 
-        if (Platform::POSTGRESQL === $serverFlavor) {
+        if (Vendor::POSTGRESQL === $vendorName) {
             return new PostgreSQLWriter($escaper, $converter);
         }
 
-        if (Platform::MYSQL === $serverFlavor) {
-            if (($serverVersion = $this->getServerVersion()) && 0 < \version_compare('8.0', $serverVersion)) {
+        if (Vendor::MYSQL === $vendorName) {
+            if (($serverVersion = $this->getVendorVersion()) && 0 < \version_compare('8.0', $serverVersion)) {
                 return new MySQLWriter($escaper, $converter);
             }
             return new MySQL8Writer($escaper, $converter);
         }
 
-        if (Platform::MARIADB === $serverFlavor) {
+        if (Vendor::MARIADB === $vendorName) {
             return new MariaDBWriter($escaper, $converter);
         }
 
-        if (Platform::SQLITE === $serverFlavor) {
+        if (Vendor::SQLITE === $vendorName) {
             return new SQLiteWriter($escaper, $converter);
         }
 
-        if (Platform::SQLSERVER === $serverFlavor) {
+        if (Vendor::SQLSERVER === $vendorName) {
             return new SQLServerWriter($escaper, $converter);
         }
 
@@ -430,29 +450,29 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
      */
     protected function createSchemaManager(): SchemaManager
     {
-        $serverFlavor = $this->getServerFlavor();
+        $vendorName = $this->getVendorName();
 
-        if (Platform::POSTGRESQL === $serverFlavor) {
+        if (Vendor::POSTGRESQL === $vendorName) {
             return new PostgreSQLSchemaManager($this);
         }
 
-        if (Platform::MYSQL === $serverFlavor) {
+        if (Vendor::MYSQL === $vendorName) {
             return new MySQLSchemaManager($this);
         }
 
-        if (Platform::MARIADB === $serverFlavor) {
+        if (Vendor::MARIADB === $vendorName) {
             return new MySQLSchemaManager($this);
         }
 
-        if (Platform::SQLITE === $serverFlavor) {
+        if (Vendor::SQLITE === $vendorName) {
             return new SQLiteSchemaManager($this);
         }
 
-        if (Platform::SQLSERVER === $serverFlavor) {
+        if (Vendor::SQLSERVER === $vendorName) {
             return new SQLServerSchemaManager($this);
         }
 
-        throw new UnsupportedFeatureError(\sprintf("Schema manager is not implemented yet for vendor '%s'", $serverFlavor));
+        throw new UnsupportedFeatureError(\sprintf("Schema manager is not implemented yet for vendor '%s'", $vendorName));
     }
 
     #[\Override]

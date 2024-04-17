@@ -44,11 +44,11 @@ $queryBuilder = new DoctrineQueryBuilder($connection);
 $queryBuilder->disableErrorConverter();
 ```
 
-:::note
+:::info
 This works with all bridges.
 :::
 
-:::note
+:::info
 The `makinacorpus/query-builder-bundle` will per default configure the `doctrine/dbal`
 bridge to disable specific error handling in order to be completely transparent for
 users that will usually expect Doctrine DBAL errors.

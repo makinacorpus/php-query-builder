@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Tests\Platform\Schema;
 
-use MakinaCorpus\QueryBuilder\Platform;
-use MakinaCorpus\QueryBuilder\QueryBuilder;
+use MakinaCorpus\QueryBuilder\Error\Bridge\DatabaseObjectDoesNotExistError;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Error\UnsupportedFeatureError;
-use MakinaCorpus\QueryBuilder\Error\Bridge\DatabaseObjectDoesNotExistError;
-use MakinaCorpus\QueryBuilder\Schema\SchemaManager;
+use MakinaCorpus\QueryBuilder\QueryBuilder;
 use MakinaCorpus\QueryBuilder\Schema\Read\ForeignKey;
 use MakinaCorpus\QueryBuilder\Schema\Read\Index;
+use MakinaCorpus\QueryBuilder\Schema\SchemaManager;
 use MakinaCorpus\QueryBuilder\Tests\FunctionalTestCase;
 use MakinaCorpus\QueryBuilder\Type\Type;
+use MakinaCorpus\QueryBuilder\Vendor;
 
 abstract class AbstractSchemaTestCase extends FunctionalTestCase
 {
@@ -42,10 +42,10 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
             } catch (DatabaseObjectDoesNotExistError) {}
         }
 
-        switch ($bridge->getServerFlavor()) {
+        switch ($bridge->getVendorName()) {
 
-            case Platform::MARIADB:
-            case Platform::MYSQL:
+            case Vendor::MARIADB:
+            case Vendor::MYSQL:
                 $bridge->executeStatement(
                     <<<SQL
                     CREATE TABLE org (
@@ -107,7 +107,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                 );
                 break;
 
-            case Platform::SQLSERVER:
+            case Vendor::SQLSERVER:
                 $bridge->executeStatement(
                     <<<SQL
                     CREATE TABLE org (
@@ -169,7 +169,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                 );
                 break;
 
-            case Platform::SQLITE:
+            case Vendor::SQLITE:
                 $bridge->executeStatement(
                     <<<SQL
                     CREATE TABLE org (
@@ -231,7 +231,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                 );
                 break;
 
-            case Platform::POSTGRESQL:
+            case Vendor::POSTGRESQL:
                 $bridge->executeStatement(
                     <<<SQL
                     CREATE TABLE org (
@@ -306,15 +306,15 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
     protected function getTestingCollation(): string
     {
-        if ($this->ifDatabase(Platform::MYSQL)) {
+        if ($this->ifDatabase(Vendor::MYSQL)) {
             return 'utf8_general_ci';
         }
-        if ($this->ifDatabase(Platform::POSTGRESQL)) {
+        if ($this->ifDatabase(Vendor::POSTGRESQL)) {
             // Arbitrary taken from: "SELECT collname FROM pg_collation" and
             // existing in all tested containers.
             return 'fr-FR-x-icu';
         }
-        if ($this->ifDatabase(Platform::SQLSERVER)) {
+        if ($this->ifDatabase(Vendor::SQLSERVER)) {
             return 'Latin1_General_100_CI_AS_KS_SC_UTF8';
         }
         return 'utf8';
@@ -395,9 +395,9 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
     public function testColumnAddIdentity(): void
     {
-        $this->skipIfDatabase(Platform::MARIADB, 'MariaDB requires AUTO_INCREMENT to be PRIMARY KEY, cannot simply be added this way');
-        $this->skipIfDatabase(Platform::MYSQL, 'MySQL requires AUTO_INCREMENT to be PRIMARY KEY, cannot simply be added this way');
-        $this->skipIfDatabase(Platform::SQLITE, 'This will never be implemented in SQLite');
+        $this->skipIfDatabase(Vendor::MARIADB, 'MariaDB requires AUTO_INCREMENT to be PRIMARY KEY, cannot simply be added this way');
+        $this->skipIfDatabase(Vendor::MYSQL, 'MySQL requires AUTO_INCREMENT to be PRIMARY KEY, cannot simply be added this way');
+        $this->skipIfDatabase(Vendor::SQLITE, 'This will never be implemented in SQLite');
 
         $this
             ->getSchemaManager()
@@ -427,9 +427,9 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
     public function testColumnAddSerial(): void
     {
-        $this->skipIfDatabase(Platform::MARIADB, 'MariaDB requires AUTO_INCREMENT to be PRIMARY KEY, cannot simply be added this way');
-        $this->skipIfDatabase(Platform::MYSQL, 'MySQL requires AUTO_INCREMENT to be PRIMARY KEY, cannot simply be added this way');
-        $this->skipIfDatabase(Platform::SQLITE, 'This will never be implemented in SQLite');
+        $this->skipIfDatabase(Vendor::MARIADB, 'MariaDB requires AUTO_INCREMENT to be PRIMARY KEY, cannot simply be added this way');
+        $this->skipIfDatabase(Vendor::MYSQL, 'MySQL requires AUTO_INCREMENT to be PRIMARY KEY, cannot simply be added this way');
+        $this->skipIfDatabase(Vendor::SQLITE, 'This will never be implemented in SQLite');
 
         $this
             ->getSchemaManager()
@@ -519,8 +519,8 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
     public function testColumnModifyType(): void
     {
-        $this->skipIfDatabase(Platform::SQLITE);
-        $this->skipIfDatabase(Platform::SQLSERVER, 'SQL Server cannot change type when there is a default, see testColumnModifyTypeAndDefault().');
+        $this->skipIfDatabase(Vendor::SQLITE);
+        $this->skipIfDatabase(Vendor::SQLSERVER, 'SQL Server cannot change type when there is a default, see testColumnModifyTypeAndDefault().');
 
         $this
             ->getSchemaManager()
@@ -550,7 +550,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
     public function testColumnModifyTypeAndDefault(): void
     {
-        $this->skipIfDatabase(Platform::SQLITE);
+        $this->skipIfDatabase(Vendor::SQLITE);
 
         $this
             ->getSchemaManager()
@@ -581,7 +581,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
     public function testColumnModifyCollation(): void
     {
-        $this->skipIfDatabase(Platform::SQLITE);
+        $this->skipIfDatabase(Vendor::SQLITE);
 
         $collation = $this->getTestingCollation();
 
@@ -614,7 +614,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
     public function testColumnModifyDropDefault(): void
     {
-        $this->skipIfDatabase(Platform::SQLITE);
+        $this->skipIfDatabase(Vendor::SQLITE);
 
         $this
             ->getSchemaManager()
@@ -644,7 +644,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
     public function testColumnModifyDefault(): void
     {
-        $this->skipIfDatabase(Platform::SQLITE);
+        $this->skipIfDatabase(Vendor::SQLITE);
 
         $this
             ->getSchemaManager()
@@ -674,7 +674,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
     public function testColumnModifyNullable(): void
     {
-        $this->skipIfDatabase(Platform::SQLITE);
+        $this->skipIfDatabase(Vendor::SQLITE);
 
         $this
             ->getSchemaManager()
@@ -704,7 +704,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
     public function testColumnModifyEverything(): void
     {
-        $this->skipIfDatabase(Platform::SQLITE);
+        $this->skipIfDatabase(Vendor::SQLITE);
 
         $collation = $this->getTestingCollation();
 
@@ -753,7 +753,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
     public function testColumnDropWithDefault(): void
     {
-        $this->skipIfDatabase(Platform::SQLSERVER, 'SQL Server drop a column with constraints');
+        $this->skipIfDatabase(Vendor::SQLSERVER, 'SQL Server drop a column with constraints');
 
         $this
             ->getSchemaManager()
@@ -772,8 +772,8 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
     public function testColumnDropWhenConstraint(): void
     {
-        $this->skipIfDatabase(Platform::SQLITE, 'SQLite cannot drop a column with a default');
-        $this->skipIfDatabase(Platform::SQLSERVER, 'SQL Server drop a column with constraints');
+        $this->skipIfDatabase(Vendor::SQLITE, 'SQLite cannot drop a column with a default');
+        $this->skipIfDatabase(Vendor::SQLSERVER, 'SQL Server drop a column with constraints');
 
         $this
             ->getSchemaManager()
@@ -827,7 +827,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
     public function testForeignKeyAdd(): void
     {
-        $this->skipIfDatabase(Platform::SQLITE);
+        $this->skipIfDatabase(Vendor::SQLITE);
 
         $this
             ->getSchemaManager()
@@ -841,7 +841,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
     public function testForeignKeyModify(): void
     {
-        $this->skipIfDatabase(Platform::SQLITE);
+        $this->skipIfDatabase(Vendor::SQLITE);
 
         self::markTestIncomplete();
         self::expectNotToPerformAssertions();
@@ -849,7 +849,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
     public function testForeignKeyDrop(): void
     {
-        $this->skipIfDatabase(Platform::SQLITE);
+        $this->skipIfDatabase(Vendor::SQLITE);
 
         $this
             ->getSchemaManager()
@@ -927,7 +927,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
     public function testPrimaryKeyAdd(): void
     {
-        $this->skipIfDatabase(Platform::SQLITE);
+        $this->skipIfDatabase(Vendor::SQLITE);
 
         $this
             ->getSchemaManager()
@@ -947,7 +947,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
     public function testPrimaryKeyDrop(): void
     {
-        $this->skipIfDatabase(Platform::SQLITE);
+        $this->skipIfDatabase(Vendor::SQLITE);
 
         $this
             ->getSchemaManager()
@@ -996,7 +996,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
     public function testTableCreateWithIdentity(): void
     {
-        $this->skipIfDatabase(Platform::SQLITE);
+        $this->skipIfDatabase(Vendor::SQLITE);
 
         $this
             ->getSchemaManager()
@@ -1020,7 +1020,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
     public function testTableCreateWithSerial(): void
     {
-        $this->skipIfDatabase(Platform::SQLITE);
+        $this->skipIfDatabase(Vendor::SQLITE);
 
         $this
             ->getSchemaManager()
@@ -1158,7 +1158,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
         ;
 
         self::expectException(QueryBuilderError::class);
-        self::expectExceptionMessageMatches("/Table 'test_db\..*\.user_address' does not exist/");
+        self::expectExceptionMessageMatches("/Table '(test_db|main)\..*\.user_address' does not exist/");
         $this
             ->getSchemaManager()
             ->getTable('user_address')
@@ -1182,7 +1182,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
         self::assertSame('renamed_table_new_name', $table->getName());
 
         self::expectException(QueryBuilderError::class);
-        self::expectExceptionMessageMatches("/Table 'test_db\..*\.renamed_table' does not exist/");
+        self::expectExceptionMessageMatches("/Table '(test_db|main)\..*\.renamed_table' does not exist/");
         $this
             ->getSchemaManager()
             ->getTable('renamed_table')
@@ -1322,7 +1322,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
         self::assertSameType(Type::decimal(10, 2), $column->getValueType());
         self::assertSame('org', $column->getTable());
         self::assertSame($this->getSchemaManager()->getDefaultSchema(), $column->getSchema());
-        self::assertMatchesRegularExpression('/^column:test_db\..*\.org.balance$/', $column->toString());
+        self::assertMatchesRegularExpression('/^column:(test_db|main)\..*\.org.balance$/', $column->toString());
         self::assertFalse($column->isNullable());
     }
 
@@ -1354,7 +1354,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
         self::assertSameType(Type::text(), $column->getValueType());
         self::assertSame('org', $column->getTable());
         self::assertSame($this->getSchemaManager()->getDefaultSchema(), $column->getSchema());
-        self::assertMatchesRegularExpression('/^column:test_db\..*\.org.name$/', $column->toString());
+        self::assertMatchesRegularExpression('/^column:(test_db|main)\..*\.org.name$/', $column->toString());
         self::assertTrue($column->isNullable());
     }
 
@@ -1404,7 +1404,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
 
         self::assertTrue($found);
 
-        if ($this->ifDatabaseNot(Platform::SQLITE)) {
+        if ($this->ifDatabaseNot(Vendor::SQLITE)) {
             self::assertCount(1, $table->getReverseForeignKeys());
         }
     }
@@ -1433,7 +1433,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
         self::assertSame('users', $foreignKey->getTable());
         self::assertSame('org', $foreignKey->getForeignTable());
 
-        if ($this->ifDatabaseNot(Platform::SQLITE)) {
+        if ($this->ifDatabaseNot(Vendor::SQLITE)) {
             self::assertNotNull($reverseForeignKey = ($table->getReverseForeignKeys()[0] ?? null));
             self::assertSame(['user_id'], $reverseForeignKey->getColumnNames());
             self::assertSame(['id'], $reverseForeignKey->getForeignColumnNames());
