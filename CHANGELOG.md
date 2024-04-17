@@ -1,6 +1,6 @@
 # Changelog
 
-## Next
+## 1.4.0
 
 * [feature] ⭐️ Added `DatabaseSession::getVendorName()`, `DatabaseSession::getVendorVersion()`,
   `DatabaseSession::vendorIs()` and `DatabaseSession::vendorVersionIs()` methods.
