@@ -558,7 +558,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                 ->modifyColumn(
                     table: 'user_address',
                     name: 'country',
-                    type: 'text',
+                    type: 'varchar(72)', // text type cannot have default with MySQL...
                     default: "'fr'",
                 )
             ->commit()
@@ -571,7 +571,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
         ;
 
         // This changed.
-        self::assertSameType(Type::text(), $column->getValueType());
+        self::assertSameType(Type::varchar(72), $column->getValueType());
 
         // This didn't.
         self::assertFalse($column->isNullable());
