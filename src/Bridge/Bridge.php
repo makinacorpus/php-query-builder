@@ -16,25 +16,22 @@ interface Bridge extends DatabaseSession
     public function disableErrorConverter(): void;
 
     /**
-     * Get server name.
+     * Get server name as exposed by the server itself, not normalized.
      */
     public function getServerName(): ?string;
 
     /**
-     * Get server product type.
+     * Get server version as exposed by the server itself, not normalized.
+     */
+    public function getServerVersion(): ?string;
+
+    /**
+     * Get normalized vendor name.
      *
      * @deprecated
      * @see DatabaseSession::getVendorName()
      */
     public function getServerFlavor(): ?string;
-
-    /**
-     * Get server version.
-     *
-     * @deprecated
-     * @see DatabaseSession::getVendorVersion()
-     */
-    public function getServerVersion(): ?string;
 
     /**
      * Version is less than given.

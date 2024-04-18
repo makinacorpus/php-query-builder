@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder;
 
+use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
+
 /**
  * RDMBS identification.
  *
@@ -30,7 +32,7 @@ namespace MakinaCorpus\QueryBuilder;
         if (\preg_match('/(\d+)(\.\d+|)(\.\d+|).*/ims', $version, $matches)) {
             return $matches[1] . ($matches[2] ?: '.0') . ($matches[3] ?: '.0');
         }
-        throw new \Exception(\sprintf("Version '%s', is not in 'x.y.z' semantic format", $version));
+        throw new QueryBuilderError(\sprintf("Version '%s', is not in 'x.y.z' semantic format", $version));
     }
 
     /**
@@ -47,7 +49,7 @@ namespace MakinaCorpus\QueryBuilder;
             '=' => 0 === \version_compare($userGiven, $serverVersion),
             '>=' => 0 <= \version_compare($userGiven, $serverVersion),
             '>' => 0 < \version_compare($userGiven, $serverVersion),
-            default => throw new \Exception("Version comparison operator must be one of '<', '<=', '=', '>=', '>'"),
+            default => throw new QueryBuilderError("Version comparison operator must be one of '<', '<=', '=', '>=', '>'"),
         };
     }
 

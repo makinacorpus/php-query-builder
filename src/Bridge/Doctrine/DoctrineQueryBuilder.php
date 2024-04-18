@@ -83,7 +83,7 @@ class DoctrineQueryBuilder extends AbstractBridge
             return $this->doctrineServerVersion = $this->connection->getServerVersion();
         }
 
-        return $this->doctrineServerVersion = 'unknown';
+        return $this->doctrineServerVersion = '0.0.0';
     }
 
     #[\Override]
@@ -98,6 +98,7 @@ class DoctrineQueryBuilder extends AbstractBridge
         };
     }
 
+    #[\Override]
     protected function createWriter(Escaper $escaper, Converter $converter): Writer
     {
         // @todo Temporary deactivated, needs a way to add converter

@@ -48,6 +48,7 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
     private ?string $serverVersion = null;
     private bool $serverVersionLookedUp = false;
     private ?string $vendorName = null;
+    private ?string $vendorVersion = null;
     private ?Transaction $currentTransaction = null;
     private ?ErrorConverter $errorConverter = null;
     private ?SchemaManager $schemaManager = null;
@@ -97,44 +98,6 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
         $this->serverVersionLookedUp = (null !== ($this->serverVersion = $serverVersion));
     }
 
-    #[\Override]
-    public function getServerName(): ?string
-    {
-        if ($this->serverNameLookedUp) {
-            return $this->serverName;
-        }
-
-        $this->serverName = $this->lookupServerName();
-        $this->serverNameLookedUp = true;
-
-        return $this->serverName;
-    }
-
-    /**
-     * Get error converter.
-     */
-    protected function getErrorConverter(): ErrorConverter
-    {
-        return $this->errorConverter ??= $this->createErrorConverter();
-    }
-
-    /**
-     * @internal
-     *    For dependency injection only.
-     */
-    public function setErrorConverter(ErrorConverter $errorConverter): void
-    {
-        $this->errorConverter = $errorConverter;
-    }
-
-    /**
-     * Please override.
-     */
-    protected function createErrorConverter(): ErrorConverter
-    {
-        return new PassthroughErrorConverter();
-    }
-
     /**
      * Please override.
      */
@@ -144,9 +107,41 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
     }
 
     #[\Override]
+    public function getServerName(): ?string
+    {
+        if ($this->serverNameLookedUp) {
+            return $this->serverName;
+        }
+
+        $this->serverNameLookedUp = true;
+
+        return $this->serverName = $this->lookupServerName();
+    }
+
+    /**
+     * Please override.
+     */
+    protected function lookupServerVersion(): ?string
+    {
+        return null;
+    }
+
+    #[\Override]
+    public function getServerVersion(): ?string
+    {
+        if ($this->serverVersionLookedUp) {
+            return $this->serverVersion;
+        }
+
+        $this->serverVersionLookedUp = true;
+
+        return $this->serverVersion = $this->lookupServerVersion();
+    }
+
+    #[\Override]
     public function getVendorName(): string
     {
-        if ($this->vendorName) {
+        if (null !== $this->vendorName) {
             return $this->vendorName;
         }
 
@@ -180,12 +175,11 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
     #[\Override]
     public function getVendorVersion(): string
     {
-        if ($this->serverVersionLookedUp && $this->serverVersion) {
-            return $this->serverVersion;
+        if (null !== $this->vendorVersion) {
+            return $this->vendorVersion;
         }
-        $this->serverVersionLookedUp = true;
 
-        $serverVersion = $this->lookupServerVersion();
+        $serverVersion = $this->getServerVersion();
 
         $matches = [];
         if ($serverVersion && \preg_match('/(\d+\.|)\d+\.\d+/ims', $serverVersion, $matches)) {
@@ -227,13 +221,6 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
 
     /** @deprecated */
     #[\Override]
-    public function getServerVersion(): ?string
-    {
-        return '0.0.0' !== ($value = $this->getVendorVersion()) ? $value : null;
-    }
-
-    /** @deprecated */
-    #[\Override]
     public function isVersionLessThan(string $version): bool
     {
         return $this->vendorVersionIs($version, '<');
@@ -249,19 +236,13 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
     #[\Override]
     public function getCurrentDatabase(): string
     {
-        if (null === $this->currentDatabase) {
-            $this->currentDatabase = (string) $this->raw('SELECT ?', [new CurrentDatabase()])->executeQuery()->fetchOne();
-        }
-        return $this->currentDatabase;
+        return $this->currentDatabase ??= (string) $this->raw('SELECT ?', [new CurrentDatabase()])->executeQuery()->fetchOne();
     }
 
     #[\Override]
     public function getDefaultSchema(): string
     {
-        if (null === $this->currentSchema) {
-            $this->currentSchema = (string) $this->raw('SELECT ?', [new CurrentSchema()])->executeQuery()->fetchOne();
-        }
-        return $this->currentSchema;
+        return $this->currentSchema ??= (string) $this->raw('SELECT ?', [new CurrentSchema()])->executeQuery()->fetchOne();
     }
 
     /**
@@ -371,11 +352,28 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
     }
 
     /**
+     * Get error converter.
+     */
+    protected function getErrorConverter(): ErrorConverter
+    {
+        return $this->errorConverter ??= $this->createErrorConverter();
+    }
+
+    /**
+     * @internal
+     *    For dependency injection only.
+     */
+    public function setErrorConverter(ErrorConverter $errorConverter): void
+    {
+        $this->errorConverter = $errorConverter;
+    }
+
+    /**
      * Please override.
      */
-    protected function lookupServerVersion(): ?string
+    protected function createErrorConverter(): ErrorConverter
     {
-        return null;
+        return new PassthroughErrorConverter();
     }
 
     /**
