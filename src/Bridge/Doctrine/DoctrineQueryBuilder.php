@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Bridge\Doctrine;
 
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Driver\ServerInfoAwareConnection;
 use MakinaCorpus\QueryBuilder\Bridge\AbstractBridge;
 use MakinaCorpus\QueryBuilder\Bridge\Doctrine\ErrorConverter\DoctrineErrorConverter;
 use MakinaCorpus\QueryBuilder\Bridge\Doctrine\Escaper\DoctrineEscaper;
@@ -14,9 +13,9 @@ use MakinaCorpus\QueryBuilder\Bridge\ErrorConverter;
 use MakinaCorpus\QueryBuilder\Converter\Converter;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Escaper\Escaper;
-use MakinaCorpus\QueryBuilder\Vendor;
 use MakinaCorpus\QueryBuilder\Result\IterableResult;
 use MakinaCorpus\QueryBuilder\Result\Result;
+use MakinaCorpus\QueryBuilder\Vendor;
 use MakinaCorpus\QueryBuilder\Writer\Writer;
 
 class DoctrineQueryBuilder extends AbstractBridge
@@ -133,10 +132,13 @@ class DoctrineQueryBuilder extends AbstractBridge
     #[\Override]
     public function close(): void
     {
-        if ($this->connection) {
-            $this->connection->close();
-        }
-        $this->connection = null;
+        $this->connection?->close();
+    }
+
+    #[\Override]
+    public function connect(): void
+    {
+        // Do nothing, because doctrine will lazy-reconnect itself on access.
     }
 
     /**

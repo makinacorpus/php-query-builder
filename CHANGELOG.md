@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.5.1
+
+* [feature] ⚠️ Move `Bridge::close()` method into the `DatabaseSession`
+  interface. Add `DatabaseSession::connect()` method for reopening
+  connection if closed.
+
 ## 1.5.0
 
 The goal of this release is to hide the bridge concept from final user facing
@@ -10,8 +16,7 @@ Warning: this release brings a few backward compatibility breaks, regarding
 exception classes namespaces. Fixing your code is trivial, but required.
 
 * [feature] Move `Bridge::getSchemaManager()` method into the `DatabaseSession`
-  interface. Bridges should now never be used
-  as a public API for end users.
+  interface. Bridges should now never be used as a public API for end users.
 * [bc] ⚠️ Move all exception classes from the `MakinaCorpus\QueryBuilder\Error\Bridge`
   namespace into the `MakinaCorpus\QueryBuilder\Error\Server` namespace.
 * [bc] ⚠️ Rename `FunctionalTestCaseTrait::getBridge()` to

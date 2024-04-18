@@ -14,6 +14,7 @@ use MakinaCorpus\QueryBuilder\Bridge\Pdo\ErrorConverter\PdoSQLServerErrorConvert
 use MakinaCorpus\QueryBuilder\Bridge\Pdo\Escaper\PdoEscaper;
 use MakinaCorpus\QueryBuilder\Bridge\Pdo\Escaper\PdoMySQLEscaper;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
+use MakinaCorpus\QueryBuilder\Error\Server\UnableToConnectError;
 use MakinaCorpus\QueryBuilder\Escaper\Escaper;
 use MakinaCorpus\QueryBuilder\Result\IterableResult;
 use MakinaCorpus\QueryBuilder\Result\Result;
@@ -141,6 +142,12 @@ class PdoQueryBuilder extends AbstractBridge
     public function close(): void
     {
         $this->connection = null;
+    }
+
+    #[\Override]
+    public function connect(): void
+    {
+        throw new UnableToConnectError("PDO driver does not support opening the connection.");
     }
 
     /**

@@ -52,9 +52,4 @@ interface Bridge extends DatabaseSession
      * Get SQL writer instance.
      */
     public function getWriter(): Writer;
-
-    /**
-     * Free everything.
-     */
-    public function close(): void;
 }

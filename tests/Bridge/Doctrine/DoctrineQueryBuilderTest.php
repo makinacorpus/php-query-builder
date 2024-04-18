@@ -63,4 +63,16 @@ class DoctrineQueryBuilderTest extends DoctrineTestCase
     {
         self::markTestIncomplete("Write me");
     }
+
+    public function testCloseConnect(): void
+    {
+        $session = $this->getDatabaseSession();
+
+        self::assertSame(7, (int) $session->executeQuery('SELECT 7')->fetchOne());
+
+        $session->close();
+        $session->connect();
+
+        self::assertSame(11, (int) $session->executeQuery('SELECT 11')->fetchOne());
+    }
 }

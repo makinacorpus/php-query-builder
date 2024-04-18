@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder;
 
 use MakinaCorpus\QueryBuilder\Error\Server\TransactionError;
+use MakinaCorpus\QueryBuilder\Error\Server\UnableToConnectError;
 use MakinaCorpus\QueryBuilder\Result\Result;
 use MakinaCorpus\QueryBuilder\Schema\SchemaManager;
 use MakinaCorpus\QueryBuilder\Transaction\Transaction;
@@ -113,4 +114,23 @@ interface DatabaseSession extends QueryBuilder
      * @experimental
      */
     public function getSchemaManager(): SchemaManager;
+
+    /**
+     * Close connection.
+     *
+     * If the bridge cannot close the connection, it will simply do nothing.
+     */
+    public function close(): void;
+
+    /**
+     * Connect the connection.
+     *
+     * If connection is not closed, does nothing.
+     *
+     * If brige does not support opening the connection, this will raise
+     * an exception.
+     *
+     * @throws UnableToConnectError
+     */
+    public function connect(): void;
 }
