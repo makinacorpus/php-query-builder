@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Platform\Transaction;
 
 use MakinaCorpus\QueryBuilder\DatabaseSession;
-use MakinaCorpus\QueryBuilder\Error\Bridge\TransactionError;
+use MakinaCorpus\QueryBuilder\Error\Server\TransactionError;
 use MakinaCorpus\QueryBuilder\Transaction\Transaction;
 use MakinaCorpus\QueryBuilder\Transaction\TransactionSavepoint;
 

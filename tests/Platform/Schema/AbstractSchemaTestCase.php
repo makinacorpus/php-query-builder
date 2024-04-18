@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Tests\Platform\Schema;
 
-use MakinaCorpus\QueryBuilder\Error\Bridge\DatabaseObjectDoesNotExistError;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
+use MakinaCorpus\QueryBuilder\Error\Server\DatabaseObjectDoesNotExistError;
 use MakinaCorpus\QueryBuilder\Error\UnsupportedFeatureError;
 use MakinaCorpus\QueryBuilder\QueryBuilder;
 use MakinaCorpus\QueryBuilder\Schema\Read\ForeignKey;
@@ -20,7 +20,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
     /** @before */
     protected function createSchema(): void
     {
-        $bridge = $this->getBridge();
+        $session = $this->getDatabaseSession();
 
         foreach ([
             'new_table',
@@ -38,15 +38,15 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
             'org',
         ] as $table) {
             try {
-                $bridge->executeStatement('DROP TABLE ?::table', [$table]);
+                $session->executeStatement('DROP TABLE ?::table', [$table]);
             } catch (DatabaseObjectDoesNotExistError) {}
         }
 
-        switch ($bridge->getVendorName()) {
+        switch ($session->getVendorName()) {
 
             case Vendor::MARIADB:
             case Vendor::MYSQL:
-                $bridge->executeStatement(
+                $session->executeStatement(
                     <<<SQL
                     CREATE TABLE org (
                         id int UNIQUE NOT NULL,
@@ -59,7 +59,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                     )
                     SQL
                 );
-                $bridge->executeStatement(
+                $session->executeStatement(
                     <<<SQL
                     CREATE TABLE users (
                         id int UNIQUE NOT NULL auto_increment PRIMARY KEY,
@@ -75,7 +75,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                     )
                     SQL
                 );
-                $bridge->executeStatement(
+                $session->executeStatement(
                     <<<SQL
                     CREATE TABLE user_address (
                         id int UNIQUE NOT NULL auto_increment PRIMARY KEY,
@@ -89,7 +89,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                     )
                     SQL
                 );
-                $bridge->executeStatement(
+                $session->executeStatement(
                     <<<SQL
                     CREATE TABLE no_pk_table (
                         id int UNIQUE NOT NULL,
@@ -97,7 +97,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                     )
                     SQL
                 );
-                $bridge->executeStatement(
+                $session->executeStatement(
                     <<<SQL
                     CREATE TABLE renamed_table (
                         id int UNIQUE NOT NULL,
@@ -108,7 +108,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                 break;
 
             case Vendor::SQLSERVER:
-                $bridge->executeStatement(
+                $session->executeStatement(
                     <<<SQL
                     CREATE TABLE org (
                         id int UNIQUE NOT NULL,
@@ -121,7 +121,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                     )
                     SQL
                 );
-                $bridge->executeStatement(
+                $session->executeStatement(
                     <<<SQL
                     CREATE TABLE users (
                         id int IDENTITY NOT NULL PRIMARY KEY,
@@ -137,7 +137,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                     )
                     SQL
                 );
-                $bridge->executeStatement(
+                $session->executeStatement(
                     <<<SQL
                     CREATE TABLE user_address (
                         id int IDENTITY NOT NULL PRIMARY KEY,
@@ -151,7 +151,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                     )
                     SQL
                 );
-                $bridge->executeStatement(
+                $session->executeStatement(
                     <<<SQL
                     CREATE TABLE no_pk_table (
                         id int UNIQUE NOT NULL,
@@ -159,7 +159,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                     )
                     SQL
                 );
-                $bridge->executeStatement(
+                $session->executeStatement(
                     <<<SQL
                     CREATE TABLE renamed_table (
                         id int UNIQUE NOT NULL,
@@ -170,7 +170,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                 break;
 
             case Vendor::SQLITE:
-                $bridge->executeStatement(
+                $session->executeStatement(
                     <<<SQL
                     CREATE TABLE org (
                         id int UNIQUE NOT NULL,
@@ -183,7 +183,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                     )
                     SQL
                 );
-                $bridge->executeStatement(
+                $session->executeStatement(
                     <<<SQL
                     CREATE TABLE users (
                         id serial UNIQUE NOT NULL PRIMARY KEY,
@@ -199,7 +199,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                     )
                     SQL
                 );
-                $bridge->executeStatement(
+                $session->executeStatement(
                     <<<SQL
                     CREATE TABLE user_address (
                         id serial UNIQUE NOT NULL PRIMARY KEY,
@@ -213,7 +213,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                     )
                     SQL
                 );
-                $bridge->executeStatement(
+                $session->executeStatement(
                     <<<SQL
                     CREATE TABLE no_pk_table (
                         id int UNIQUE NOT NULL,
@@ -221,7 +221,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                     )
                     SQL
                 );
-                $bridge->executeStatement(
+                $session->executeStatement(
                     <<<SQL
                     CREATE TABLE renamed_table (
                         id int UNIQUE NOT NULL,
@@ -232,7 +232,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                 break;
 
             case Vendor::POSTGRESQL:
-                $bridge->executeStatement(
+                $session->executeStatement(
                     <<<SQL
                     CREATE TABLE org (
                         id int UNIQUE NOT NULL,
@@ -245,7 +245,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                     )
                     SQL
                 );
-                $bridge->executeStatement(
+                $session->executeStatement(
                     <<<SQL
                     CREATE TABLE users (
                         id serial UNIQUE NOT NULL PRIMARY KEY,
@@ -261,7 +261,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                     )
                     SQL
                 );
-                $bridge->executeStatement(
+                $session->executeStatement(
                     <<<SQL
                     CREATE TABLE user_address (
                         id serial UNIQUE NOT NULL PRIMARY KEY,
@@ -275,7 +275,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                     )
                     SQL
                 );
-                $bridge->executeStatement(
+                $session->executeStatement(
                     <<<SQL
                     CREATE TABLE no_pk_table (
                         id int UNIQUE NOT NULL,
@@ -283,7 +283,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
                     )
                     SQL
                 );
-                $bridge->executeStatement(
+                $session->executeStatement(
                     <<<SQL
                     CREATE TABLE renamed_table (
                         id int UNIQUE NOT NULL,
@@ -298,7 +298,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
     protected function getSchemaManager(): SchemaManager
     {
         try {
-            return $this->getBridge()->getSchemaManager();
+            return $this->getDatabaseSession()->getSchemaManager();
         } catch (UnsupportedFeatureError $e) {
             self::markTestSkipped($e->getMessage());
         }

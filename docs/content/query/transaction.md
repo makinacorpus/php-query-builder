@@ -2,7 +2,7 @@
 
 ## Introduction
 
-When used in conjunction with a bridge, you may use transactions.
+As soon as you have a working `DatabaseSession` instance, you may use transactions.
 
 SQL transaction supports the given level of features:
 
@@ -16,13 +16,21 @@ Consider that you are manipulating a brige instance, which name is `$brige`, you
 simply start a transaction this way:
 
 ```php
-$transaction = $bridge->beginTransaction();
+use MakinaCorpus\QueryBuilder\DatabaseSession;
+
+assert($session instanceof DatabaseSession);
+
+$transaction = $session->beginTransaction();
 ```
 
 You may also create the stub object for it, then start it later:
 
 ```php
-$transaction = $bridge->createTransaction();
+use MakinaCorpus\QueryBuilder\DatabaseSession;
+
+assert($session instanceof DatabaseSession);
+
+$transaction = $session->createTransaction();
 
 $transaction->isStarted(); // returns false
 
@@ -42,11 +50,14 @@ $transaction->commit();
 Error handling is up to you, we advice writing such algorightm to do it right:
 
 ```sql
-use MakinaCorpus\QueryBuilder\Error\Bridge\ServerError;
+use MakinaCorpus\QueryBuilder\DatabaseSession;
+use MakinaCorpus\QueryBuilder\Error\Server\ServerError;
+
+assert($session instanceof DatabaseSession);
 
 $transaction = null;
 try {
-    $transaction = $bridge->beginTransaction();
+    $transaction = $session->beginTransaction();
 
     // ... you SQL statements here ...
 
@@ -61,15 +72,17 @@ try {
 }
 ```
 
-Transaction `ROLLBACK` is never issued automatically, one exception stands: if the transaction
-objet goes out of scope, when the destructor is called, then `ROLLBACK` is issued.
+Transaction `ROLLBACK` is never issued automatically, one exception stands: if
+the transaction objet goes out of scope, when the destructor is called, then
+`ROLLBACK` is issued.
 
 All transactions must be `COMMIT` explicitely, or will be `ROLLBACK` later.
 
 :::warning
-The bridge is a single SQL session, which means that if you start a transaction, it will
-remain in memory until it is being commited or rollbacked. Code later in stack will issue
-SQL queries in the same transaction until it's finished.
+Transaction is shared for the `DatabaseSession` instance which means that if
+you start a transaction, it will remain in memory until it is being commited
+or rollbacked. Code later in stack will issue SQL queries in the same
+transaction until it's finished.
 :::
 
 ## Savepoints

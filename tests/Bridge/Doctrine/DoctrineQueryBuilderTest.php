@@ -13,7 +13,7 @@ class DoctrineQueryBuilderTest extends DoctrineTestCase
         self::assertSame(
             1,
             (int) $this
-                ->getBridge()
+                ->getDatabaseSession()
                 ->select()
                 ->columnRaw('1')
                 ->executeQuery()
@@ -29,7 +29,7 @@ class DoctrineQueryBuilderTest extends DoctrineTestCase
     public function testParameterTypeGuess(): void
     {
         $query = $this
-            ->getBridge()
+            ->getDatabaseSession()
             ->raw(
                 'select ?',
                 [

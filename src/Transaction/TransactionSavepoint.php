@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Transaction;
 
-use MakinaCorpus\QueryBuilder\Error\Bridge\TransactionError;
+use MakinaCorpus\QueryBuilder\Error\Server\TransactionError;
 
 final class TransactionSavepoint implements Transaction
 {

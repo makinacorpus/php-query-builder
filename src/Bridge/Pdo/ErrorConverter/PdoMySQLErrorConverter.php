@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Bridge\Pdo\ErrorConverter;
 
 use MakinaCorpus\QueryBuilder\Bridge\ErrorConverter;
-use MakinaCorpus\QueryBuilder\Error\Bridge\AmbiguousIdentifierError;
-use MakinaCorpus\QueryBuilder\Error\Bridge\ForeignKeyConstraintViolationError;
-use MakinaCorpus\QueryBuilder\Error\Bridge\NotNullConstraintViolationError;
-use MakinaCorpus\QueryBuilder\Error\Bridge\TableDoesNotExistError;
-use MakinaCorpus\QueryBuilder\Error\Bridge\TransactionDeadlockError;
-use MakinaCorpus\QueryBuilder\Error\Bridge\TransactionLockWaitTimeoutError;
-use MakinaCorpus\QueryBuilder\Error\Bridge\UniqueConstraintViolationError;
-use MakinaCorpus\QueryBuilder\Error\Bridge\ColumnDoesNotExistError;
-use MakinaCorpus\QueryBuilder\Error\Bridge\ServerError;
+use MakinaCorpus\QueryBuilder\Error\Server\AmbiguousIdentifierError;
+use MakinaCorpus\QueryBuilder\Error\Server\ColumnDoesNotExistError;
+use MakinaCorpus\QueryBuilder\Error\Server\ForeignKeyConstraintViolationError;
+use MakinaCorpus\QueryBuilder\Error\Server\NotNullConstraintViolationError;
+use MakinaCorpus\QueryBuilder\Error\Server\ServerError;
+use MakinaCorpus\QueryBuilder\Error\Server\TableDoesNotExistError;
+use MakinaCorpus\QueryBuilder\Error\Server\TransactionDeadlockError;
+use MakinaCorpus\QueryBuilder\Error\Server\TransactionLockWaitTimeoutError;
+use MakinaCorpus\QueryBuilder\Error\Server\UniqueConstraintViolationError;
 
 class PdoMySQLErrorConverter implements ErrorConverter
 {

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Bridge;
 
 use MakinaCorpus\QueryBuilder\DatabaseSession;
-use MakinaCorpus\QueryBuilder\Schema\SchemaManager;
 use MakinaCorpus\QueryBuilder\Writer\Writer;
 
 interface Bridge extends DatabaseSession
@@ -53,13 +52,6 @@ interface Bridge extends DatabaseSession
      * Get SQL writer instance.
      */
     public function getWriter(): Writer;
-
-    /**
-     * Get schema manager.
-     *
-     * @experimental
-     */
-    public function getSchemaManager(): SchemaManager;
 
     /**
      * Free everything.

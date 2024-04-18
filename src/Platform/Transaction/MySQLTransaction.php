@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Platform\Transaction;
 
-use MakinaCorpus\QueryBuilder\Error\Bridge\ServerError;
+use MakinaCorpus\QueryBuilder\Error\Server\ServerError;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
 
 class MySQLTransaction extends AbstractTransaction

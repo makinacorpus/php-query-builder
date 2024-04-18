@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Tests\Bridge;
 
 use MakinaCorpus\QueryBuilder\Vendor;
-use MakinaCorpus\QueryBuilder\Error\Bridge\AmbiguousIdentifierError;
-use MakinaCorpus\QueryBuilder\Error\Bridge\ColumnDoesNotExistError;
-use MakinaCorpus\QueryBuilder\Error\Bridge\ForeignKeyConstraintViolationError;
-use MakinaCorpus\QueryBuilder\Error\Bridge\TableDoesNotExistError;
-use MakinaCorpus\QueryBuilder\Error\Bridge\UniqueConstraintViolationError;
+use MakinaCorpus\QueryBuilder\Error\Server\AmbiguousIdentifierError;
+use MakinaCorpus\QueryBuilder\Error\Server\ColumnDoesNotExistError;
+use MakinaCorpus\QueryBuilder\Error\Server\ForeignKeyConstraintViolationError;
+use MakinaCorpus\QueryBuilder\Error\Server\TableDoesNotExistError;
+use MakinaCorpus\QueryBuilder\Error\Server\UniqueConstraintViolationError;
 use MakinaCorpus\QueryBuilder\Tests\FunctionalTestCase;
 use MakinaCorpus\QueryBuilder\Transaction\Transaction;
 
@@ -19,7 +19,7 @@ abstract class AbstractErrorConverterTestCase extends FunctionalTestCase
     protected function createSchema(): void
     {
         try {
-            $this->getBridge()->executeStatement(
+            $this->getDatabaseSession()->executeStatement(
                 <<<SQL
                 DROP TABLE foo
                 SQL
@@ -27,18 +27,18 @@ abstract class AbstractErrorConverterTestCase extends FunctionalTestCase
         } catch (\Throwable) {}
 
         try {
-            $this->getBridge()->executeStatement(
+            $this->getDatabaseSession()->executeStatement(
                 <<<SQL
                 DROP TABLE bar
                 SQL
             );
         } catch (\Throwable) {}
 
-        switch ($this->getBridge()->getVendorName()) {
+        switch ($this->getDatabaseSession()->getVendorName()) {
 
             case Vendor::MARIADB:
             case Vendor::MYSQL:
-                $this->getBridge()->executeStatement(
+                $this->getDatabaseSession()->executeStatement(
                     <<<SQL
                     CREATE TABLE foo (
                         id int UNIQUE NOT NULL,
@@ -47,7 +47,7 @@ abstract class AbstractErrorConverterTestCase extends FunctionalTestCase
                     )
                     SQL
                 );
-                $this->getBridge()->executeStatement(
+                $this->getDatabaseSession()->executeStatement(
                     <<<SQL
                     CREATE TABLE bar (
                         id int UNIQUE NOT NULL,
@@ -62,7 +62,7 @@ abstract class AbstractErrorConverterTestCase extends FunctionalTestCase
                 break;
 
             case Vendor::SQLSERVER:
-                $this->getBridge()->executeStatement(
+                $this->getDatabaseSession()->executeStatement(
                     <<<SQL
                     CREATE TABLE foo (
                         id int UNIQUE NOT NULL,
@@ -71,7 +71,7 @@ abstract class AbstractErrorConverterTestCase extends FunctionalTestCase
                     )
                     SQL
                 );
-                $this->getBridge()->executeStatement(
+                $this->getDatabaseSession()->executeStatement(
                     <<<SQL
                     CREATE TABLE bar (
                         id int UNIQUE NOT NULL,
@@ -86,7 +86,7 @@ abstract class AbstractErrorConverterTestCase extends FunctionalTestCase
                 break;
 
             case Vendor::SQLITE:
-                $this->getBridge()->executeStatement(
+                $this->getDatabaseSession()->executeStatement(
                     <<<SQL
                     CREATE TABLE foo (
                         id int UNIQUE NOT NULL,
@@ -95,7 +95,7 @@ abstract class AbstractErrorConverterTestCase extends FunctionalTestCase
                     )
                     SQL
                 );
-                $this->getBridge()->executeStatement(
+                $this->getDatabaseSession()->executeStatement(
                     <<<SQL
                     CREATE TABLE bar (
                         id int UNIQUE NOT NULL,
@@ -110,7 +110,7 @@ abstract class AbstractErrorConverterTestCase extends FunctionalTestCase
                 break;
 
             default:
-                $this->getBridge()->executeStatement(
+                $this->getDatabaseSession()->executeStatement(
                     <<<SQL
                     CREATE TABLE foo (
                         id int UNIQUE NOT NULL,
@@ -119,7 +119,7 @@ abstract class AbstractErrorConverterTestCase extends FunctionalTestCase
                     )
                     SQL
                 );
-                $this->getBridge()->executeStatement(
+                $this->getDatabaseSession()->executeStatement(
                     <<<SQL
                     CREATE TABLE bar (
                         id int UNIQUE NOT NULL,
@@ -139,7 +139,7 @@ abstract class AbstractErrorConverterTestCase extends FunctionalTestCase
     {
         self::expectException(AmbiguousIdentifierError::class);
 
-        $this->getBridge()->executeStatement(
+        $this->getDatabaseSession()->executeStatement(
             <<<SQL
             SELECT id FROM foo, bar;
             SQL
@@ -160,7 +160,7 @@ abstract class AbstractErrorConverterTestCase extends FunctionalTestCase
     {
         self::expectException(ColumnDoesNotExistError::class);
 
-        $this->getBridge()->executeStatement(
+        $this->getDatabaseSession()->executeStatement(
             <<<SQL
             SELECT this_column_does_not_exist FROM foo;
             SQL
@@ -173,7 +173,7 @@ abstract class AbstractErrorConverterTestCase extends FunctionalTestCase
 
         self::expectException(ForeignKeyConstraintViolationError::class);
 
-        $this->getBridge()->executeStatement(
+        $this->getDatabaseSession()->executeStatement(
             <<<SQL
             INSERT INTO bar (id, foo_id) VALUES (12, 34);
             SQL
@@ -184,7 +184,7 @@ abstract class AbstractErrorConverterTestCase extends FunctionalTestCase
     {
         self::expectException(TableDoesNotExistError::class);
 
-        $this->getBridge()->executeStatement(
+        $this->getDatabaseSession()->executeStatement(
             <<<SQL
             SELECT * FROM this_table_does_not_exist;
             SQL
@@ -193,7 +193,7 @@ abstract class AbstractErrorConverterTestCase extends FunctionalTestCase
 
     public function testUniqueConstraintViolationError(): void
     {
-        $this->getBridge()->executeStatement(
+        $this->getDatabaseSession()->executeStatement(
             <<<SQL
             INSERT INTO foo (id, name) VALUES (1, 'foo');
             SQL
@@ -201,7 +201,7 @@ abstract class AbstractErrorConverterTestCase extends FunctionalTestCase
 
         self::expectException(UniqueConstraintViolationError::class);
 
-        $this->getBridge()->executeStatement(
+        $this->getDatabaseSession()->executeStatement(
             <<<SQL
             INSERT INTO foo (id, name) VALUES (2, 'foo');
             SQL
@@ -217,7 +217,7 @@ abstract class AbstractErrorConverterTestCase extends FunctionalTestCase
     {
         self::markTestIncomplete("This test requires two different connections, this is unhanlded yet.");
 
-        $bridge = $this->getBridge();
+        $session = $this->getDatabaseSession();
 
         if (!$runner1->getPlatform()->supportsSchema()) {
             self::markTestSkipped("This test requires a schema.");

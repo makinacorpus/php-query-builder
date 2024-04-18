@@ -6,8 +6,9 @@
 
 **Input value converter** converts user input values **from PHP to SQL**.
 
-It is plugged per default in the `Bridge` or `QueryBuilder` instance then
-propagated to the `ArgumentBag` instance prior query execution.
+It is plugged per default in the `Bridge` instance, hence for the final user
+the `QueryBuilder` and `DatabaseSession` instances, then propagated to the
+`ArgumentBag` instance prior query execution.
 
 When `ArgumentBag::getAll()` is called, all values are lazily converted from
 PHP to SQL using the types that were specified during query building.
@@ -32,8 +33,9 @@ See the [legacy data type matrix](../query/datatype) until the documentation is 
 
 **Output value converter** converts user input values **from SQL to PHP**.
 
-It is plugged per default in the `Bridge` or `QueryBuilder` instance then
-propagated to the `ResultRow` instance after query execution.
+It is plugged per default in the `Bridge` instance, hence for the final user
+the `QueryBuilder` and `DatabaseSession` instances, then propagated to the
+`ResultRow` instance after query execution.
 
 When you decide to iterate over  `ResultRow` instances, by calling
 `Result::fetchRow()` then the output converter may be used if you specify
@@ -91,7 +93,7 @@ $escaper = new StandardEscaper();
 // Pass here the newly created converter.
 $writer = new PostgreSQLWriter($escaper, $converter);
 
-$queryBuilder = new DefaultQueryBuilder();
+$session = new DefaultQueryBuilder();
 ```
 
 ### When using a bridge
@@ -102,10 +104,10 @@ by the bridge, hence the different procedure.
 ```php
 use MakinaCorpus\QueryBuilder\Bridge\AbstractBridge;
 
-assert($bridge instanceof AbstractBridge);
+assert($session instanceof AbstractBridge);
 
 // Directly register your implementation into the bridge.
-$bridge
+$session
     ->getConverterPluginRegistry
     ->register(
         new MyCustomOutputConverter(),

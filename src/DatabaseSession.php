@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder;
 
-use MakinaCorpus\QueryBuilder\Error\Bridge\TransactionError;
+use MakinaCorpus\QueryBuilder\Error\Server\TransactionError;
 use MakinaCorpus\QueryBuilder\Result\Result;
+use MakinaCorpus\QueryBuilder\Schema\SchemaManager;
 use MakinaCorpus\QueryBuilder\Transaction\Transaction;
 
 /**
@@ -105,4 +106,11 @@ interface DatabaseSession extends QueryBuilder
      * Alias of createTransaction() but it will force it to start
      */
     public function beginTransaction(int $isolationLevel = Transaction::REPEATABLE_READ, bool $allowPending = true): Transaction;
+
+    /**
+     * Get schema manager.
+     *
+     * @experimental
+     */
+    public function getSchemaManager(): SchemaManager;
 }

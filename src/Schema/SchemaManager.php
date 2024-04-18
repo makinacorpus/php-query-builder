@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Schema;
 
 use MakinaCorpus\QueryBuilder\DatabaseSession;
-use MakinaCorpus\QueryBuilder\Error\Bridge\TableDoesNotExistError;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
+use MakinaCorpus\QueryBuilder\Error\Server\TableDoesNotExistError;
 use MakinaCorpus\QueryBuilder\Error\UnsupportedFeatureError;
 use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Expression\DataType;

@@ -23,7 +23,7 @@ class SelectFunctionalTest extends DoctrineTestCase
     protected function createSchema(): void
     {
         try {
-            $this->getBridge()->executeStatement(
+            $this->getDatabaseSession()->executeStatement(
                 <<<SQL
                 DROP TABLE foo
                 SQL
@@ -31,18 +31,18 @@ class SelectFunctionalTest extends DoctrineTestCase
         } catch (\Throwable) {}
 
         try {
-            $this->getBridge()->executeStatement(
+            $this->getDatabaseSession()->executeStatement(
                 <<<SQL
                 DROP TABLE bar
                 SQL
             );
         } catch (\Throwable) {}
 
-        switch ($this->getBridge()->getVendorName()) {
+        switch ($this->getDatabaseSession()->getVendorName()) {
 
             case Vendor::MARIADB:
             case Vendor::MYSQL:
-                $this->getBridge()->executeStatement(
+                $this->getDatabaseSession()->executeStatement(
                     <<<SQL
                     CREATE TABLE foo (
                         id int NOT NULL,
@@ -51,7 +51,7 @@ class SelectFunctionalTest extends DoctrineTestCase
                     )
                     SQL
                 );
-                $this->getBridge()->executeStatement(
+                $this->getDatabaseSession()->executeStatement(
                     <<<SQL
                     CREATE TABLE bar (
                         foo_id int NOT NULL,
@@ -62,7 +62,7 @@ class SelectFunctionalTest extends DoctrineTestCase
                 break;
 
             case Vendor::SQLSERVER:
-                $this->getBridge()->executeStatement(
+                $this->getDatabaseSession()->executeStatement(
                     <<<SQL
                     CREATE TABLE foo (
                         id int NOT NULL,
@@ -71,7 +71,7 @@ class SelectFunctionalTest extends DoctrineTestCase
                     )
                     SQL
                 );
-                $this->getBridge()->executeStatement(
+                $this->getDatabaseSession()->executeStatement(
                     <<<SQL
                     CREATE TABLE bar (
                         foo_id int NOT NULL,
@@ -82,7 +82,7 @@ class SelectFunctionalTest extends DoctrineTestCase
                 break;
 
             default:
-                $this->getBridge()->executeStatement(
+                $this->getDatabaseSession()->executeStatement(
                     <<<SQL
                     CREATE TABLE foo (
                         id int NOT NULL,
@@ -91,7 +91,7 @@ class SelectFunctionalTest extends DoctrineTestCase
                     )
                     SQL
                 );
-                $this->getBridge()->executeStatement(
+                $this->getDatabaseSession()->executeStatement(
                     <<<SQL
                     CREATE TABLE bar (
                         foo_id int NOT NULL,

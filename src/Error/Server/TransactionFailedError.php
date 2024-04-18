@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace MakinaCorpus\QueryBuilder\Error\Bridge;
+namespace MakinaCorpus\QueryBuilder\Error\Server;
 
 class TransactionFailedError extends TransactionError
 {

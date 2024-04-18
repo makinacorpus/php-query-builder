@@ -15,10 +15,10 @@ They all inherit from `MakinaCorpus\QueryBuilder\Error\QueryBuilderError`.
 ## Server errors
 
 All server side errors are exception, when a driver error is caught and supported,
-it will be converted to a `MakinaCorpus\QueryBuilder\Error\Bridge\*` exception.
+it will be converted to a `MakinaCorpus\QueryBuilder\Error\Server\*` exception.
 
 When an error is not supported then the generic
-`MakinaCorpus\QueryBuilder\Error\Bridge\ServerError` is raised.
+`MakinaCorpus\QueryBuilder\Error\Server\ServerError` is raised.
 
 ## Bridge errors passthrough
 
@@ -38,10 +38,10 @@ use Doctrine\DBAL\DriverManager;
 use MakinaCorpus\QueryBuilder\Bridge\Doctrine\DoctrineQueryBuilder;
 
 $connection = DriverManager::getConnection(['driver' => 'pdo_pgsql', /* ... */]);
-$queryBuilder = new DoctrineQueryBuilder($connection);
+$bridge = new DoctrineQueryBuilder($connection);
 
 // Here it is:
-$queryBuilder->disableErrorConverter();
+$bridge->disableErrorConverter();
 ```
 
 :::info

@@ -50,7 +50,7 @@ While your write your SQL queries, you can, and probably will, provide userland
 arbitrary identifiers, such as table names, column names, ... As show below:
 
 ```php
-$queryBuilder->select('some_table')->column('some_column');
+$session->select('some_table')->column('some_column');
 ```
 
 Those needs escaping, in order to prevent SQL injection or unintential syntax

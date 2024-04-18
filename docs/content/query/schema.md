@@ -14,14 +14,15 @@ session was connected.
 The schema manager is an object that allows you to introspect and alter your
 database schema.
 
-Once you have a functional bridge instance, you may fetch the *schema manager* instance:
+Once you have a functional database session instance, you may fetch the
+*schema manager* instance:
 
 ```php
-use MakinaCorpus\QueryBuilder\Bridge\Bridge;
+use MakinaCorpus\QueryBuilder\DatabaseSession;
 
-\assert($bridge instanceof Bridge);
+\assert($session instanceof DatabaseSession);
 
-$schemaManager = $bridge->getSchemaManager();
+$schemaManager = $session->getSchemaManager();
 ```
 
 `$schemaManager` will be an instance of `MakinaCorpus\QueryBuilder\Schema\SchemaManager`.

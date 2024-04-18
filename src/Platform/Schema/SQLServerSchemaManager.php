@@ -138,7 +138,7 @@ class SQLServerSchemaManager extends SchemaManager
     {
         /*
         $defaultCollation = $this
-            ->bridge
+            ->session
             ->executeQuery(
                 <<<SQL
                 SELECT datcollate FROM pg_database WHERE datname = ?

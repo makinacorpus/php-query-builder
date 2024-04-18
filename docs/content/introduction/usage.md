@@ -11,7 +11,8 @@ almost every method call, exception being the methods that create new
 objects that requires you to manipulate.
 
 :::info
-In all this page, The `$queryBuilder` variable will always be an instance of `MakinaCorpus\QueryBuilder\QueryBuilder`.
+In all this page, The `$queryBuilder` variable will always be an instance of
+`MakinaCorpus\QueryBuilder\DatabaseSession` or `MakinaCorpus\QueryBuilder\QueryBuilder`.
 The `$result` variable will always be an instance of `MakinaCorpus\QueryBuilder\Result\Result`.
 :::
 

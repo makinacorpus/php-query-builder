@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Tests\Functional;
 
-use MakinaCorpus\QueryBuilder\Error\Bridge\TransactionError;
-use MakinaCorpus\QueryBuilder\Error\Bridge\UniqueConstraintViolationError;
+use MakinaCorpus\QueryBuilder\Error\Server\TransactionError;
+use MakinaCorpus\QueryBuilder\Error\Server\UniqueConstraintViolationError;
 use MakinaCorpus\QueryBuilder\Tests\Bridge\Doctrine\DoctrineTestCase;
 use MakinaCorpus\QueryBuilder\Transaction\Transaction;
 use MakinaCorpus\QueryBuilder\Transaction\TransactionSavepoint;
@@ -16,21 +16,21 @@ final class TransactionFunctionalTest extends DoctrineTestCase
     /** @before */
     protected function createSchema(): void
     {
-        $bridge = $this->getBridge();
+        $session = $this->getDatabaseSession();
 
         try {
-            $bridge->executeStatement(
+            $session->executeStatement(
                 <<<SQL
                 DROP TABLE transaction_test
                 SQL
             );
         } catch (\Throwable) {}
 
-        switch ($bridge->getVendorName()) {
+        switch ($session->getVendorName()) {
 
             case Vendor::MARIADB:
             case Vendor::MYSQL:
-                $bridge->executeStatement(
+                $session->executeStatement(
                     <<<SQL
                     CREATE TABLE transaction_test (
                         id serial PRIMARY KEY,
@@ -39,14 +39,14 @@ final class TransactionFunctionalTest extends DoctrineTestCase
                     )
                     SQL
                 );
-                $bridge->executeStatement(
+                $session->executeStatement(
                     <<<SQL
                     alter table transaction_test
                         add constraint transaction_test_foo
                         unique (foo)
                     SQL
                 );
-                $bridge->executeStatement(
+                $session->executeStatement(
                     <<<SQL
                     alter table transaction_test
                         add constraint transaction_test_bar
@@ -56,7 +56,7 @@ final class TransactionFunctionalTest extends DoctrineTestCase
                 break;
 
             case Vendor::SQLSERVER:
-                $bridge->executeStatement(
+                $session->executeStatement(
                     <<<SQL
                     CREATE TABLE transaction_test (
                         id int IDENTITY(1,1) PRIMARY KEY,
@@ -65,14 +65,14 @@ final class TransactionFunctionalTest extends DoctrineTestCase
                     )
                     SQL
                 );
-                $bridge->executeStatement(
+                $session->executeStatement(
                     <<<SQL
                     alter table transaction_test
                         add constraint transaction_test_foo
                         unique (foo)
                     SQL
                 );
-                $bridge->executeStatement(
+                $session->executeStatement(
                     <<<SQL
                     alter table transaction_test
                         add constraint transaction_test_bar
@@ -82,7 +82,7 @@ final class TransactionFunctionalTest extends DoctrineTestCase
                 break;
 
             case Vendor::SQLITE:
-                $bridge->executeStatement(
+                $session->executeStatement(
                     <<<SQL
                     CREATE TABLE transaction_test (
                         id serial PRIMARY KEY,
@@ -95,7 +95,7 @@ final class TransactionFunctionalTest extends DoctrineTestCase
                 break;
 
             default:
-                $bridge->executeStatement(
+                $session->executeStatement(
                     <<<SQL
                     CREATE TABLE transaction_test (
                         id serial PRIMARY KEY,
@@ -104,7 +104,7 @@ final class TransactionFunctionalTest extends DoctrineTestCase
                     )
                     SQL
                 );
-                $bridge->executeStatement(
+                $session->executeStatement(
                     <<<SQL
                     alter table transaction_test
                         add constraint transaction_test_foo
@@ -112,7 +112,7 @@ final class TransactionFunctionalTest extends DoctrineTestCase
                         deferrable
                     SQL
                 );
-                $bridge->executeStatement(
+                $session->executeStatement(
                     <<<SQL
                     alter table transaction_test
                         add constraint transaction_test_bar
@@ -123,7 +123,7 @@ final class TransactionFunctionalTest extends DoctrineTestCase
                 break;
         }
 
-        $bridge
+        $session
             ->insert('transaction_test')
             ->columns(['foo', 'bar'])
             ->values([1, 'a'])
@@ -138,10 +138,10 @@ final class TransactionFunctionalTest extends DoctrineTestCase
      */
     public function testTransaction()
     {
-        $bridge = $this->getBridge();
-        $transaction = $bridge->beginTransaction();
+        $session = $this->getDatabaseSession();
+        $transaction = $session->beginTransaction();
 
-        $bridge
+        $session
             ->insert('transaction_test')
             ->columns(['foo', 'bar'])
             ->values([4, 'd'])
@@ -150,7 +150,7 @@ final class TransactionFunctionalTest extends DoctrineTestCase
 
         $transaction->commit();
 
-        $result = $bridge
+        $result = $session
             ->select('transaction_test')
             ->orderBy('foo')
             ->executeQuery()
@@ -168,30 +168,30 @@ final class TransactionFunctionalTest extends DoctrineTestCase
 
     public function testNestedTransactionCreatesSavepoint()
     {
-        $bridge = $this->getBridge();
+        $session = $this->getDatabaseSession();
 
-        /* if (!$bridge->getPlatform()->supportsTransactionSavepoints()) {
-            self::markTestSkipped(\sprintf("Driver '%s' does not supports savepoints", $bridge->getDriverName()));
+        /* if (!$session->getPlatform()->supportsTransactionSavepoints()) {
+            self::markTestSkipped(\sprintf("Driver '%s' does not supports savepoints", $session->getDriverName()));
         } */
 
-        $bridge->delete('transaction_test')->executeStatement();
+        $session->delete('transaction_test')->executeStatement();
 
-        $transaction = $bridge->beginTransaction();
+        $transaction = $session->beginTransaction();
 
-        $bridge
+        $session
             ->insert('transaction_test')
             ->columns(['foo', 'bar'])
             ->values([789, 'f'])
             ->executeStatement()
         ;
 
-        $savepoint = $bridge->beginTransaction();
+        $savepoint = $session->beginTransaction();
 
         self::assertInstanceOf(TransactionSavepoint::class, $savepoint);
         self::assertTrue($savepoint->isNested());
         self::assertNotNull($savepoint->getSavepointName());
 
-        $bridge
+        $session
             ->insert('transaction_test')
             ->columns(['foo', 'bar'])
             ->values([456, 'g'])
@@ -200,7 +200,7 @@ final class TransactionFunctionalTest extends DoctrineTestCase
 
         $transaction->commit();
 
-        $result = $bridge
+        $result = $session
             ->select('transaction_test')
             ->orderBy('foo')
             ->executeQuery()
@@ -216,30 +216,30 @@ final class TransactionFunctionalTest extends DoctrineTestCase
 
     public function testNestedTransactionRollbackToSavepointTransparently()
     {
-        $bridge = $this->getBridge();
+        $session = $this->getDatabaseSession();
 
-        /* if (!$bridge->getPlatform()->supportsTransactionSavepoints()) {
-            self::markTestSkipped(\sprintf("Driver '%s' does not supports savepoints", $bridge->getDriverName()));
+        /* if (!$session->getPlatform()->supportsTransactionSavepoints()) {
+            self::markTestSkipped(\sprintf("Driver '%s' does not supports savepoints", $session->getDriverName()));
         } */
 
-        $bridge->delete('transaction_test')->executeStatement();
+        $session->delete('transaction_test')->executeStatement();
 
-        $transaction = $bridge->beginTransaction();
+        $transaction = $session->beginTransaction();
 
-        $bridge
+        $session
             ->insert('transaction_test')
             ->columns(['foo', 'bar'])
             ->values([789, 'f'])
             ->executeStatement()
         ;
 
-        $savepoint = $bridge->beginTransaction();
+        $savepoint = $session->beginTransaction();
 
         self::assertInstanceOf(TransactionSavepoint::class, $savepoint);
         self::assertTrue($savepoint->isNested());
         self::assertNotNull($savepoint->getSavepointName());
 
-        $bridge
+        $session
             ->insert('transaction_test')
             ->columns(['foo', 'bar'])
             ->values([456, 'g'])
@@ -249,7 +249,7 @@ final class TransactionFunctionalTest extends DoctrineTestCase
         $savepoint->rollback();
         $transaction->commit();
 
-        $result = $bridge
+        $result = $session
             ->select('transaction_test')
             ->orderBy('foo')
             ->executeQuery()
@@ -273,9 +273,9 @@ final class TransactionFunctionalTest extends DoctrineTestCase
 
         self::expectNotToPerformAssertions();
 
-        $bridge = $this->getBridge();
+        $session = $this->getDatabaseSession();
 
-        $transaction = $bridge
+        $transaction = $session
             ->beginTransaction()
             ->deferred() // Defer all
             ->immediate('transaction_test_bar')
@@ -286,7 +286,7 @@ final class TransactionFunctionalTest extends DoctrineTestCase
             // if backend does not support defering, this will
             // fail anyway, but the rest of the test is still
             // valid
-            $bridge
+            $session
                 ->insert('transaction_test')
                 ->columns(['foo', 'bar'])
                 ->values([2, 'd'])
@@ -294,7 +294,7 @@ final class TransactionFunctionalTest extends DoctrineTestCase
             ;
 
             // This should fail, bar constraint it immediate
-            $bridge
+            $session
                 ->insert('transaction_test')
                 ->columns(['foo', 'bar'])
                 ->values([5, 'b'])
@@ -322,13 +322,13 @@ final class TransactionFunctionalTest extends DoctrineTestCase
 
         self::expectNotToPerformAssertions();
 
-        $bridge = $this->getBridge();
+        $session = $this->getDatabaseSession();
 
-        /* if (!$bridge->getPlatform()->supportsDeferingConstraints()) {
+        /* if (!$session->getPlatform()->supportsDeferingConstraints()) {
             self::markTestSkipped("driver does not support defering constraints");
         } */
 
-        $transaction = $bridge
+        $transaction = $session
             ->beginTransaction()
             ->immediate() // Immediate all
             ->deferred('transaction_test_foo')
@@ -337,7 +337,7 @@ final class TransactionFunctionalTest extends DoctrineTestCase
         try {
 
             // This should pass, foo constraint it deferred
-            $bridge
+            $session
                 ->insert('transaction_test')
                 ->columns(['foo', 'bar'])
                 ->values([2, 'd'])
@@ -345,7 +345,7 @@ final class TransactionFunctionalTest extends DoctrineTestCase
             ;
 
             // This should fail, bar constraint it immediate
-            $bridge
+            $session
                 ->insert('transaction_test')
                 ->columns(['foo', 'bar'])
                 ->values([5, 'b'])
@@ -369,13 +369,13 @@ final class TransactionFunctionalTest extends DoctrineTestCase
     {
         self::expectNotToPerformAssertions();
 
-        $bridge = $this->getBridge();
+        $session = $this->getDatabaseSession();
 
-        /* if (!$bridge->getPlatform()->supportsDeferingConstraints()) {
+        /* if (!$session->getPlatform()->supportsDeferingConstraints()) {
             self::markTestSkipped("driver does not support defering constraints");
         } */
 
-        $transaction = $bridge
+        $transaction = $session
             ->beginTransaction()
             ->deferred()
         ;
@@ -383,7 +383,7 @@ final class TransactionFunctionalTest extends DoctrineTestCase
         try {
 
             // This should pass, all are deferred
-            $bridge
+            $session
                 ->insert('transaction_test')
                 ->columns(['foo', 'bar'])
                 ->values([2, 'd'])
@@ -391,7 +391,7 @@ final class TransactionFunctionalTest extends DoctrineTestCase
             ;
 
             // This should pass, all are deferred
-            $bridge
+            $session
                 ->insert('transaction_test')
                 ->columns(['foo', 'bar'])
                 ->values([5, 'b'])
@@ -413,11 +413,11 @@ final class TransactionFunctionalTest extends DoctrineTestCase
      */
     public function testTransactionRollback()
     {
-        $bridge = $this->getBridge();
+        $session = $this->getDatabaseSession();
 
-        $transaction = $bridge->beginTransaction();
+        $transaction = $session->beginTransaction();
 
-        $bridge
+        $session
             ->insert('transaction_test')
             ->columns(['foo', 'bar'])
             ->values([4, 'd'])
@@ -426,7 +426,7 @@ final class TransactionFunctionalTest extends DoctrineTestCase
 
         $transaction->rollback();
 
-        $result = $bridge
+        $result = $session
             ->select('transaction_test')
             ->executeQuery()
         ;
@@ -448,19 +448,19 @@ final class TransactionFunctionalTest extends DoctrineTestCase
      */
     public function testPendingAllowed()
     {
-        $bridge = $this->getBridge();
+        $session = $this->getDatabaseSession();
 
-        $transaction = $bridge->beginTransaction();
+        $transaction = $session->beginTransaction();
 
         // Fetch another transaction, it should fail
         try {
-            $bridge->beginTransaction(Transaction::REPEATABLE_READ, false);
+            $session->beginTransaction(Transaction::REPEATABLE_READ, false);
             self::fail();
         } catch (TransactionError $e) {
         }
 
         // Fetch another transaction, it should NOT fail
-        $t3 = $bridge->beginTransaction(Transaction::REPEATABLE_READ, true);
+        $t3 = $session->beginTransaction(Transaction::REPEATABLE_READ, true);
         // @todo temporary deactivating this test since that the profiling
         //   transaction makes it harder
         //self::assertSame($t3, $transaction);
@@ -481,11 +481,11 @@ final class TransactionFunctionalTest extends DoctrineTestCase
      */
     public function testTransactionSavepoint()
     {
-        $bridge = $this->getBridge();
+        $session = $this->getDatabaseSession();
 
-        $transaction = $bridge->beginTransaction();
+        $transaction = $session->beginTransaction();
 
-        $bridge
+        $session
             ->update('transaction_test')
             ->set('bar', 'z')
             ->where('foo', 1)
@@ -494,7 +494,7 @@ final class TransactionFunctionalTest extends DoctrineTestCase
 
         $transaction->savepoint('bouyaya');
 
-        $bridge
+        $session
             ->update('transaction_test')
             ->set('bar', 'y')
             ->where('foo', 2)
@@ -504,7 +504,7 @@ final class TransactionFunctionalTest extends DoctrineTestCase
         $transaction->rollbackToSavepoint('bouyaya');
         $transaction->commit();
 
-        $oneBar = $bridge
+        $oneBar = $session
             ->select('transaction_test')
             ->column('bar')
             ->where('foo', 1)
@@ -514,7 +514,7 @@ final class TransactionFunctionalTest extends DoctrineTestCase
         // This should have pass since it's before the savepoint
         self::assertSame('z', $oneBar);
 
-        $twoBar = $bridge
+        $twoBar = $session
             ->select('transaction_test')
             ->column('bar')
             ->where('foo', 2)

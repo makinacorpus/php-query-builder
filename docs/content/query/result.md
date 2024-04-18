@@ -24,14 +24,14 @@ you can call `Query::executeQuery()` over your queries, for example:
 use Doctrine\DBAL\DriverManager;
 use MakinaCorpus\QueryBuilder\Bridge\Doctrine\DoctrineQueryBuilder;
 
-$queryBuilder = new DoctrineQueryBuilder(
+$session = new DoctrineQueryBuilder(
     DriverManager::getConnection([
         'driver' => 'pdo_pgsql',
         // ... driver options.
     ])
 );
 
-$result = $queryBuilder
+$result = $session
     ->select('some_table')
     ->column('*')
     ->executeQuery()
@@ -48,14 +48,14 @@ You may also directly execute raw SQL code as such:
 use Doctrine\DBAL\DriverManager;
 use MakinaCorpus\QueryBuilder\Bridge\Doctrine\DoctrineQueryBuilder;
 
-$queryBuilder = new DoctrineQueryBuilder(
+$session = new DoctrineQueryBuilder(
     DriverManager::getConnection([
         'driver' => 'pdo_pgsql',
         // ... driver options.
     ])
 );
 
-$result = $queryBuilder
+$result = $session
     ->executeQuery(
         <<<SQL
         SELECT * FROM "some_table"
@@ -82,14 +82,14 @@ use Doctrine\DBAL\DriverManager;
 use MakinaCorpus\QueryBuilder\Bridge\Doctrine\DoctrineQueryBuilder;
 use MakinaCorpus\QueryBuilder\Result\ResultRow;
 
-$queryBuilder = new DoctrineQueryBuilder(
+$session = new DoctrineQueryBuilder(
     DriverManager::getConnection([
         'driver' => 'pdo_pgsql',
         // ... driver options.
     ])
 );
 
-$result = $queryBuilder
+$result = $session
     ->executeQuery(
         <<<SQL
         SELECT * FROM "some_table"
@@ -142,7 +142,7 @@ to be passed while iterating.
 
 ```php
 
-$result = $queryBuilder
+$result = $session
     ->executeQuery(
         <<<SQL
         SELECT "id", "name", "email", "created_at" FROM "users"

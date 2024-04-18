@@ -36,7 +36,7 @@ trait FunctionalTestCaseTrait
     /**
      * Create query builder.
      */
-    protected function getBridge(): Bridge
+    protected function getDatabaseSession(): Bridge
     {
         return $this->connection ??= $this->createBridge();
     }
@@ -44,7 +44,7 @@ trait FunctionalTestCaseTrait
     /**
      * Create priviledged query builder.
      */
-    protected function getPriviledgedBridge(): Bridge
+    protected function getDatabaseSessionWithPrivileges(): Bridge
     {
         return $this->privConnection ??= $this->createPriviledgeBridge();
     }
@@ -59,12 +59,12 @@ trait FunctionalTestCaseTrait
      *
      * This doesn't return any result; but may return affected row count.
      *
-     * This is a proxy function to $this->getBridge()->executeStatement();
+     * This is a proxy function to $this->getDatabaseSession()->executeStatement();
      */
     protected function executeStatement(string|Expression $query, ?array $arguments = null): ?int
     {
         try {
-            return $this->getBridge()->executeStatement($query, $arguments);
+            return $this->getDatabaseSession()->executeStatement($query, $arguments);
         } catch (\Throwable $e) {
             throw new QueryBuilderError(
                 \sprintf(
@@ -74,7 +74,7 @@ trait FunctionalTestCaseTrait
                     %s
                     TXT,
                     $e->getMessage(),
-                    $this->getBridge()->getWriter()->prepare(\is_string($query) ? new Raw($query, $arguments) : $query)->toString()
+                    $this->getDatabaseSession()->getWriter()->prepare(\is_string($query) ? new Raw($query, $arguments) : $query)->toString()
                 ),
                 $e->getCode(),
                 $e
@@ -87,12 +87,12 @@ trait FunctionalTestCaseTrait
      *
      * This doesn't return any result; but may return affected row count.
      *
-     * This is a proxy function to $this->getBridge()->executeStatement();
+     * This is a proxy function to $this->getDatabaseSession()->executeStatement();
      */
     protected function executeQuery(string|Expression $query, ?array $arguments = null): Result
     {
         try {
-            return $this->getBridge()->executeQuery($query, $arguments);
+            return $this->getDatabaseSession()->executeQuery($query, $arguments);
         } catch (\Throwable $e) {
             throw new QueryBuilderError(
                 \sprintf(
@@ -102,7 +102,7 @@ trait FunctionalTestCaseTrait
                     %s
                     TXT,
                     $e->getMessage(),
-                    $this->getBridge()->getWriter()->prepare(\is_string($query) ? new Raw($query, $arguments) : $query)->toString()
+                    $this->getDatabaseSession()->getWriter()->prepare(\is_string($query) ? new Raw($query, $arguments) : $query)->toString()
                 ),
                 $e->getCode(),
                 $e
@@ -116,7 +116,7 @@ trait FunctionalTestCaseTrait
      */
     protected function ifDatabase(string|array $database): bool
     {
-        return $this->getBridge()->vendorIs($database);
+        return $this->getDatabaseSession()->vendorIs($database);
     }
 
     /**
@@ -125,7 +125,7 @@ trait FunctionalTestCaseTrait
      */
     protected function ifDatabaseNot(string|array $database): bool
     {
-        return !$this->getBridge()->vendorIs($database);
+        return !$this->getDatabaseSession()->vendorIs($database);
     }
 
     /**
@@ -155,7 +155,7 @@ trait FunctionalTestCaseTrait
     {
         $this->skipIfDatabaseNot($database);
 
-        if ($this->getBridge()->vendorVersionIs($version)) {
+        if ($this->getDatabaseSession()->vendorVersionIs($version)) {
             self::markTestSkipped($message ?? \sprintf("Test disabled for database '%s' at version >= '%s'", $database, $version));
         }
     }
@@ -167,7 +167,7 @@ trait FunctionalTestCaseTrait
     {
         $this->skipIfDatabaseNot($database);
 
-        if ($this->getBridge()->vendorVersionIs($version, '<')) {
+        if ($this->getDatabaseSession()->vendorVersionIs($version, '<')) {
             self::markTestSkipped($message ?? \sprintf("Test disabled for database '%s' at version <= '%s'", $database, $version));
         }
     }
@@ -193,10 +193,10 @@ trait FunctionalTestCaseTrait
      */
     private function initializeDatabase(string $dbname): void
     {
-        $privBridge = $this->getPriviledgedBridge();
+        $session = $this->getDatabaseSessionWithPrivileges();
 
         try {
-            $privBridge->executeStatement("CREATE DATABASE ?::id", ['test_db']);
+            $session->executeStatement("CREATE DATABASE ?::id", ['test_db']);
         } catch (\Throwable $e) {
             // Check database already exists or not.
             if (!\str_contains($e->getMessage(), 'exist')) {

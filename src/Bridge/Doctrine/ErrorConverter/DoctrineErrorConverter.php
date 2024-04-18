@@ -20,15 +20,15 @@ use Doctrine\DBAL\Schema\Exception\ColumnDoesNotExist;
 use Doctrine\DBAL\Schema\Exception\TableDoesNotExist;
 use MakinaCorpus\QueryBuilder\Bridge\ErrorConverter;
 use MakinaCorpus\QueryBuilder\Bridge\Pdo\ErrorConverter\PdoSQLiteErrorConverter;
-use MakinaCorpus\QueryBuilder\Error\Bridge\AmbiguousIdentifierError;
-use MakinaCorpus\QueryBuilder\Error\Bridge\ColumnDoesNotExistError;
-use MakinaCorpus\QueryBuilder\Error\Bridge\ConstraintViolationError;
-use MakinaCorpus\QueryBuilder\Error\Bridge\DatabaseObjectDoesNotExistError;
-use MakinaCorpus\QueryBuilder\Error\Bridge\ForeignKeyConstraintViolationError;
-use MakinaCorpus\QueryBuilder\Error\Bridge\NotNullConstraintViolationError;
-use MakinaCorpus\QueryBuilder\Error\Bridge\TableDoesNotExistError;
-use MakinaCorpus\QueryBuilder\Error\Bridge\UnableToConnectError;
-use MakinaCorpus\QueryBuilder\Error\Bridge\UniqueConstraintViolationError;
+use MakinaCorpus\QueryBuilder\Error\Server\AmbiguousIdentifierError;
+use MakinaCorpus\QueryBuilder\Error\Server\ColumnDoesNotExistError;
+use MakinaCorpus\QueryBuilder\Error\Server\ConstraintViolationError;
+use MakinaCorpus\QueryBuilder\Error\Server\DatabaseObjectDoesNotExistError;
+use MakinaCorpus\QueryBuilder\Error\Server\ForeignKeyConstraintViolationError;
+use MakinaCorpus\QueryBuilder\Error\Server\NotNullConstraintViolationError;
+use MakinaCorpus\QueryBuilder\Error\Server\TableDoesNotExistError;
+use MakinaCorpus\QueryBuilder\Error\Server\UnableToConnectError;
+use MakinaCorpus\QueryBuilder\Error\Server\UniqueConstraintViolationError;
 
 class DoctrineErrorConverter implements ErrorConverter
 {
