@@ -150,6 +150,7 @@ class DateIntervalTest extends UnitTestCase
     public function testWithArrayNotIntegerRaiseError(): void
     {
         self::expectException(QueryBuilderError::class);
+        // @phpstan-ignore-next-line Error is intentional, this is what we test.
         new DateInterval([DateIntervalUnit::WEEK => 'this is not an int']);
     }
 }

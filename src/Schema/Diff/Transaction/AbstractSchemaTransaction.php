@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Schema\Diff\Transaction;
 
+use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\QueryBuilder;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\CallbackChange;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Change\ColumnAdd;
@@ -29,6 +30,7 @@ use MakinaCorpus\QueryBuilder\Schema\Diff\Change\UniqueKeyDrop;
 use MakinaCorpus\QueryBuilder\Schema\Diff\ChangeLog;
 use MakinaCorpus\QueryBuilder\Schema\Diff\ChangeLogItem;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Condition\AbstractCondition;
+use MakinaCorpus\QueryBuilder\Schema\Diff\SchemaTransaction;
 use MakinaCorpus\QueryBuilder\Type\Type;
 
 // @todo IDE bug.
@@ -75,8 +77,10 @@ abstract class AbstractSchemaTransaction
     {
         if ($this instanceof NestedSchemaTransaction || $this instanceof DeepNestedSchemaTransaction) {
             $ret = new DeepNestedSchemaTransaction($this, $this->schema, $conditions);
-        } else {
+        } else if ($this instanceof SchemaTransaction) {
             $ret = new NestedSchemaTransaction($this, $this->schema, $conditions);
+        } else {
+            throw new QueryBuilderError(\sprintf("Unimplemented use case, nesting %s", static::class));
         }
 
         $this->logChange($ret);

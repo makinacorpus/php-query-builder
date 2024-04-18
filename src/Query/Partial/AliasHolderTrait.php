@@ -18,7 +18,7 @@ use MakinaCorpus\QueryBuilder\Expression\WithAlias;
 trait AliasHolderTrait
 {
     private int $aliasIndex = 0;
-    /** @var array<string,Expression> */
+    /** @var array<string,string> */
     private array $tableIndex = [];
 
     /**
@@ -132,7 +132,7 @@ trait AliasHolderTrait
                 throw new QueryBuilderError(\sprintf(
                     "Alias '%s' is already registered for table '%s'",
                     $alias,
-                    $this->tableIndex[$alias]
+                    $this->tableIndex[$alias],
                 ));
             }
 

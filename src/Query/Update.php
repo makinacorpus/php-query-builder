@@ -79,7 +79,7 @@ class Update extends AbstractQuery
     /**
      * Set multiple column values to update.
      *
-     * @param string[]|Expression[] $values
+     * @param array<string,mixed|Expression> $values
      *   Keys are column names, as specified in the ::value() method, and values
      *   are statements as specified by the same method.
      */

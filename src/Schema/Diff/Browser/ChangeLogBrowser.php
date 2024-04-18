@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Schema\Diff\Browser;
 
+use MakinaCorpus\QueryBuilder\Schema\Diff\Change\AbstractChange;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Condition\AbstractCondition;
 use MakinaCorpus\QueryBuilder\Schema\Diff\SchemaTransaction;
 use MakinaCorpus\QueryBuilder\Schema\Diff\Transaction\AbstractNestedSchemaTransaction;
@@ -28,7 +29,7 @@ class ChangeLogBrowser
             foreach ($transaction->getChangeLog()->getAll() as $change) {
                 if ($change instanceof AbstractNestedSchemaTransaction) {
                     $this->reduceNested($change, 1, $this->visitors);
-                } else {
+                } else if ($change instanceof AbstractChange) {
                     foreach ($this->visitors as $visitor) {
                         $visitor->apply($change);
                     }
@@ -96,7 +97,7 @@ class ChangeLogBrowser
         foreach ($new->getChangeLog()->getAll() as $change) {
             if ($change instanceof AbstractNestedSchemaTransaction) {
                 $this->reduceNested($change, $depth + 1, $visitors);
-            } else {
+            } else if ($change instanceof AbstractChange) {
                 foreach ($visitors as $visitor) {
                     $visitor->apply($change);
                 }

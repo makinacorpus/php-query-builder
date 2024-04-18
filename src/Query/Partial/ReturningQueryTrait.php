@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder\Query\Partial;
 
-use Doctrine\DBAL\Schema\Column;
-use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
-use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\ExpressionHelper;
+use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Expression\ColumnAll;
 
 /**
@@ -69,7 +67,7 @@ trait ReturningQueryTrait
      */
     public function returningRaw(mixed $expression, ?string $alias = null): static
     {
-        $this->return[] = new Column(ExpressionHelper::raw($expression), $alias);
+        $this->return[] = new SelectColumn(ExpressionHelper::raw($expression), $alias);
 
         return $this;
     }
