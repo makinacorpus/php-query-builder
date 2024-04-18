@@ -8,7 +8,6 @@ class IterableResult extends AbstractResult
 {
     private ?int $columnCount = null;
     private null|array $current = null;
-    private bool $started = false;
     private bool $currentFetched = false;
     private ?\Iterator $nextGenerator;
     private mixed /* callable */ $freeCallback;

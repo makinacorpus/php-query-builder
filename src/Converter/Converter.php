@@ -126,7 +126,7 @@ class Converter
      * @throws ValueConversionError
      *   In case of value conversion error.
      */
-    public function fromSql(string $type, int|float|string $value): mixed
+    public function fromSql(string $type, null|int|float|string $value): mixed
     {
         if (null === $value) {
             return null;

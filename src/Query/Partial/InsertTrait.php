@@ -65,15 +65,9 @@ trait InsertTrait
         if ($this->query) {
             throw new QueryBuilderError(\sprintf("%s::query() was already set.", __CLASS__));
         }
-
-        if (!$query instanceof Query) {
-            if ($query instanceof ConstantTable) {
-                $this->queryIsConstantTable = true;
-            } else {
-                throw new QueryBuilderError(\sprintf("Query must be a %s or %s instance.", Query::class, ConstantTable::class));
-            }
+        if ($query instanceof ConstantTable) {
+            $this->queryIsConstantTable = true;
         }
-
         $this->query = $query;
 
         return $this;

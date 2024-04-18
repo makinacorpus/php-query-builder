@@ -615,6 +615,7 @@ abstract class SchemaManager implements LoggerAwareInterface
             ForeignKeyAdd::ON_DELETE_RESTRICT, ForeignKeyAdd::ON_UPDATE_RESTRICT => $this->raw('RESTRICT'),
             ForeignKeyAdd::ON_DELETE_SET_DEFAULT, ForeignKeyAdd::ON_UPDATE_SET_DEFAULT => $this->raw('SET DEFAULT'),
             ForeignKeyAdd::ON_DELETE_SET_NULL, ForeignKeyAdd::ON_UPDATE_SET_NULL => $this->raw('SET NULL'),
+            default => $behavior,
         };
     }
 
@@ -626,6 +627,7 @@ abstract class SchemaManager implements LoggerAwareInterface
         return match ($initially) {
             ForeignKeyAdd::INITIALLY_DEFERRED, ForeignKeyAdd::INITIALLY_DEFERRED => $this->raw('INITIALLY DEFERRED'),
             ForeignKeyAdd::INITIALLY_IMMEDIATE, ForeignKeyAdd::INITIALLY_IMMEDIATE => $this->raw('INITIALLY IMMEDIATE'),
+            default => 'initially ' . $initially,
         };
     }
 

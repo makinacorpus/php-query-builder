@@ -54,6 +54,7 @@ class CastTest extends UnitTestCase
     {
         self::markTestIncomplete('There is no parenthesis friendly expressions yet');
 
+        /*
         $expression = new Cast(new Raw('foo'), 'alias');
 
         self::assertSameSql(
@@ -62,5 +63,6 @@ class CastTest extends UnitTestCase
             SQL,
             $expression
         );
+         */
     }
 }

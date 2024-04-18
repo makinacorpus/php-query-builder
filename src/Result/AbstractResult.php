@@ -16,15 +16,13 @@ abstract class AbstractResult implements Result, \IteratorAggregate
 {
     private ?int $rowCount = null;
     private ?int $columnCount = null;
-    private ?array $columnNames = null;
-    private ?array $columnTypes = [];
+    private ?array $columnTypes = []; // @phpstan-ignore-line
     private mixed $hydrator = null;
     private bool $hydratorUsesArray = false;
     private bool $iterationFreed = false;
     private bool $iterationStarted = false;
     private bool $iterationCompleted = false;
-    private bool $justRewinded = false;
-    private bool $rewindable = false;
+    private bool $rewindable = false; // @phpstan-ignore-line
     private ?Converter $converter = null;
 
     public function __construct(

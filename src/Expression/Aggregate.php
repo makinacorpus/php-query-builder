@@ -71,10 +71,7 @@ class Aggregate implements Expression
      */
     public function getFilter(): ?Where
     {
-        if ($this->filter && !$this->filter->isEmpty()) {
-            return $this->filter;
-        }
-        return null;
+        return $this->filter->isEmpty() ? null : $this->filter;
     }
 
     /**

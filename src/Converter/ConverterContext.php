@@ -22,6 +22,7 @@ class ConverterContext
 
     public function getClientTimeZone(): string
     {
+        // @phpstan-ignore-next-line
         return $this->options?->get('client_timezone') ?? ($this->phpDefaultTimeZone ??= (@\date_default_timezone_get()) ?? 'UTC');
     }
 

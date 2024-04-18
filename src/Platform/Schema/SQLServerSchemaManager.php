@@ -460,6 +460,7 @@ class SQLServerSchemaManager extends SchemaManager
         )->fetchOne();
     }
 
+    /*
     private function findColumnUniqueKeyConstraintName(string $schema, string $table, string $column): ?string
     {
         return $this->session->executeQuery(
@@ -480,10 +481,7 @@ class SQLServerSchemaManager extends SchemaManager
             [$schema . '.' . $table, $column]
         )->fetchOne();
     }
-
-/*
-
-           */
+     */
 
     #[\Override]
     protected function getTableIndexes(string $database, string $schema, string $name): array

@@ -1328,10 +1328,7 @@ class Writer
         $output = [];
 
         $columns = $query->getAllColumns();
-
-        if (!$table = $query->getTable()) {
-            throw new QueryBuilderError("Insert query must target a table.");
-        }
+        $table = $query->getTable();
 
         $output[] = $this->doFormatWith($context, $query->getAllWith());
         // From SQL 92 standard, INSERT queries don't have table alias
@@ -1371,9 +1368,7 @@ class Writer
     {
         $output = [];
 
-        if (!$table = $query->getTable()) {
-            throw new QueryBuilderError("Delete query must target a table.");
-        }
+        $table = $query->getTable();
 
         $output[] = $this->doFormatWith($context, $query->getAllWith());
         // This is not SQL-92 compatible, we are using USING..JOIN clause to
@@ -1419,9 +1414,7 @@ class Writer
             throw new QueryBuilderError("Cannot run an update query without any columns to update.");
         }
 
-        if (!$table = $query->getTable()) {
-            throw new QueryBuilderError("Update query must have a table.");
-        }
+        $table = $query->getTable();
 
         //
         // Specific use case for DELETE, there might be JOIN, this valid for
@@ -1772,9 +1765,9 @@ class Writer
 
         if ($over = $expression->getOverWindow()) {
             if ($over instanceof Window) {
-                $output .= ' over ' . $this->format($over, $context, !$over instanceof Window);
+                $output .= ' over ' . $this->format($over, $context, true);
             } else {
-                $output .= ' over (' . $this->format($over, $context, !$over instanceof Window) . ')';
+                $output .= ' over (' . $this->format($over, $context, false) . ')';
             }
         }
 

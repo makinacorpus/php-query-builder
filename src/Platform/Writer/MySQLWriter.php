@@ -192,10 +192,7 @@ class MySQLWriter extends Writer
 
         $columns = $query->getAllColumns();
         $isIgnore = Query::CONFLICT_IGNORE === $query->getConflictBehaviour();
-
-        if (!$table = $query->getTable()) {
-            throw new QueryBuilderError("Insert query must have a table.");
-        }
+        $table = $query->getTable();
 
         $output[] = $this->doFormatWith($context, $query->getAllWith());
         if ($isIgnore) {
@@ -255,10 +252,7 @@ class MySQLWriter extends Writer
         // alias on the main table, so we are going to give him this always
         // so we won't have to bother about weither or not we have other tables
         // to JOIN.
-        if (!$table = $query->getTable()) {
-            throw new QueryBuilderError("Delete query must have a table.");
-        }
-
+        $table = $query->getTable();
         $tableAlias = $table->getAlias() ?? $table->getName();
 
         // MySQL does not have USING clause, and support a non-standard way of

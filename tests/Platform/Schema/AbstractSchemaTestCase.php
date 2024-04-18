@@ -810,19 +810,16 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
     public function testConstraintDrop(): void
     {
         self::markTestIncomplete();
-        self::expectNotToPerformAssertions();
     }
 
     public function testConstraintModify(): void
     {
         self::markTestIncomplete();
-        self::expectNotToPerformAssertions();
     }
 
     public function testConstraintRename(): void
     {
         self::markTestIncomplete();
-        self::expectNotToPerformAssertions();
     }
 
     public function testForeignKeyAdd(): void
@@ -844,7 +841,6 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
         $this->skipIfDatabase(Vendor::SQLITE);
 
         self::markTestIncomplete();
-        self::expectNotToPerformAssertions();
     }
 
     public function testForeignKeyDrop(): void
@@ -871,7 +867,6 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
     public function testForeignKeyRename(): void
     {
         self::markTestIncomplete();
-        self::expectNotToPerformAssertions();
     }
 
     public function testIndexCreate(): void
@@ -1048,6 +1043,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
     {
         self::markTestIncomplete("PostgreSQL refuses to create a temporary relation in a non-temporary schema ?!");
 
+        /*
         $this
             ->getSchemaManager()
             ->modify()
@@ -1060,6 +1056,7 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
         ;
 
         self::expectNotToPerformAssertions();
+         */
     }
 
     public function testTableCreateWithPrimaryKey(): void
@@ -1147,7 +1144,6 @@ abstract class AbstractSchemaTestCase extends FunctionalTestCase
     public function testTableCreateWithAll(): void
     {
         self::markTestIncomplete();
-        self::expectNotToPerformAssertions();
     }
 
     public function testTableDrop(): void

@@ -49,30 +49,24 @@ class Table extends AbstractObject
         if (null !== $foreignKeys) {
             if (\is_callable($foreignKeys)) {
                 $this->fetchForeignKeys = $foreignKeys(...);
-            } else if (\is_array($foreignKeys)) {
-                $this->foreignKeys = $foreignKeys;
             } else {
-                throw new \InvalidArgumentException(\sprintf("\$foreignKeys must be a callable or an array of %s instances.", ForeignKey::class));
+                $this->foreignKeys = $foreignKeys;
             }
         }
 
         if (null !== $reverseForeignKeys) {
             if (\is_callable($reverseForeignKeys)) {
                 $this->fetchReverseForeignKeys = $reverseForeignKeys(...);
-            } else if (\is_array($reverseForeignKeys)) {
-                $this->reverseForeignKeys = $reverseForeignKeys;
             } else {
-                throw new \InvalidArgumentException(\sprintf("\$reverseForeignKeys must be a callable or an array of %s instances.", ForeignKey::class));
+                $this->reverseForeignKeys = $reverseForeignKeys;
             }
         }
 
         if (null !== $indexes) {
             if (\is_callable($indexes)) {
                 $this->fetchIndexes = $indexes(...);
-            } else if (\is_array($indexes)) {
-                $this->indexes = $indexes;
             } else {
-                throw new \InvalidArgumentException(\sprintf("\$reverseForeignKeys must be a callable or an array of %s instances.", ForeignKey::class));
+                $this->indexes = $indexes;
             }
         }
     }

@@ -18,8 +18,6 @@ use MakinaCorpus\QueryBuilder\Schema\Diff\Transaction\TableBuilder;
 
 class SchemaTransaction extends AbstractSchemaTransaction
 {
-    private ChangeLog $changeLog;
-
     public function __construct(
         string $schema,
         private readonly \Closure $onCommit,

@@ -56,10 +56,7 @@ class PostgreSQLWriter extends Writer
         $output = [];
 
         $columns = $query->getAllColumns();
-
-        if (!$table = $query->getTable()) {
-            throw new QueryBuilderError("Insert query must have a table.");
-        }
+        $table = $query->getTable();
 
         $output[] = $this->doFormatWith($context, $query->getAllWith());
         // From SQL 92 standard, INSERT queries don't have table alias

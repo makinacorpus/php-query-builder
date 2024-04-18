@@ -41,6 +41,7 @@ class NotTest extends UnitTestCase
     {
         self::markTestIncomplete('There is no parenthesis friendly expressions yet');
 
+        /*
         $expression = new Not(new Raw('foo'));
 
         self::assertSameSql(
@@ -49,5 +50,6 @@ class NotTest extends UnitTestCase
             SQL,
             $expression
         );
+         */
     }
 }

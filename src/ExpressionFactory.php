@@ -65,7 +65,7 @@ class ExpressionFactory
      */
     public static function array(mixed $values, ?string $valueType = null, bool $shouldCast = true): ArrayValue
     {
-        if (!\is_iterable($values) && !\is_array($values)) {
+        if (!\is_iterable($values)) {
             $values = [$values];
         }
         return new ArrayValue($values, $valueType, $shouldCast);

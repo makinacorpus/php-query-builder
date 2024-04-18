@@ -22,7 +22,7 @@ class Lpad implements Expression
     /**
      * @param mixed $value
      *   Expression that returns text or a string value.
-     * @param int $size
+     * @param mixed $size
      *   Pad size.
      * @param mixed $fill
      *   Expression to fill with, will be space by default.

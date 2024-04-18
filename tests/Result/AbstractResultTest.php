@@ -74,6 +74,7 @@ class AbstractResultTest extends TestCase
         $result = $this->createResult();
 
         self::assertSame(['a' => "key1", 'b' => "val1"], $result->fetchRow()?->toArray());
+        // @phpstan-ignore-next-line
         self::assertSame(['a' => "key2", 'b' => "val2"], $result->fetchRow()?->toArray());
         self::assertNull($result->fetchRow());
     }

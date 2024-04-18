@@ -379,7 +379,7 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
     /**
      * Create default writer based upon server name and version and driver.
      */
-    protected function getConverter(): Converter
+    protected function createConverter(): Converter
     {
         $ret = match ($this->getVendorName()) {
             Vendor::MARIADB => new MySQLConverter(),
@@ -390,6 +390,14 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
         $ret->setConverterPluginRegistry($this->getConverterPluginRegistry());
 
         return $ret;
+    }
+
+    /**
+     * Create default writer based upon server name and version and driver.
+     */
+    protected function getConverter(): Converter
+    {
+        return $this->converter ??= $this->createConverter();
     }
 
     /**

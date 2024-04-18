@@ -41,6 +41,7 @@ class AliasedTest extends UnitTestCase
     {
         self::markTestIncomplete('There is no parenthesis friendly expressions yet');
 
+        /*
         $expression = new Aliased(new Raw('foo'), 'alias');
 
         self::assertSameSql(
@@ -49,6 +50,7 @@ class AliasedTest extends UnitTestCase
             SQL,
             $expression
         );
+         */
     }
 
     public function testWithoutAlias(): void

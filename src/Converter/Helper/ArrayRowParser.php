@@ -108,16 +108,6 @@ final class ArrayRowParser
     }
 
     /**
-     * Unescape a SQL string.
-     *
-     * @todo I think it is wrong, but up until now, it seem to work.
-     */
-    private static function escapeString(string $value): string
-    {
-        return "'".\str_replace('\\', '\\\\', $value)."'";
-    }
-
-    /**
      * From a quoted string, find the end of it and return it.
      */
     private static function findUnquotedStringEnd(string $string, int $start, int $length, string $endChar): int
@@ -142,7 +132,7 @@ final class ArrayRowParser
                 if ($i === $length) {
                     throw new QueryBuilderError(\sprintf("misplaced \\ escape char at end of string"));
                 }
-                $string[$i++]; // Skip escaped char
+                $i++; // Skip escaped char
             } else if ('"' === $char) {
                 return $i;
             }

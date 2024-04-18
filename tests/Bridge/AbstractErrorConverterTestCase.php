@@ -217,6 +217,7 @@ abstract class AbstractErrorConverterTestCase extends FunctionalTestCase
     {
         self::markTestIncomplete("This test requires two different connections, this is unhanlded yet.");
 
+        /*
         $session = $this->getDatabaseSession();
 
         if (!$runner1->getPlatform()->supportsSchema()) {
@@ -283,12 +284,14 @@ abstract class AbstractErrorConverterTestCase extends FunctionalTestCase
 
         $transaction1->commit();
         $transaction2->commit();
+         */
     }
 
     public function testTransactionSerializationError2(): void
     {
         self::markTestIncomplete("This test requires two different connections, this is unhanlded yet.");
 
+        /*
         $runner1 = $factory->getRunner();
 
         if (!$runner1->getPlatform()->supportsSchema()) {
@@ -328,6 +331,7 @@ abstract class AbstractErrorConverterTestCase extends FunctionalTestCase
 
         $transaction1->commit();
         $transaction2->commit();
+         */
     }
 
     public function testTransactionDeadlockError(): void
