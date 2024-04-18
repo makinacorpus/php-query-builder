@@ -1,6 +1,13 @@
 # Changelog
 
-## Next
+## 1.5.0
+
+The goal of this release is to hide the bridge concept from final user facing
+API. User are encouraged to type the database connection or query builder using
+the `MakinaCorpus\QueryBuilder\DatabaseSession` interface.
+
+Warning: this release brings a few backward compatibility breaks, regarding
+exception classes namespaces. Fixing your code is trivial, but required.
 
 * [feature] Move `Bridge::getSchemaManager()` method into the `DatabaseSession`
   interface. Bridges should now never be used
