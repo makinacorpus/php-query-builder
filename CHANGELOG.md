@@ -2,23 +2,24 @@
 
 ## Next
 
-* [feature] `Bridge::getSchemaManager()` method is moved into the
-  `DatabaseSession` interface instead. Bridges should now never be used
+* [feature] Move `Bridge::getSchemaManager()` method into the `DatabaseSession`
+  interface. Bridges should now never be used
   as a public API for end users.
-* [bc] ⚠️ All errors in the `MakinaCorpus\QueryBuilder\Error\Bridge`
-  namespace are now in the `MakinaCorpus\QueryBuilder\Error\Server` namespace.
-* [bc] ⚠️ `FunctionalTestCaseTrait::getBridge()` was renamed to
+* [bc] ⚠️ Move all exception classes from the `MakinaCorpus\QueryBuilder\Error\Bridge`
+  namespace into the `MakinaCorpus\QueryBuilder\Error\Server` namespace.
+* [bc] ⚠️ Rename `FunctionalTestCaseTrait::getBridge()` to
   `FunctionalTestCaseTrait::getDatabaseSession()`.
+* [internal] Change PHPstan level from 3 to 5.
 
 ## 1.4.0
 
-* [feature] ⭐️ Added `DatabaseSession::getVendorName()`, `DatabaseSession::getVendorVersion()`,
+* [feature] ⭐️ Add `DatabaseSession::getVendorName()`, `DatabaseSession::getVendorVersion()`,
   `DatabaseSession::vendorIs()` and `DatabaseSession::vendorVersionIs()` methods.
-* [feature] ⭐️ Renamed the `Platform` class to `Vendor`..
-* [deprecation] ⚠️ Deprecated `Bridge::getServerFlavor()`, `Bridge::getServerVersion()`,
+* [feature] ⭐️ Rename the `Platform` class to `Vendor`..
+* [deprecation] ⚠️ Deprecate `Bridge::getServerFlavor()`, `Bridge::getServerVersion()`,
   `Bridge::isVersionLessThan()` and `Bridge::isVersionGreaterOrEqualThan()` methods.
-* [deprecation] ⚠️ Deprecated the `Platform` class.
-* [fix] Table creation with an identity column now works in SQLite.
+* [deprecation] ⚠️ Deprecate the `Platform` class.
+* [fix] Fix table creation with an identity in SQLite.
 
 ## 1.3.3
 
