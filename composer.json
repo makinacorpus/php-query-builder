@@ -39,5 +39,8 @@
         "phpunit/phpunit" : "^10.3",
         "ramsey/uuid": ">=3.8",
         "symfony/uid": ">=6.0"
+    },
+    "conflict": {
+        "doctrine/dbal": "<3.7"
     }
 }

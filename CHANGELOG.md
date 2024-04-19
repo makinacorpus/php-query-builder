@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.5.2
+
+* [fix] Add `doctrine/dbal:<3.7` to composer `conflict`.
+
 ## 1.5.1
 
 * [feature] ⚠️ Move `Bridge::close()` method into the `DatabaseSession`
