@@ -66,13 +66,13 @@ class DoctrineQueryBuilder extends AbstractBridge
 
         // doctrine/dbal:^3.17 only.
         $driver = $this->connection->getDriver();
-        if ((\interface_exists(ServerInfoAwareConnection::class) && $driver instanceof ServerInfoAwareConnection) || \method_exists($driver, 'getServerVersion')) {
+        if ($driver && \method_exists($driver, 'getServerVersion')) {
             // @phpstan-ignore-next-line
             return $this->doctrineServerVersion = $driver->getServerVersion();
         }
         if (\method_exists($this->connection, 'getWrappedConnection')) {
             $driverConnection = $this->connection->getWrappedConnection();
-            if ((\interface_exists(ServerInfoAwareConnection::class) && $driverConnection instanceof ServerInfoAwareConnection) || \method_exists($driverConnection, 'getServerVersion')) {
+            if ($driverConnection && \method_exists($driverConnection, 'getServerVersion')) {
                 return $this->doctrineServerVersion = $driverConnection->getServerVersion();
             }
         }
