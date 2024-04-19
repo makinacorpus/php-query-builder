@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.5.3
+
+* [internal] Add `MakinaCorpus\QueryBuilder\Bridge\Mock\MockQueryBuilder` for
+  third-party library or project unit testing.
+
 ## 1.5.2
 
 * [fix] Add `doctrine/dbal:<3.7` to composer `conflict`.
