@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.5.4
+
+* [feature] Add `MakinaCorpus\QueryBuilder\Dsn` class as a public API for third
+  party usage, with no internal use yet.
+
 ## 1.5.3
 
 * [internal] Add `MakinaCorpus\QueryBuilder\Bridge\Mock\MockQueryBuilder` for
