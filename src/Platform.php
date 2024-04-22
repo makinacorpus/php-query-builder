@@ -13,7 +13,7 @@ final class Platform extends Vendor
     public const MARIADB = 'mariadb';
     public const MYSQL = 'mysql';
     public const ORACLE = 'oracle';
-    public const POSTGRESQL = 'postgresql';
+    public const POSTGRESQL = 'pgsql';
     public const SQLITE = 'sqlite';
     public const SQLSERVER = 'sqlsrv';
     public const UNKNOWN = 'unknown';
