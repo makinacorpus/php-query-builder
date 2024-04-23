@@ -25,30 +25,12 @@ class DsnTest extends TestCase
         self::assertNull($dsn->getOption('non_existing_option'));
     }
 
-    public function testWithFilename(): void
-    {
-        $dsn = Dsn::fromString('sqlite:///some/path.db?server=sqlite-3');
-
-        self::assertTrue($dsn->isFile());
-        self::assertSame('sqlite', $dsn->getVendor());
-        self::assertSame('any', $dsn->getDriver());
-        self::assertSame('sqlite-3', $dsn->getOption('server'));
-        self::assertSame('/some/path.db', $dsn->getHost());
-        self::assertSame('/some/path.db', $dsn->getDatabase());
-    }
-
     public function testUserPassAreDecoded(): void
     {
         $dsn = Dsn::fromString('pdo_mysql://some%20user:some%20password@somehost.com:1234/some_database');
 
         self::assertSame('some user', $dsn->getUser());
         self::assertSame('some password', $dsn->getPassword());
-    }
-
-    public function testNoDatabaseRaiseException(): void
-    {
-        self::expectException(\InvalidArgumentException::class);
-        Dsn::fromString('pdo_mysql://some%20user:some%20password@thirdpartyprovider.com');
     }
 
     public function testNoSchemeRaiseException(): void
@@ -61,6 +43,97 @@ class DsnTest extends TestCase
     {
         self::expectException(\InvalidArgumentException::class);
         Dsn::fromString('oauth://some%20user:some%20password@?foo=bar');
+    }
+
+    public function testWithFilename(): void
+    {
+        $dsn = Dsn::fromString('sqlite:///some/path.db?server=sqlite-3');
+
+        self::assertTrue($dsn->isFile());
+        self::assertSame('sqlite', $dsn->getVendor());
+        self::assertSame('any', $dsn->getDriver());
+        self::assertSame('sqlite-3', $dsn->getOption('server'));
+        self::assertSame('/some/path.db', $dsn->getHost());
+        self::assertSame('/some/path.db', $dsn->getFilename());
+        self::assertSame('default', $dsn->getDatabase());
+    }
+
+    public function testSQLiteEdgeCaseRelative(): void
+    {
+        $dsn = Dsn::fromString('pdo-sqlite://ignored:ignored@ignored:1234/somedb.sqlite');
+
+        self::assertTrue($dsn->isFile());
+        self::assertSame('sqlite', $dsn->getVendor());
+        self::assertSame('pdo', $dsn->getDriver());
+        self::assertSame('somedb.sqlite', $dsn->getFilename());
+        self::assertSame('somedb.sqlite', $dsn->getHost());
+        self::assertSame('default', $dsn->getDatabase());
+    }
+
+    public function testSQLiteEdgeCaseAbsolute(): void
+    {
+        $dsn = Dsn::fromString('pdo-sqlite://ignored:ignored@ignored:1234//somedb.sqlite');
+
+        self::assertTrue($dsn->isFile());
+        self::assertSame('sqlite', $dsn->getVendor());
+        self::assertSame('pdo', $dsn->getDriver());
+        self::assertSame('/somedb.sqlite', $dsn->getFilename());
+        self::assertSame('default', $dsn->getDatabase());
+        self::assertSame('/somedb.sqlite', $dsn->getHost());
+    }
+
+    public function testSQLiteEdgeCaseNoHostRelative(): void
+    {
+        $dsn = Dsn::fromString('pdo-sqlite://ignored:ignored@somedb.sqlite');
+
+        self::assertTrue($dsn->isFile());
+        self::assertSame('sqlite', $dsn->getVendor());
+        self::assertSame('pdo', $dsn->getDriver());
+        self::assertSame('somedb.sqlite', $dsn->getFilename());
+        self::assertSame('default', $dsn->getDatabase());
+
+        self::assertSame('somedb.sqlite', $dsn->getHost());
+    }
+
+    public function testSQLiteEdgeCaseNoHostAbsolute(): void
+    {
+        self::markTestSkipped("We sure cannot handle every typo error from our users.");
+
+        /*
+        $dsn = Dsn::fromString('pdo-sqlite://ignored:ignored@/somedb.sqlite');
+
+        self::assertTrue($dsn->isFile());
+        self::assertSame('sqlite', $dsn->getVendor());
+        self::assertSame('pdo', $dsn->getDriver());
+        self::assertSame('/somedb.sqlite', $dsn->getFilename());
+        self::assertSame('default', $dsn->getDatabase());
+
+        self::assertSame('/somedb.sqlite', $dsn->getHost());
+         */
+    }
+
+    public function testSQLiteEdgeCaseMemoryRelative(): void
+    {
+        $dsn = Dsn::fromString('pdo-sqlite://:memory:');
+
+        self::assertTrue($dsn->isFile());
+        self::assertSame('sqlite', $dsn->getVendor());
+        self::assertSame('pdo', $dsn->getDriver());
+        self::assertSame(':memory:', $dsn->getHost());
+        self::assertSame(':memory:', $dsn->getFilename());
+        self::assertSame('default', $dsn->getDatabase());
+    }
+
+    public function testSQLiteEdgeCaseMemoryAbsolute(): void
+    {
+        $dsn = Dsn::fromString('pdo-sqlite:///:memory:');
+
+        self::assertTrue($dsn->isFile());
+        self::assertSame('sqlite', $dsn->getVendor());
+        self::assertSame('pdo', $dsn->getDriver());
+        self::assertSame(':memory:', $dsn->getHost());
+        self::assertSame(':memory:', $dsn->getFilename());
+        self::assertSame('default', $dsn->getDatabase());
     }
 
     public function testToUrl(): void

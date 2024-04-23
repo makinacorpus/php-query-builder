@@ -22,16 +22,20 @@ class Dsn
     private readonly bool $isFile;
     private readonly string $driver;
     private readonly string $vendor;
+    private readonly ?string $host;
+    private readonly ?string $filename;
+    private readonly ?string $database;
 
     public function __construct(
         /** Database vendor, eg. "mysql", "pgsql", ... */
         string $vendor,
         /** Host or local filename (unix socket, database file) */
-        private readonly string $host,
+        ?string $host = null,
+        ?string $filename = null,
         bool $isFile = false,
         /** Driver, eg. "pdo", "ext", ... */
         ?string $driver = null,
-        private readonly ?string $database = null,
+        ?string $database = null,
         private readonly ?string $user = null,
         #[\SensitiveParameter]
         private readonly ?string $password = null,
@@ -54,6 +58,7 @@ class Dsn
                 $this->driver = self::DRIVER_SQLITE3;
                 $this->vendor = Vendor::SQLITE;
                 $this->scheme = $vendor;
+                $isFile = true;
                 break;
             default:
                 $matches = [];
@@ -68,7 +73,28 @@ class Dsn
                 }
                 break;
         }
-        $this->isFile = $isFile || '/' === $host[0];
+
+        if (!$host && !$filename) {
+            throw new \InvalidArgumentException("Either one of \$host or \$filename parameter must be provided.");
+        }
+
+        $isFile = $isFile || $filename || '/' === $host[0] || Vendor::SQLITE === $this->vendor;
+
+        // Fix an edge case where sqlite is not detected.
+        if ($isFile) {
+            if (!$filename) {
+                $filename = $database ?? $host;
+                $database = $host = null;
+            }
+            $isFile = true;
+        } else {
+            $database = $database ? \trim($database, '/') : null;
+        }
+
+        $this->isFile = $isFile;
+        $this->database = $database;
+        $this->filename = $filename;
+        $this->host = $host;
     }
 
     public static function fromString(#[\SensitiveParameter] string $dsn): self
@@ -98,21 +124,35 @@ class Dsn
             throw new \InvalidArgumentException('The database DSN is invalid.');
         }
 
+        $database = $host = $filename = null;
+
         if ($isFile) {
             if (empty($params['path'])) {
                 throw new \InvalidArgumentException('The database DSN must contain a path when a targetting a local filename.');
             }
-            $host = $params['path'];
-            $database = $params['path'];
+            $filename = $params['path'];
         } else {
             if (empty($params['host'])) {
                 throw new \InvalidArgumentException('The database DSN must contain a host (use "default" by default).');
             }
-            if (empty($params['path'])) {
-                throw new \InvalidArgumentException('The database DSN must contain a database name.');
+            if (isset($params['path'])) {
+                // If path was absolute and is a filename then it should take
+                // the form of "//some/path". If URL path is a database name,
+                // then we must remove the leading '/' in all cases. In the
+                // other hand, if database is a filename that wasn't prior
+                // detected then we have '//' leading here. In both cases we
+                // need to strip exactly one '/'.
+                $database = '/' === $params['path'][0] ? \substr($params['path'], 1) : $params['path'];
             }
             $host = $params['host'];
-            $database = \trim($params['path'], '/');
+        }
+
+        // parse_url() few edge cases.
+        if (':memory' === $host) {
+            $filename = ':memory:';
+            $host = null;
+        } else if ('/:memory:' === $filename) {
+            $filename = ':memory:';
         }
 
         $port = $params['port'] ?? null;
@@ -124,6 +164,7 @@ class Dsn
 
         return new self(
             database: $database,
+            filename: $filename,
             host: $host,
             isFile: $isFile,
             password: $password,
@@ -144,24 +185,36 @@ class Dsn
         return $this->vendor;
     }
 
+    /**
+     * Get host name, if none provided and database is a file, return filename.
+     */
     public function getHost(): string
     {
-        return $this->host;
+        return $this->host ?? $this->filename;
     }
 
+    /**
+     * Is the database a file.
+     */
     public function isFile(): bool
     {
         return $this->isFile;
     }
 
-    public function getDatabase(): ?string
+    /**
+     * Get database, if none provided, "default" is returned.
+     */
+    public function getDatabase(): string
     {
-        return $this->database;
+        return $this->database ?? 'default';
     }
 
+    /**
+     * Get filename if detected as such.
+     */
     public function getFilename(): ?string
     {
-        return $this->isFile ? $this->host : null;
+        return $this->filename;
     }
 
     public function getUser(): ?string

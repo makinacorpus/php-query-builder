@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.5.5
+
+* [fix] Handle `mysqli` in `Dsn` class.
+* [fix] Handle `:memory:` in `Dsn` class.
+* [fix] Better filename detection in `Dsn` class.
+
 ## 1.5.4
 
 * [feature] Add `MakinaCorpus\QueryBuilder\Dsn` class as a public API for third
