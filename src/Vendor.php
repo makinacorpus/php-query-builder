@@ -62,7 +62,7 @@ use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 
         return match ($reduced) {
             'maria', 'mariadb' => self::MARIADB,
-            'mysql', 'my' => self::MYSQL,
+            'mysql', 'mysqli', 'my' => self::MYSQL,
             'oracle' => self::ORACLE,
             'postgresql', 'pgsql', 'postgre', 'postgres', 'pg' => self::POSTGRESQL,
             'sqlsrv', 'sqlserver', 'mssql', => self::SQLSERVER,

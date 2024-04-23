@@ -13,8 +13,10 @@ class Dsn
 {
     public const DRIVER_ANY = 'any';
     public const DRIVER_DOCTRINE = 'doctrine';
-    public const DRIVER_EXT = 'ext';
+    public const DRIVER_EXTPGSQL = 'ext-pgsql';
+    public const DRIVER_MYSQLI = 'mysqli';
     public const DRIVER_PDO = 'pdo';
+    public const DRIVER_SQLITE3 = 'sqlite3';
 
     private string $scheme;
     private readonly bool $isFile;
@@ -22,7 +24,7 @@ class Dsn
     private readonly string $vendor;
 
     public function __construct(
-        /** Database vendor, eg. "mysql", "postgresql", ... */
+        /** Database vendor, eg. "mysql", "pgsql", ... */
         string $vendor,
         /** Host or local filename (unix socket, database file) */
         private readonly string $host,
@@ -37,15 +39,34 @@ class Dsn
         private readonly array $query = [],
     ) {
         // Deal with some exceptions.
-        $matches = [];
-        if (\preg_match('@^([^-_+]+)[-_+](.+)$@i', $vendor, $matches)) {
-            $this->driver = $matches[1];
-            $this->vendor = Vendor::vendorNameNormalize($matches[2]);
-            $this->scheme = $vendor;
-        } else {
-            $this->driver = $driver ?? self::DRIVER_ANY;
-            $this->vendor = $vendor;
-            $this->scheme = $driver . '-' . $vendor;
+        switch ($vendor) {
+            case 'ext-pgsql':
+                $this->driver = self::DRIVER_EXTPGSQL;
+                $this->vendor = Vendor::POSTGRESQL;
+                $this->scheme = $vendor;
+                break;
+            case 'mysqli':
+                $this->driver = self::DRIVER_MYSQLI;
+                $this->vendor = Vendor::MYSQL;
+                $this->scheme = $vendor;
+                break;
+            case 'sqlite3':
+                $this->driver = self::DRIVER_SQLITE3;
+                $this->vendor = Vendor::SQLITE;
+                $this->scheme = $vendor;
+                break;
+            default:
+                $matches = [];
+                if (\preg_match('@^([^-_+]+)[-_+](.+)$@i', $vendor, $matches)) {
+                    $this->driver = $matches[1];
+                    $this->vendor = Vendor::vendorNameNormalize($matches[2]);
+                    $this->scheme = $vendor;
+                } else {
+                    $this->driver = $driver ?? self::DRIVER_ANY;
+                    $this->vendor = $vendor;
+                    $this->scheme = $this->driver . '-' . $vendor;
+                }
+                break;
         }
         $this->isFile = $isFile || '/' === $host[0];
     }
@@ -136,6 +157,11 @@ class Dsn
     public function getDatabase(): ?string
     {
         return $this->database;
+    }
+
+    public function getFilename(): ?string
+    {
+        return $this->isFile ? $this->host : null;
     }
 
     public function getUser(): ?string
