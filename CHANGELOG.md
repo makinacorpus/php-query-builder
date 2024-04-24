@@ -4,6 +4,7 @@
 
 * [feature] ⭐️ Add `MakinaCorpus\QueryBuilder\BridgeFactory` for creating
   standalone connections.
+* [fix] Better version compare algorithm, with less erroneous edge cases.
 * [deprecation] ⚠️ Renamed `MakinaCorpus\QueryBuilder\Bridge\Doctrine\DoctrineQueryBuilder`
   to `MakinaCorpus\QueryBuilder\Bridge\Doctrine\DoctrineBridge`.
 * [deprecation] ⚠️ Renamed `MakinaCorpus\QueryBuilder\Bridge\Pdo\PdoQueryBuilder`

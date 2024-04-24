@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder;
 
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
+use MakinaCorpus\QueryBuilder\Version\Version;
 
 /**
  * RDMBS identification.
@@ -40,17 +41,7 @@ use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
      */
     public static function versionCompare(string $userGiven, string $serverVersion, string $operator): bool
     {
-        $userGiven = self::versionNormalize($userGiven);
-        $serverVersion = self::versionNormalize($serverVersion);
-
-        return match ($operator) {
-            '<' => 0 > \version_compare($userGiven, $serverVersion),
-            '<=' => 0 >= \version_compare($userGiven, $serverVersion),
-            '=' => 0 === \version_compare($userGiven, $serverVersion),
-            '>=' => 0 <= \version_compare($userGiven, $serverVersion),
-            '>' => 0 < \version_compare($userGiven, $serverVersion),
-            default => throw new QueryBuilderError("Version comparison operator must be one of '<', '<=', '=', '>=', '>'"),
-        };
+        return (new Version($userGiven))->compare($serverVersion, $operator);
     }
 
     /**
