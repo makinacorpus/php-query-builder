@@ -1,5 +1,14 @@
 # Changelog
 
+## Next
+
+* [feature] ⭐️ Add `MakinaCorpus\QueryBuilder\BridgeFactory` for creating
+  standalone connections.
+* [deprecation] ⚠️ Renamed `MakinaCorpus\QueryBuilder\Bridge\Doctrine\DoctrineQueryBuilder`
+  to `MakinaCorpus\QueryBuilder\Bridge\Doctrine\DoctrineBridge`.
+* [deprecation] ⚠️ Renamed `MakinaCorpus\QueryBuilder\Bridge\Pdo\PdoQueryBuilder`
+  to `MakinaCorpus\QueryBuilder\Bridge\Pdo\PdoBridge`.
+
 ## 1.5.5
 
 * [fix] Handle `mysqli` in `Dsn` class.

@@ -116,7 +116,7 @@ Setting it up is easier than standalone setup:
 
 ```php
 use Doctrine\DBAL\DriverManager;
-use MakinaCorpus\QueryBuilder\Bridge\Doctrine\DoctrineQueryBuilder;
+use MakinaCorpus\QueryBuilder\Bridge\Doctrine\DoctrineBridge;
 use MakinaCorpus\QueryBuilder\DatabaseSession;
 
 // Create or fetch your doctrine/dbal connection.
@@ -126,7 +126,7 @@ $connection = DriverManager::getConnection([
 ]);
 
 // Create the query builder.
-$session = new DoctrineQueryBuilder($connection);
+$session = new DoctrineBridge($connection);
 \assert($session instanceof DatabaseSession);
 ```
 
@@ -189,14 +189,14 @@ composer require makinacorpus/query-builder
 Setting it up is easier than standalone setup:
 
 ```php
-use MakinaCorpus\QueryBuilder\Bridge\Pdo\PdoQueryBuilder;
+use MakinaCorpus\QueryBuilder\Bridge\Pdo\PdoBridge;
 use MakinaCorpus\QueryBuilder\DatabaseSession;
 
 // Create or fetch your PDO connection.
 $connection = new \PDO('pgsql:...');
 
 // User facade for you to build SQL queries.
-$session = new PdoQueryBuilder($connection);
+$session = new PdoBridge($connection);
 \assert($session instanceof DatabaseSession);
 ```
 

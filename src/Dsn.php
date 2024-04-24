@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace MakinaCorpus\QueryBuilder;
 
+use MakinaCorpus\QueryBuilder\Error\ConfigurationError;
+
 /**
  * Various use case this DSN implements:
  *  - driver://user:pass@host:port/database?arg=value&arg=value...
  *  - driver:///path/to/file?arg=value&... (socket connection, or database file name).
+ *  - driver:///:memory:?arg=value&... (for example sqlite in memory)
  */
 class Dsn
 {
@@ -20,6 +23,7 @@ class Dsn
 
     private string $scheme;
     private readonly bool $isFile;
+    private readonly bool $memory;
     private readonly string $driver;
     private readonly string $vendor;
     private readonly ?string $host;
@@ -29,10 +33,13 @@ class Dsn
     public function __construct(
         /** Database vendor, eg. "mysql", "pgsql", ... */
         string $vendor,
-        /** Host or local filename (unix socket, database file) */
+        /** Database hostname, mutually exclusive with filename and memory. */
         ?string $host = null,
+        /** Database filename or unix socket, mutually exclusive with host and memory. */
         ?string $filename = null,
         bool $isFile = false,
+        /** Database in memory, mutually exclusive with host and filename. */
+        bool $memory = false,
         /** Driver, eg. "pdo", "ext", ... */
         ?string $driver = null,
         ?string $database = null,
@@ -74,11 +81,20 @@ class Dsn
                 break;
         }
 
-        if (!$host && !$filename) {
-            throw new \InvalidArgumentException("Either one of \$host or \$filename parameter must be provided.");
+        if (!$host && !$filename && !$memory) {
+            throw new ConfigurationError("Either one of \$host, \$filename or \$memory parameter must be provided.");
         }
 
-        $isFile = $isFile || $filename || '/' === $host[0] || Vendor::SQLITE === $this->vendor;
+        if ($memory) {
+            if ($filename && $filename !== ':memory:') {
+                throw new ConfigurationError(\sprintf("When \$memory is true, filename must be null or equal to ':memory:', found '%s'.", $filename));
+            }
+            $filename = ':memory:';
+        } else if (':memory:' === $filename) {
+            $memory = true;
+        }
+
+        $isFile = !$memory && ($isFile || $filename || '/' === $host[0] || Vendor::SQLITE === $this->vendor);
 
         // Fix an edge case where sqlite is not detected.
         if ($isFile) {
@@ -91,10 +107,11 @@ class Dsn
             $database = $database ? \trim($database, '/') : null;
         }
 
-        $this->isFile = $isFile;
         $this->database = $database;
         $this->filename = $filename;
         $this->host = $host;
+        $this->isFile = $isFile;
+        $this->memory = $memory;
     }
 
     public static function fromString(#[\SensitiveParameter] string $dsn): self
@@ -117,23 +134,23 @@ class Dsn
                 $dsn = 'mock://' . $matches[2];
             }
         } else {
-            throw new \InvalidArgumentException('The database DSN must contain a scheme.');
+            throw new ConfigurationError('The database DSN must contain a scheme.');
         }
 
         if (false === ($params = \parse_url($dsn))) {
-            throw new \InvalidArgumentException('The database DSN is invalid.');
+            throw new ConfigurationError('The database DSN is invalid.');
         }
 
         $database = $host = $filename = null;
 
         if ($isFile) {
             if (empty($params['path'])) {
-                throw new \InvalidArgumentException('The database DSN must contain a path when a targetting a local filename.');
+                throw new ConfigurationError('The database DSN must contain a path when a targetting a local filename.');
             }
             $filename = $params['path'];
         } else {
             if (empty($params['host'])) {
-                throw new \InvalidArgumentException('The database DSN must contain a host (use "default" by default).');
+                throw new ConfigurationError('The database DSN must contain a host (use "default" by default).');
             }
             if (isset($params['path'])) {
                 // If path was absolute and is a filename then it should take
@@ -202,11 +219,19 @@ class Dsn
     }
 
     /**
-     * Get database, if none provided, "default" is returned.
+     * Is a database in memory.
      */
-    public function getDatabase(): string
+    public function inMemory(): bool
     {
-        return $this->database ?? 'default';
+        return $this->memory;
+    }
+
+    /**
+     * Get database name, can be null.
+     */
+    public function getDatabase(): ?string
+    {
+        return $this->database;
     }
 
     /**
@@ -235,6 +260,11 @@ class Dsn
     public function getOption(string $key, mixed $default = null): mixed
     {
         return $this->query[$key] ?? $default;
+    }
+
+    public function getOptions(): array
+    {
+        return $this->query;
     }
 
     public function toUrl(array $excludeParams = []): string

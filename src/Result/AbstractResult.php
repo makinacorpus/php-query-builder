@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Result;
 
 use MakinaCorpus\QueryBuilder\Converter\Converter;
+use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Error\ResultAlreadyStartedError;
 use MakinaCorpus\QueryBuilder\Error\ResultError;
 use MakinaCorpus\QueryBuilder\Error\ResultLockedError;
@@ -180,7 +181,7 @@ abstract class AbstractResult implements Result, \IteratorAggregate
             return $this->fetchOne();
         }
 
-        throw new \LogicException('Only fetch modes declared on Doctrine\DBAL\FetchMode are supported by legacy API.');
+        throw new QueryBuilderError('Only fetch modes declared on Doctrine\DBAL\FetchMode are supported by legacy API.');
     }
 
     #[\Override]

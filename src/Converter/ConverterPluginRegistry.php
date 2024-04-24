@@ -11,6 +11,7 @@ use MakinaCorpus\QueryBuilder\Converter\InputConverter\SymfonyUidInputConverter;
 use MakinaCorpus\QueryBuilder\Converter\OutputConverter\DateOutputConverter;
 use MakinaCorpus\QueryBuilder\Converter\OutputConverter\RamseyUuidOutputConverter;
 use MakinaCorpus\QueryBuilder\Converter\OutputConverter\SymfonyUidOutputConverter;
+use MakinaCorpus\QueryBuilder\Error\ConfigurationError;
 use MakinaCorpus\QueryBuilder\Type\Type;
 use Ramsey\Uuid\UuidInterface;
 use Symfony\Component\Uid\AbstractUid;
@@ -85,7 +86,7 @@ class ConverterPluginRegistry
         }
 
         if (!$found) {
-            throw new \InvalidArgumentException(\sprintf("Unsupported plugin class %s", \get_class($plugin)));
+            throw new ConfigurationError(\sprintf("Unsupported plugin class %s", \get_class($plugin)));
         }
     }
 

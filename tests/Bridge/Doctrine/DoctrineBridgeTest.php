@@ -6,7 +6,7 @@ namespace MakinaCorpus\QueryBuilder\Tests\Bridge\Doctrine;
 
 use MakinaCorpus\QueryBuilder\Expression\RandomInt;
 
-class DoctrineQueryBuilderTest extends DoctrineTestCase
+class DoctrineBridgeTest extends DoctrineTestCase
 {
     public function testSelectExecuteQuery(): void
     {
