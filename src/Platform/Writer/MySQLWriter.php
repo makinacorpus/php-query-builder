@@ -383,6 +383,28 @@ class MySQLWriter extends Writer
     }
 
     /**
+     * Compute MySQL cast type.
+     *
+     * Because MySQL doesn't like consistency and standard, they need specific
+     * expressions for CAST instead of usual type names.
+     */
+    protected function doFormatCastType(Type $type, WriterContext $context): ?string
+    {
+        if ($type->isText()) {
+            return 'CHAR';
+        }
+        // Do not use "unsigned" on behalf of the user, or it would proceed
+        // accidentally to transparent data alteration.
+        if (\in_array($type->internal, [InternalType::INT, InternalType::INT_BIG, InternalType::INT_SMALL, InternalType::INT_TINY])) {
+            return 'SIGNED';
+        }
+        if (\in_array($type->internal, [InternalType::FLOAT, InternalType::FLOAT_BIG, InternalType::FLOAT_SMALL, InternalType::DECIMAL])) {
+            return 'DECIMAL';
+        }
+        return null;
+    }
+
+    /**
      * MySQL and types, seriously. Be conservative and fix user basic
      * errors, but do not attempt to do too much magic and let unknown
      * types pass.
@@ -393,16 +415,13 @@ class MySQLWriter extends Writer
     protected function doFormatCastExpression(string $expressionString, string|Type $type, WriterContext $context): string
     {
         $type = Type::create($type);
-        $typeString = $this->typeConverter->getSqlTypeName($type);
 
-        // Do not use "unsigned" on behalf of the user, or it would proceed
-        // accidentally to transparent data alteration.
-        if (\in_array($type->internal, [InternalType::INT, InternalType::INT_BIG, InternalType::INT_SMALL, InternalType::INT_TINY])) {
-            $typeString = 'SIGNED';
-        } else if ($type->isText()) {
-            $typeString = 'CHAR';
+        $typeString = $this->doFormatCastType($type, $context);
+        if (null === $typeString) {
+            $typeString = $this->typeConverter->getSqlTypeName($type);
         }
 
+        // This will not work with MySQL 5.7 and previous, beware.
         if ($type->array) {
             $typeString .= ' ARRAY';
         }

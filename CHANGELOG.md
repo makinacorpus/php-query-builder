@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.6.1
+
+* [fix] Fix MySQL 5.7 `decimal` and `float` type cast.
+
 ## 1.6.0
 
 * [feature] ⭐️ Add `MakinaCorpus\QueryBuilder\BridgeFactory` for creating

@@ -8,6 +8,8 @@ use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\Expression\Row;
 use MakinaCorpus\QueryBuilder\Platform\Type\MySQL8TypeConverter;
+use MakinaCorpus\QueryBuilder\Type\InternalType;
+use MakinaCorpus\QueryBuilder\Type\Type;
 use MakinaCorpus\QueryBuilder\Type\TypeConverter;
 use MakinaCorpus\QueryBuilder\Writer\WriterContext;
 
@@ -36,6 +38,24 @@ class MySQL8Writer extends MySQLWriter
         }
 
         return $expression;
+    }
+
+    /**
+     * Same code as MySQL 5.7 but drops the DECIMAL since MySQL >= 8.0 supports
+     * the FLOAT type cast.
+     */
+    #[\Override]
+    protected function doFormatCastType(Type $type, WriterContext $context): ?string
+    {
+        if ($type->isText()) {
+            return 'CHAR';
+        }
+        // Do not use "unsigned" on behalf of the user, or it would proceed
+        // accidentally to transparent data alteration.
+        if (\in_array($type->internal, [InternalType::INT, InternalType::INT_BIG, InternalType::INT_SMALL, InternalType::INT_TINY])) {
+            return 'SIGNED';
+        }
+        return null;
     }
 
     /**
