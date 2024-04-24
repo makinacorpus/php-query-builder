@@ -35,10 +35,10 @@ call the `Bridge::disableErrorConverter()` method when initializing the bridge:
 
 ```php
 use Doctrine\DBAL\DriverManager;
-use MakinaCorpus\QueryBuilder\Bridge\Doctrine\DoctrineQueryBuilder;
+use MakinaCorpus\QueryBuilder\Bridge\Doctrine\DoctrineBridge;
 
 $connection = DriverManager::getConnection(['driver' => 'pdo_pgsql', /* ... */]);
-$bridge = new DoctrineQueryBuilder($connection);
+$bridge = new DoctrineBridge($connection);
 
 // Here it is:
 $bridge->disableErrorConverter();

@@ -17,6 +17,10 @@ use MakinaCorpus\QueryBuilder\Result\Result;
 use MakinaCorpus\QueryBuilder\Vendor;
 use MakinaCorpus\QueryBuilder\Writer\Writer;
 
+/**
+ * @deprecated This will be removed in 2.0, use DoctrineBridge instead.
+ * @see DoctrineBridge
+ */
 class DoctrineQueryBuilder extends AbstractBridge
 {
     private Connection $connection;
@@ -28,6 +32,10 @@ class DoctrineQueryBuilder extends AbstractBridge
         parent::__construct();
 
         $this->connection = $connection;
+
+        if (static::class === self::class) {
+            @\trigger_error(\sprintf("Class '%s' is deprecated and will be removed in 2.0, use '%s' instead.", DoctrineQueryBuilder::class, DoctrineBridge::class));
+        }
     }
 
     /**

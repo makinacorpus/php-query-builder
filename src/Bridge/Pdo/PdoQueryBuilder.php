@@ -20,6 +20,10 @@ use MakinaCorpus\QueryBuilder\Result\IterableResult;
 use MakinaCorpus\QueryBuilder\Result\Result;
 use MakinaCorpus\QueryBuilder\Vendor;
 
+/**
+ * @deprecated This will be removed in 2.0, use PdoBridge instead.
+ * @see PdoBridge
+ */
 class PdoQueryBuilder extends AbstractBridge
 {
     private ?\PDO $connection = null;
@@ -30,6 +34,10 @@ class PdoQueryBuilder extends AbstractBridge
         parent::__construct();
 
         $this->connection = $connection;
+
+        if (static::class === self::class) {
+            @\trigger_error(\sprintf("Class '%s' is deprecated and will be removed in 2.0, use '%s' instead.", PdoQueryBuilder::class, PdoBridge::class));
+        }
     }
 
     /**

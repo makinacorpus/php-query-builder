@@ -228,16 +228,16 @@ trait FunctionalTestCaseTrait
         if (\str_contains($driver,  'sqlsrv')) {
             // https://stackoverflow.com/questions/71688125/odbc-driver-18-for-sql-serverssl-provider-error1416f086
             $driverOptions['TrustServerCertificate'] = "true";
+            $driverOptions['MultipleActiveResultSets'] = "false";
         }
 
         return \array_filter([
             'driver' => $driver,
-            'driverOptions' => $driverOptions,
             'host' => \getenv('DBAL_HOST'),
             'password' => \getenv('DBAL_ROOT_PASSWORD'),
             'port' => \getenv('DBAL_PORT'),
             'user' => \getenv('DBAL_ROOT_USER'),
-        ]);
+        ]) + $driverOptions;
     }
 
     /**
@@ -259,11 +259,10 @@ trait FunctionalTestCaseTrait
         return \array_filter([
             'dbname' => 'test_db',
             'driver' => $driver,
-            'driverOptions' => $driverOptions,
             'host' => \getenv('DBAL_HOST'),
             'password' => \getenv('DBAL_PASSWORD'),
             'port' => \getenv('DBAL_PORT'),
             'user' => \getenv('DBAL_USER'),
-        ]);
+        ] + $driverOptions);
     }
 }

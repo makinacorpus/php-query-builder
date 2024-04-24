@@ -22,9 +22,9 @@ you can call `Query::executeQuery()` over your queries, for example:
 
 ```php
 use Doctrine\DBAL\DriverManager;
-use MakinaCorpus\QueryBuilder\Bridge\Doctrine\DoctrineQueryBuilder;
+use MakinaCorpus\QueryBuilder\Bridge\Doctrine\DoctrineBridge;
 
-$session = new DoctrineQueryBuilder(
+$session = new DoctrineBridge(
     DriverManager::getConnection([
         'driver' => 'pdo_pgsql',
         // ... driver options.
@@ -46,9 +46,9 @@ You may also directly execute raw SQL code as such:
 
 ```php
 use Doctrine\DBAL\DriverManager;
-use MakinaCorpus\QueryBuilder\Bridge\Doctrine\DoctrineQueryBuilder;
+use MakinaCorpus\QueryBuilder\Bridge\Doctrine\DoctrineBridge;
 
-$session = new DoctrineQueryBuilder(
+$session = new DoctrineBridge(
     DriverManager::getConnection([
         'driver' => 'pdo_pgsql',
         // ... driver options.
@@ -79,10 +79,10 @@ instances:
 
 ```php
 use Doctrine\DBAL\DriverManager;
-use MakinaCorpus\QueryBuilder\Bridge\Doctrine\DoctrineQueryBuilder;
+use MakinaCorpus\QueryBuilder\Bridge\Doctrine\DoctrineBridge;
 use MakinaCorpus\QueryBuilder\Result\ResultRow;
 
-$session = new DoctrineQueryBuilder(
+$session = new DoctrineBridge(
     DriverManager::getConnection([
         'driver' => 'pdo_pgsql',
         // ... driver options.
