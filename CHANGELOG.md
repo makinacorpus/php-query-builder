@@ -1,5 +1,9 @@
 # Changelog
 
+## Next
+
+* [fix] Cleanup PDO DSN options prior connecting in bridge factory.
+
 ## 1.6.1
 
 * [fix] Fix MySQL 5.7 `decimal` and `float` type cast.

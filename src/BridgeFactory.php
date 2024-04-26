@@ -182,7 +182,9 @@ class BridgeFactory
         if ($value = $dsn->getDatabase()) {
             $options['dbname'] = $value;
         }
-        $options += \array_diff_key($dsn->getOptions(), ['persistent' => 1]);
+
+        // https://www.php.net/manual/en/ref.pdo-mysql.connection.php
+        $options = self::pdoConnectionOptionClean($options + $dsn->getOptions(), ['host', 'port', 'dbname', 'unix_socket', 'charset']);
 
         $flags = [];
         $persistent = $dsn->getOption('peristent');
@@ -209,7 +211,9 @@ class BridgeFactory
         if ($value = $dsn->getDatabase()) {
             $options['dbname'] = $value;
         }
-        $options += \array_diff_key($dsn->getOptions(), ['persistent' => 1]);
+
+        // https://www.php.net/manual/en/ref.pdo-pgsql.connection.php
+        $options = self::pdoConnectionOptionClean($options + $dsn->getOptions(), ['host', 'port', 'dbname', 'user', 'password', 'sslmode']);
 
         $flags = [];
         $persistent = $dsn->getOption('peristent');
@@ -228,15 +232,32 @@ class BridgeFactory
     {
         $options = [];
         if ($value = $dsn->getHost()) {
-            $options['server'] = $value;
+            $options['Server'] = $value;
             if ($value = $dsn->getPort()) {
-                $options['server'] .= ',' . $value;
+                $options['Server'] .= ',' . $value;
             }
         }
         if ($value = $dsn->getDatabase()) {
             $options['Database'] = $value;
         }
-        $options += \array_diff_key($dsn->getOptions(), ['persistent' => 1]);
+
+        // https://www.php.net/manual/en/ref.pdo-sqlsrv.connection.php
+        $options = self::pdoConnectionOptionClean($options + $dsn->getOptions(), [
+            'APP',
+            'ConnectionPooling',
+            'Database',
+            'Encrypt',
+            'Failover_Partner',
+            'LoginTimeout',
+            'MultipleActiveResultSets',
+            'QuotedId',
+            'Server',
+            'TraceFile',
+            'TraceOn',
+            'TransactionIsolation',
+            'TrustServerCertificate',
+            'WSID',
+        ]);
 
         if (isset($options['MultipleActiveResultSets'])) {
             $options['MultipleActiveResultSets'] = $options['MultipleActiveResultSets'] ? 'true' : 'false';
@@ -262,7 +283,16 @@ class BridgeFactory
     private static function pdoConnectionSQLite(#[\SensitiveParameter] Dsn $dsn): \PDO
     {
         // Dsn::getFilename() may return ":memory:" which is supported by PDO.
+        // https://www.php.net/manual/fr/ref.pdo-sqlite.connection.php
         return new \PDO('sqlite:' . $dsn->getFilename());
+    }
+
+    /**
+     * Strip some well known options that you may often encounter ensuitable for PDO.
+     */
+    private static function pdoConnectionOptionClean(array $options, array $allowed): array
+    {
+        return \array_intersect_key($options, \array_flip($allowed));
     }
 
     /**
