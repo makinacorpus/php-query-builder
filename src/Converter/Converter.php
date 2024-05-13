@@ -126,10 +126,13 @@ class Converter
      * @throws ValueConversionError
      *   In case of value conversion error.
      */
-    public function fromSql(string $type, null|int|float|string $value): mixed
+    public function fromSql(callable|string $type, null|int|float|string $value): mixed
     {
         if (null === $value) {
             return null;
+        }
+        if (\is_callable($type)) {
+            return $type($value);
         }
 
         if (\str_ends_with($type, '[]')) {

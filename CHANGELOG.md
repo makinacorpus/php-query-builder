@@ -2,6 +2,7 @@
 
 ## Next
 
+* [feature] ⭐️ Allow `Converter::fromSql()` `$type` parameter to be a user-given callback.
 * [fix] Cleanup PDO DSN options prior connecting in bridge factory.
 
 ## 1.6.1

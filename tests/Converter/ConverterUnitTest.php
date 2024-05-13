@@ -60,6 +60,15 @@ class ConverterUnitTest extends UnitTestCase
         self::assertNull($value->getType());
     }
 
+    public function testFromSqlCallback(): void
+    {
+        $converter = new Converter();
+
+        $callback = fn (mixed $value) => "13" === $value ? 7 : throw new \Exception();
+
+        self::assertSame(7, $converter->fromSql($callback, "13"));
+    }
+
     public function testFromSqlBool(): void
     {
         $converter = new Converter();
