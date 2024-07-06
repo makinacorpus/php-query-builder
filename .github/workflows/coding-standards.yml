@@ -39,7 +39,7 @@ jobs:
           php-version: "${{ matrix.php-version }}"
 
       - name: "Install dependencies with Composer"
-        uses: "ramsey/composer-install@v2"
+        uses: "ramsey/composer-install@v3"
 
       - name: "Run a Code style analysis with friendsofphp/php-cs-fixer"
         run: "vendor/bin/php-cs-fixer fix --verbose --allow-risky=yes"
