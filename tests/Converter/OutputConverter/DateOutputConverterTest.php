@@ -7,6 +7,7 @@ namespace MakinaCorpus\QueryBuilder\Tests\Converter\OutputConverter;
 use MakinaCorpus\QueryBuilder\Converter\InputConverter\DateInputConverter;
 use MakinaCorpus\QueryBuilder\Converter\OutputConverter\DateOutputConverter;
 use MakinaCorpus\QueryBuilder\Tests\UnitTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class DateOutputConverterTest extends UnitTestCase
 {
@@ -15,9 +16,7 @@ class DateOutputConverterTest extends UnitTestCase
         return [[\DateTime::class], [\DateTimeImmutable::class], [\DateTimeInterface::class]];
     }
 
-    /**
-     * @dataProvider dataPhpType()
-     */
+    #[DataProvider('dataPhpType')]
     public function testFromSqlDateTimeWithUsecTz(string $phpType): void
     {
         // This time zone is GMT+1 on Europe/Paris.
@@ -32,9 +31,7 @@ class DateOutputConverterTest extends UnitTestCase
         );
     }
 
-    /**
-     * @dataProvider dataPhpType()
-     */
+    #[DataProvider('dataPhpType')]
     public function testFromSqlDateTimeWithTz(string $phpType): void
     {
         // This time zone is GMT+1 on Europe/Paris.
@@ -49,9 +46,7 @@ class DateOutputConverterTest extends UnitTestCase
         );
     }
 
-    /**
-     * @dataProvider dataPhpType()
-     */
+    #[DataProvider('dataPhpType')]
     public function testFromSqlDateTimeWithUsec(string $phpType): void
     {
         // This time zone is GMT+1 on Europe/Paris.
@@ -67,9 +62,7 @@ class DateOutputConverterTest extends UnitTestCase
         );
     }
 
-    /**
-     * @dataProvider dataPhpType()
-     */
+    #[DataProvider('dataPhpType')]
     public function testFromSqlDateTime(string $phpType): void
     {
         // This time zone is GMT+1 on Europe/Paris.
@@ -85,9 +78,7 @@ class DateOutputConverterTest extends UnitTestCase
         );
     }
 
-    /**
-     * @dataProvider dataPhpType()
-     */
+    #[DataProvider('dataPhpType')]
     public function testFromSqlTimeWithUsecTz(string $phpType): void
     {
         $sqlDate = '13:42:34.901965+00';
@@ -101,9 +92,7 @@ class DateOutputConverterTest extends UnitTestCase
         );
     }
 
-    /**
-     * @dataProvider dataPhpType()
-     */
+    #[DataProvider('dataPhpType')]
     public function testFromSqlTimeWithTz(string $phpType): void
     {
         $sqlDate = '13:42:34+00';
@@ -117,9 +106,7 @@ class DateOutputConverterTest extends UnitTestCase
         );
     }
 
-    /**
-     * @dataProvider dataPhpType()
-     */
+    #[DataProvider('dataPhpType')]
     public function testFromSqlTimeWithUsec(string $phpType): void
     {
         $sqlDate = '13:42:34.901965';
@@ -133,9 +120,7 @@ class DateOutputConverterTest extends UnitTestCase
         );
     }
 
-    /**
-     * @dataProvider dataPhpType()
-     */
+    #[DataProvider('dataPhpType')]
     public function testFromSqlTime(string $phpType): void
     {
         $sqlDate = '13:42:34';

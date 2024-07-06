@@ -10,10 +10,11 @@ use MakinaCorpus\QueryBuilder\Tests\Bridge\Doctrine\DoctrineTestCase;
 use MakinaCorpus\QueryBuilder\Transaction\Transaction;
 use MakinaCorpus\QueryBuilder\Transaction\TransactionSavepoint;
 use MakinaCorpus\QueryBuilder\Vendor;
+use PHPUnit\Framework\Attributes\Before;
 
 final class TransactionFunctionalTest extends DoctrineTestCase
 {
-    /** @before */
+    #[Before]
     protected function createSchema(): void
     {
         $session = $this->getDatabaseSession();

@@ -14,10 +14,11 @@ use MakinaCorpus\QueryBuilder\Schema\SchemaManager;
 use MakinaCorpus\QueryBuilder\Tests\FunctionalTestCase;
 use MakinaCorpus\QueryBuilder\Type\Type;
 use MakinaCorpus\QueryBuilder\Vendor;
+use PHPUnit\Framework\Attributes\Before;
 
 abstract class AbstractSchemaTestCase extends FunctionalTestCase
 {
-    /** @before */
+    #[Before]
     protected function createSchema(): void
     {
         $session = $this->getDatabaseSession();

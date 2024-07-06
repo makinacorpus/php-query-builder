@@ -10,6 +10,7 @@ use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
 use MakinaCorpus\QueryBuilder\Result\Result;
+use PHPUnit\Framework\Attributes\After;
 
 /**
  * Functional test case trait for API third-party packages that require
@@ -20,7 +21,7 @@ trait FunctionalTestCaseTrait
     private ?Bridge $connection = null;
     private ?Bridge $privConnection = null;
 
-    /** @after */
+    #[After]
     protected function closeConnection(): void
     {
         if (null !== $this->connection) {

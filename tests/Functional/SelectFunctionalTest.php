@@ -16,10 +16,11 @@ use MakinaCorpus\QueryBuilder\Query\Query;
 use MakinaCorpus\QueryBuilder\Query\Select;
 use MakinaCorpus\QueryBuilder\Tests\Bridge\Doctrine\DoctrineTestCase;
 use MakinaCorpus\QueryBuilder\Vendor;
+use PHPUnit\Framework\Attributes\Before;
 
 class SelectFunctionalTest extends DoctrineTestCase
 {
-    /** @before */
+    #[Before]
     protected function createSchema(): void
     {
         try {

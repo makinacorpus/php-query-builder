@@ -7,10 +7,11 @@ namespace MakinaCorpus\QueryBuilder\Tests\Functional;
 use MakinaCorpus\QueryBuilder\Query\Update;
 use MakinaCorpus\QueryBuilder\Tests\Bridge\Doctrine\DoctrineTestCase;
 use MakinaCorpus\QueryBuilder\Vendor;
+use PHPUnit\Framework\Attributes\Before;
 
 class UpdateFunctionalTest extends DoctrineTestCase
 {
-    /** @before */
+    #[Before]
     protected function createSchema(): void
     {
         try {

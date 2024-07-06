@@ -8,6 +8,7 @@ use MakinaCorpus\QueryBuilder\Converter\InputConverter\IntervalInputConverter;
 use MakinaCorpus\QueryBuilder\Error\UnexpectedInputValueTypeError;
 use MakinaCorpus\QueryBuilder\Tests\UnitTestCase;
 use MakinaCorpus\QueryBuilder\Type\Type;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 final class IntervalInputConverterTest extends UnitTestCase
 {
@@ -27,9 +28,7 @@ final class IntervalInputConverterTest extends UnitTestCase
         ];
     }
 
-    /**
-     * @dataProvider getValidToSQLData
-     */
+    #[DataProvider('getValidToSQLData')]
     public function testValidToSQL($expected, $value): void
     {
         $converter = new IntervalInputConverter();
@@ -51,9 +50,7 @@ final class IntervalInputConverterTest extends UnitTestCase
         ];
     }
 
-    /**
-     * @dataProvider getInvalidToSQLData
-     */
+    #[DataProvider('getInvalidToSQLData')]
     public function testInvalidToSQL($invalidValue): void
     {
         $converter = new IntervalInputConverter();

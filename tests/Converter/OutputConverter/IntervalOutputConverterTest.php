@@ -7,6 +7,7 @@ namespace MakinaCorpus\QueryBuilder\Tests\Converter\OutputConverter;
 use MakinaCorpus\QueryBuilder\Converter\OutputConverter\IntervalOutputConverter;
 use MakinaCorpus\QueryBuilder\Tests\UnitTestCase;
 use MakinaCorpus\QueryBuilder\Converter\InputConverter\IntervalInputConverter;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class IntervalOutputConverterTest extends UnitTestCase
 {
@@ -21,9 +22,7 @@ class IntervalOutputConverterTest extends UnitTestCase
         ];
     }
 
-    /**
-     * @dataProvider getValidFromSQLData
-     */
+    #[DataProvider('getValidFromSQLData')]
     public function testFromSQL(string $value, string $expected): void
     {
         $instance = new IntervalOutputConverter();

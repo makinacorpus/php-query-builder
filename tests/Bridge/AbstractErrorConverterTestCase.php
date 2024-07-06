@@ -12,10 +12,11 @@ use MakinaCorpus\QueryBuilder\Error\Server\TableDoesNotExistError;
 use MakinaCorpus\QueryBuilder\Error\Server\UniqueConstraintViolationError;
 use MakinaCorpus\QueryBuilder\Tests\FunctionalTestCase;
 use MakinaCorpus\QueryBuilder\Transaction\Transaction;
+use PHPUnit\Framework\Attributes\Before;
 
 abstract class AbstractErrorConverterTestCase extends FunctionalTestCase
 {
-    /** @before */
+    #[Before]
     protected function createSchema(): void
     {
         try {
