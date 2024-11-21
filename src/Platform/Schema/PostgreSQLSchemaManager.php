@@ -381,7 +381,7 @@ class PostgreSQLSchemaManager extends SchemaManager
 
         while ($row = $result->fetchRow()) {
             $ret[] = new Index(
-                columnNames: $row->get('column_names', 'string[]'),
+                columnNames: $row->get('column_names', 'string[]') ?? [],
                 comment: null, // @todo
                 database: $database,
                 name: $row->get('index_name', 'string'),
