@@ -1,9 +1,10 @@
 # Changelog
 
-## Next
+## 1.6.2
 
 * [feature] ⭐️ Allow `Converter::fromSql()` `$type` parameter to be a user-given callback.
 * [fix] Cleanup PDO DSN options prior connecting in bridge factory.
+* [fix] Fix random crashes in PostgreSQL schema manager.
 
 ## 1.6.1
 
