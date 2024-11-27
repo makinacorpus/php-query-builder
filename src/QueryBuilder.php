@@ -44,7 +44,7 @@ interface QueryBuilder
     /**
      * Create raw SQL query.
      */
-    public function raw(string $expression = null, mixed $arguments = null, bool $returns = false): RawQuery;
+    public function raw(null|string $expression = null, mixed $arguments = null, bool $returns = false): RawQuery;
 
     /**
      * Get the expression factory.

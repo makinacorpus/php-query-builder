@@ -176,7 +176,7 @@ abstract class AbstractTransaction implements Transaction
     }
 
     #[\Override]
-    public function savepoint(string $name = null): TransactionSavepoint
+    public function savepoint(null|string $name = null): TransactionSavepoint
     {
         if (!$this->started) {
             throw new TransactionError(\sprintf("can not commit a non-running transaction"));

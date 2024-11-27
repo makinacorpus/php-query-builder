@@ -53,7 +53,7 @@ class Type
     /**
      * Padded fixed-with character string.
      */
-    public static function char(int $length = null): self
+    public static function char(null|int $length = null): self
     {
         return new self(internal: InternalType::CHAR, length: $length);
     }
@@ -79,7 +79,7 @@ class Type
     /**
      * Decimal/numeric arbitrary precision numeric value.
      */
-    public static function decimal(?int $precision = null, int $scale = null): self
+    public static function decimal(null|int $precision = null, null|int $scale = null): self
     {
         return new self(internal: InternalType::DECIMAL, precision: $precision, scale: $scale);
     }

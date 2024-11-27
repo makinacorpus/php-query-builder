@@ -1,5 +1,9 @@
 # Changelog
 
+## Next
+
+* [feature] ⭐️ PHP 8.4 support.
+
 ## 1.6.2
 
 * [feature] ⭐️ Allow `Converter::fromSql()` `$type` parameter to be a user-given callback.

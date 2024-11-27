@@ -616,7 +616,7 @@ class Writer
         array $join,
         bool $transformFirstJoinAsFrom = false,
         ?string $fromPrefix = null,
-        Query $query = null
+        null|Query $query = null
     ): string {
         if (!$join) {
             return '';

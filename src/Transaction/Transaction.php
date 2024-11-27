@@ -34,27 +34,27 @@ interface Transaction
     /**
      * Set as immediate all or a set of constraints.
      *
-     * @param string|string[] $constraint
+     * @param null|string|string[] $constraint
      *   If set to null, all constraints are set immediate
      *   If a string or a string array, only the given constraint
      *   names are set as immediate.
      */
-    public function immediate(string|array $constraint = null): static;
+    public function immediate(null|string|array $constraint = null): static;
 
     /**
      * Defer all or a set of constraints.
      *
-     * @param string|string[] $constraint
+     * @param null|string|string[] $constraint
      *   If set to null, all constraints are set immediate
      *   If a string or a string array, only the given constraint
      *   names are set as immediate.
      */
-    public function deferred(string|array $constraint = null): static;
+    public function deferred(null|string|array $constraint = null): static;
 
     /**
      * Creates a savepoint and return its name.
      *
-     * @param string $name
+     * @param null|string $name
      *   Optional user given savepoint name, if none provided a name will be
      *   automatically computed using a serial.
      *
@@ -64,7 +64,7 @@ interface Transaction
      * @return TransactionSavepoint
      *   The nested transaction.
      */
-    public function savepoint(string $name = null): TransactionSavepoint;
+    public function savepoint(null|string $name = null): TransactionSavepoint;
 
     /**
      * Is transaction nested (ie. is a savepoint).

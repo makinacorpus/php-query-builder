@@ -15,7 +15,7 @@ class IterableResult extends AbstractResult
     public function __construct(
         iterable $data,
         private ?int $rowCount = null,
-        callable $freeCallback = null,
+        null|callable $freeCallback = null,
     ) {
         parent::__construct(false);
 

@@ -109,7 +109,7 @@ trait FromClauseTrait
     /**
      * Add inner statement and return the associated Where.
      */
-    final public function innerJoinWhere(string|Expression $table, string $alias = null): Where
+    final public function innerJoinWhere(string|Expression $table, null|string $alias = null): Where
     {
         return $this->joinWhere($table, $alias, Query::JOIN_INNER);
     }
@@ -117,7 +117,7 @@ trait FromClauseTrait
     /**
      * Add left outer join statement and return the associated Where.
      */
-    final public function leftJoinWhere(string|Expression $table, string $alias = null): Where
+    final public function leftJoinWhere(string|Expression $table, null|string $alias = null): Where
     {
         return $this->joinWhere($table, $alias, Query::JOIN_LEFT_OUTER);
     }

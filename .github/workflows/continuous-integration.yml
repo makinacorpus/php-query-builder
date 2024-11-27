@@ -34,6 +34,7 @@ jobs:
           - "8.1"
           - "8.2"
           - "8.3"
+          - "8.4"
         postgres-version:
           - "16"
         extension:
@@ -68,7 +69,7 @@ jobs:
           ini-values: "zend.assertions=1"
 
       - name: "Install dependencies with Composer"
-        uses: "ramsey/composer-install@v2"
+        uses: "ramsey/composer-install@v3"
         with:
           dependency-versions: "${{ matrix.dependencies }}"
           composer-options: "--ignore-platform-req=php+"
@@ -132,7 +133,7 @@ jobs:
           ini-values: "zend.assertions=1"
 
       - name: "Install dependencies with Composer"
-        uses: "ramsey/composer-install@v2"
+        uses: "ramsey/composer-install@v3"
         with:
           composer-options: "--ignore-platform-req=php+"
 
@@ -195,7 +196,7 @@ jobs:
           extensions: "${{ matrix.extension }}"
 
       - name: "Install dependencies with Composer"
-        uses: "ramsey/composer-install@v2"
+        uses: "ramsey/composer-install@v3"
         with:
           composer-options: "--ignore-platform-req=php+"
 
@@ -256,7 +257,7 @@ jobs:
           extensions: "${{ matrix.extension }}"
 
       - name: "Install dependencies with Composer"
-        uses: "ramsey/composer-install@v2"
+        uses: "ramsey/composer-install@v3"
         with:
           composer-options: "--ignore-platform-req=php+"
 
@@ -314,7 +315,7 @@ jobs:
           extensions: "${{ matrix.extension }}-5.10.0"
 
       - name: "Install dependencies with Composer"
-        uses: "ramsey/composer-install@v2"
+        uses: "ramsey/composer-install@v3"
         with:
           composer-options: "--ignore-platform-req=php+"
 
@@ -363,7 +364,7 @@ jobs:
           ini-values: "zend.assertions=1"
 
       - name: "Install dependencies with Composer"
-        uses: "ramsey/composer-install@v2"
+        uses: "ramsey/composer-install@v3"
         with:
           composer-options: "--ignore-platform-req=php+"
 

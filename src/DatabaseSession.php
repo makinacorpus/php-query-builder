@@ -74,7 +74,7 @@ interface DatabaseSession extends QueryBuilder
     /**
      * Execute query and return result.
      */
-    public function executeQuery(string|Expression $expression = null, mixed $arguments = null): Result;
+    public function executeQuery(null|string|Expression $expression = null, mixed $arguments = null): Result;
 
     /**
      * Execute query and return affected row count if possible.
@@ -82,7 +82,7 @@ interface DatabaseSession extends QueryBuilder
      * @return null|int
      *   Affected row count if applyable and driver supports it.
      */
-    public function executeStatement(string|Expression $expression = null, mixed $arguments = null): ?int;
+    public function executeStatement(null|string|Expression $expression = null, mixed $arguments = null): ?int;
 
     /**
      * Creates a new transaction.

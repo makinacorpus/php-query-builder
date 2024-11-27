@@ -5,7 +5,7 @@ GREEN='\033[0;32m'
 NC='\033[0m' # No Color
 
 # PHP version.
-PHPVER="8-1"
+PHPVER="8-4"
 # Extra parameters passed to all docker command lines.
 EXTRA_DOCKER_ENV=""
 
@@ -21,11 +21,17 @@ while getopts ":xp:l" opt; do
         p)
             p=${OPTARG}
             case "${OPTARG}" in
+                "8.1")
+                    PHPVER="8-1"
+                    ;;
                 "8.3")
                     PHPVER="8-3"
                     ;;
+                "8.4")
+                    PHPVER="8-4"
+                    ;;
                 *)
-                    PHPVER="8-1"
+                    PHPVER="8-4"
                     ;;
             esac
             ;;

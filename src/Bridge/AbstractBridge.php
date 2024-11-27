@@ -251,7 +251,7 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
     abstract protected function doExecuteQuery(string $expression, array $arguments = []): Result;
 
     #[\Override]
-    public function executeQuery(string|Expression $expression = null, mixed $arguments = null): Result
+    public function executeQuery(null|string|Expression $expression = null, mixed $arguments = null): Result
     {
         if (\is_string($expression)) {
             $expression = new Raw($expression, $arguments);
@@ -277,7 +277,7 @@ abstract class AbstractBridge extends DefaultQueryBuilder implements Bridge
     abstract protected function doExecuteStatement(string $expression, array $arguments = []): ?int;
 
     #[\Override]
-    public function executeStatement(string|Expression $expression = null, mixed $arguments = null): ?int
+    public function executeStatement(null|string|Expression $expression = null, mixed $arguments = null): ?int
     {
         if (\is_string($expression)) {
             $expression = new Raw($expression, $arguments);

@@ -68,7 +68,7 @@ class DefaultQueryBuilder implements QueryBuilder
     }
 
     #[\Override]
-    public function raw(string $expression = null, mixed $arguments = null, bool $returns = false): RawQuery
+    public function raw(null|string $expression = null, mixed $arguments = null, bool $returns = false): RawQuery
     {
         $ret = new RawQuery($expression, $arguments, $returns);
         $this->prepareQuery($ret);
