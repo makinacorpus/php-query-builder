@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.6.3
+## 1.6.3
 
 * [feature] ⭐️ PHP 8.4 support.
 
