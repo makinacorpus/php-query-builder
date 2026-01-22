@@ -29,15 +29,15 @@
     },
     "require" : {
         "php" : ">=8.1",
-        "symfony/polyfill-php83": "^1.29"
+        "symfony/polyfill-php83": "^1.33"
     },
     "require-dev" : {
         "doctrine/dbal": "^3.7|^4.0",
         "friendsofphp/php-cs-fixer": "^3.40",
         "phpbench/phpbench": "^1.2",
         "phpstan/phpstan": "^1.10",
-        "phpunit/phpunit" : "^10.3",
-        "ramsey/uuid": ">=3.8",
+        "phpunit/phpunit" : "^10.5.60",
+        "ramsey/uuid": ">=3.9.2",
         "symfony/uid": ">=6.0"
     },
     "conflict": {

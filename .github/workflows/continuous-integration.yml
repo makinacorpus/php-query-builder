@@ -35,12 +35,13 @@ jobs:
           - "8.2"
           - "8.3"
           - "8.4"
+          - "8.5"
         postgres-version:
-          - "16"
+          - "18"
         extension:
           - "pdo_pgsql"
         dependencies:
-          - "lowest"
+          # - "lowest"
           - "highest"
 
     services:
@@ -57,7 +58,7 @@ jobs:
 
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v4"
+        uses: "actions/checkout@v6"
         with:
           fetch-depth: 2
 
@@ -76,14 +77,8 @@ jobs:
 
       - name: "Run PHPUnit"
         env:
-          DBAL_DRIVER: "${{ matrix.extension }}"
-          DBAL_DBNAME: "test_db"
-          DBAL_HOST: "postgres"
-          DBAL_PASSWORD: "postgres"
-          DBAL_PORT: "5432"
-          DBAL_ROOT_PASSWORD: "postgres"
-          DBAL_ROOT_USER: "postgres"
-          DBAL_USER: "postgres"
+          DATABASE_ROOT_PASSWORD: "postgres"
+          DATABASE_ROOT_USER: "postgres"
           DATABASE_URL: "postgresql://postgres:postgres@postgres:5432/test_db?serverVersion=${{ matrix.postgres-version }}&charset=utf8"
         run: "vendor/bin/phpunit"
 
@@ -97,11 +92,10 @@ jobs:
     strategy:
       matrix:
         php-version:
-          - "8.1"
+          - "8.5"
         postgres-version:
           - "10"
-          - "15"
-          - "16"
+          - "18"
         extension:
           - "pgsql"
           - "pdo_pgsql"
@@ -120,7 +114,7 @@ jobs:
 
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v4"
+        uses: "actions/checkout@v6"
         with:
           fetch-depth: 2
 
@@ -139,14 +133,8 @@ jobs:
 
       - name: "Run PHPUnit"
         env:
-          DBAL_DRIVER: "${{ matrix.extension }}"
-          DBAL_DBNAME: "test_db"
-          DBAL_HOST: "postgres"
-          DBAL_PASSWORD: "postgres"
-          DBAL_PORT: "5432"
-          DBAL_ROOT_PASSWORD: "postgres"
-          DBAL_ROOT_USER: "postgres"
-          DBAL_USER: "postgres"
+          DATABASE_ROOT_PASSWORD: "postgres"
+          DATABASE_ROOT_USER: "postgres"
           DATABASE_URL: "postgresql://postgres:postgres@postgres:5432/test_db?serverVersion=${{ matrix.postgres-version }}&charset=utf8"
         run: "vendor/bin/phpunit"
 
@@ -160,11 +148,10 @@ jobs:
     strategy:
       matrix:
         php-version:
-          - "8.1"
+          - "8.5"
         mariadb-version:
-          - "10.11" # LTS (Feb 2028)
-          - "11.0"  # STS (Jun 2024)
-          - "11.1"  # STS (Aug 2024)
+          - "10.11"
+          - "12.1"
         extension:
           - "mysqli"
           - "pdo_mysql"
@@ -184,7 +171,7 @@ jobs:
 
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v4"
+        uses: "actions/checkout@v6"
         with:
           fetch-depth: 2
 
@@ -202,14 +189,6 @@ jobs:
 
       - name: "Run PHPUnit"
         env:
-          DBAL_DRIVER: "${{ matrix.extension }}"
-          DBAL_DBNAME: "test_db"
-          DBAL_HOST: "mariadb"
-          DBAL_PASSWORD: "password"
-          DBAL_PORT: "3306"
-          DBAL_ROOT_PASSWORD: "password"
-          DBAL_ROOT_USER: "root"
-          DBAL_USER: "root"
           DATABASE_URL: "mysql://root:password@mariadb:3306/test_db"
         run: "vendor/bin/phpunit"
 
@@ -223,10 +202,10 @@ jobs:
     strategy:
       matrix:
         php-version:
-          - "8.1"
+          - "8.5"
         mysql-version:
           - "8.0"
-          - "8.2"
+          - "8.4"
         extension:
           - "mysqli"
           - "pdo_mysql"
@@ -245,7 +224,7 @@ jobs:
 
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v4"
+        uses: "actions/checkout@v6"
         with:
           fetch-depth: 2
 
@@ -263,14 +242,6 @@ jobs:
 
       - name: "Run PHPUnit"
         env:
-          DBAL_DRIVER: "${{ matrix.extension }}"
-          DBAL_DBNAME: "test_db"
-          DBAL_HOST: "mysql"
-          DBAL_PASSWORD: "password"
-          DBAL_PORT: "3306"
-          DBAL_ROOT_PASSWORD: "password"
-          DBAL_ROOT_USER: "root"
-          DBAL_USER: "root"
           DATABASE_URL: "mysql://root:password@mysql:3306/test_db"
         run: "vendor/bin/phpunit"
 
@@ -284,13 +255,15 @@ jobs:
     strategy:
       matrix:
         include:
-          - php-version: "8.1"
+          - php-version: "8.5"
             extension: "pdo_sqlsrv"
             schema: "mssql"
 
     services:
       mssql:
-        image: "mcr.microsoft.com/mssql/server:2019-latest"
+        # @see https://github.com/testcontainers/testcontainers-dotnet/issues/1220
+        #image: "mcr.microsoft.com/mssql/server:2019-latest"
+        image: "mcr.microsoft.com/mssql/server:2022-CU13-ubuntu-22.04"
         env:
           ACCEPT_EULA: "Y"
           SA_PASSWORD: "P@ssword123"
@@ -303,7 +276,7 @@ jobs:
 
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v4"
+        uses: "actions/checkout@v6"
         with:
           fetch-depth: 2
 
@@ -321,14 +294,7 @@ jobs:
 
       - name: "Run PHPUnit"
         env:
-          DBAL_DRIVER: "${{ matrix.extension }}"
-          DBAL_DBNAME: "test_db"
-          DBAL_HOST: "mssql"
-          DBAL_PASSWORD: "P@ssword123"
-          DBAL_PORT: "1433"
-          DBAL_ROOT_PASSWORD: "P@ssword123"
-          DBAL_ROOT_USER: "sa"
-          DBAL_USER: "sa"
+          DATABASE_DRIVER: "${{ matrix.extension }}"
           DATABASE_URL: "${{ matrix.schema }}://sa:P%40ssword123@mssql:1433/test_db?serverVersion=2019&driverOptions[TrustServerCertificate]=true"
 
         run: "vendor/bin/phpunit"
@@ -345,14 +311,14 @@ jobs:
         os:
           - "ubuntu-22.04"
         php-version:
-          - "8.1"
+          - "8.5"
         extension:
           - "pdo_sqlite"
           - "sqlite3"
 
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v4"
+        uses: "actions/checkout@v6"
         with:
           fetch-depth: 2
 
@@ -370,9 +336,5 @@ jobs:
 
       - name: "Run PHPUnit"
         env:
-          DBAL_DRIVER: "${{ matrix.extension }}"
-          DBAL_DBNAME: "test_db"
-          DBAL_HOST: "127.0.0.1"
-          DBAL_PATH: ":memory:"
           DATABASE_URL: "sqlite:///:memory:"
         run: "vendor/bin/phpunit"
