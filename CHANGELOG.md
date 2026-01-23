@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.7.0
+
+* [feature] ⭐️ PHP 8.5 support (#28).
+* [bc] ⚠️ Deprecate MySQL 5.7, drop testing from CI.
+* [internal] Full rewrite of local testing Docker stack and `dev.sh` script (#28).
+* [internal] Incremental Github CI improvements (#28).
+
 ## 1.6.3
 
 * [feature] ⭐️ PHP 8.4 support.
