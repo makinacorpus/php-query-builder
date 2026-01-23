@@ -29,7 +29,7 @@ class Version
 
         $this->major = (int) $matches[1];
 
-        if (isset($matches[3]) && $matches[3] !== '') {
+        if (isset($matches[3]) && $matches[3] !== '') { // @phpstan-ignore-line
             $this->minor = (int) $matches[3];
             if (isset($matches[5]) && $matches[5] !== '') {
                 $this->patch = (int) $matches[5];

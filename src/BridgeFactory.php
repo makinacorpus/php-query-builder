@@ -55,21 +55,15 @@ class BridgeFactory
     }
 
     /**
-     * Creates connection using doctrine/dbal.
-     *
-     * Doctrine is the bridge that will give you the most vendor support and
-     * configuration options.
+     * Guess Doctrine DBAL driver using user input.
      */
-    public static function createDoctrine(#[\SensitiveParameter] array|string|Dsn $uri): DoctrineBridge
+    public static function guessDoctrineDriver(string $vendor, string $driver): string
     {
-        $dsn = self::normalizeDsn($uri);
-
-        $driver = $dsn->getDriver();
-        $vendor = $dsn->getVendor();
+        $vendor = Vendor::vendorNameNormalize($vendor);
 
         // These are opiniated choices.
         // @see https://www.doctrine-project.org/projects/doctrine-dbal/en/latest/reference/configuration.html
-        $doctrineDriver = match ($driver) {
+        return match ($driver) {
             Dsn::DRIVER_ANY, Dsn::DRIVER_DOCTRINE => match ($vendor) {
                 Vendor::MARIADB, Vendor::MYSQL => 'pdo_mysql',
                 Vendor::ORACLE => 'oci8',
@@ -89,6 +83,22 @@ class BridgeFactory
                 default => $driver . '_' . $vendor,
             },
         };
+    }
+
+    /**
+     * Creates connection using doctrine/dbal.
+     *
+     * Doctrine is the bridge that will give you the most vendor support and
+     * configuration options.
+     */
+    public static function createDoctrine(#[\SensitiveParameter] array|string|Dsn $uri): DoctrineBridge
+    {
+        $dsn = self::normalizeDsn($uri);
+
+        $driver = $dsn->getDriver();
+        $vendor = $dsn->getVendor();
+
+        $doctrineDriver = self::guessDoctrineDriver($vendor, $driver);
 
         $params = \array_filter([
             'dbname' => $dsn->getDatabase(),

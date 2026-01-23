@@ -50,7 +50,7 @@ class Dsn
         private readonly array $query = [],
     ) {
         // Deal with some exceptions.
-        switch ($vendor) {
+        switch (\strtolower($vendor)) {
             case 'ext-pgsql':
                 $this->driver = self::DRIVER_EXTPGSQL;
                 $this->vendor = Vendor::POSTGRESQL;
@@ -75,7 +75,7 @@ class Dsn
                     $this->scheme = $vendor;
                 } else {
                     $this->driver = $driver ?? self::DRIVER_ANY;
-                    $this->vendor = $vendor;
+                    $this->vendor = Vendor::vendorNameNormalize($vendor);
                     $this->scheme = $this->driver . '-' . $vendor;
                 }
                 break;

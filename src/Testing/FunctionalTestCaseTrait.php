@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace MakinaCorpus\QueryBuilder\Testing;
 
 use MakinaCorpus\QueryBuilder\Bridge\Bridge;
+use MakinaCorpus\QueryBuilder\BridgeFactory;
 use MakinaCorpus\QueryBuilder\DatabaseSession;
+use MakinaCorpus\QueryBuilder\Dsn;
 use MakinaCorpus\QueryBuilder\Error\QueryBuilderError;
 use MakinaCorpus\QueryBuilder\Expression;
 use MakinaCorpus\QueryBuilder\Expression\Raw;
@@ -20,7 +22,7 @@ trait FunctionalTestCaseTrait
     private ?Bridge $connection = null;
     private ?Bridge $privConnection = null;
 
-    /** @after */
+    /** @before */
     protected function closeConnection(): void
     {
         if (null !== $this->connection) {
@@ -220,8 +222,14 @@ trait FunctionalTestCaseTrait
      */
     private function getPriviledgedConnectionParameters(): array
     {
-        if (!$driver = \getenv('DBAL_DRIVER')) {
-            self::markTestSkipped("Missing 'DBAL_DRIVER' environment variable.");
+        if (!$dsnString = \getenv('DATABASE_URL')) {
+            self::markTestSkipped("Missing 'DATABASE_URL' environment variable.");
+        }
+        $dsn = Dsn::fromString($dsnString);
+
+        $driver = \getenv('DATABASE_DRIVER') ?: $dsn->getDriver();
+        if ($driver === Dsn::DRIVER_ANY) {
+            $driver = BridgeFactory::guessDoctrineDriver($dsn->getVendor(), $driver);
         }
 
         $driverOptions = [];
@@ -233,10 +241,10 @@ trait FunctionalTestCaseTrait
 
         return \array_filter([
             'driver' => $driver,
-            'host' => \getenv('DBAL_HOST'),
-            'password' => \getenv('DBAL_ROOT_PASSWORD'),
-            'port' => \getenv('DBAL_PORT'),
-            'user' => \getenv('DBAL_ROOT_USER'),
+            'host' => $dsn->getHost(),
+            'password' => \getenv('DATABASE_ROOT_PASSWORD') ?: $dsn->getPassword(),
+            'port' => $dsn->getPort(),
+            'user' => \getenv('DATABASE_ROOT_USER') ?: $dsn->getUser(),
         ]) + $driverOptions;
     }
 
@@ -245,8 +253,14 @@ trait FunctionalTestCaseTrait
      */
     private function getConnectionParameters(): array
     {
-        if (!$driver = \getenv('DBAL_DRIVER')) {
-            self::markTestSkipped("Missing 'DBAL_DRIVER' environment variable.");
+        if (!$dsnString = \getenv('DATABASE_URL')) {
+            self::markTestSkipped("Missing 'DATABASE_URL' environment variable.");
+        }
+        $dsn = Dsn::fromString($dsnString);
+
+        $driver = \getenv('DATABASE_DRIVER') ?: $dsn->getDriver();
+        if (Dsn::DRIVER_ANY === $driver) {
+            $driver = BridgeFactory::guessDoctrineDriver($dsn->getVendor(), $driver);
         }
 
         $driverOptions = [];
@@ -259,10 +273,10 @@ trait FunctionalTestCaseTrait
         return \array_filter([
             'dbname' => 'test_db',
             'driver' => $driver,
-            'host' => \getenv('DBAL_HOST'),
-            'password' => \getenv('DBAL_PASSWORD'),
-            'port' => \getenv('DBAL_PORT'),
-            'user' => \getenv('DBAL_USER'),
+            'host' => $dsn->getHost(),
+            'password' => $dsn->getPassword(),
+            'port' => $dsn->getPort(),
+            'user' => $dsn->getUser(),
         ] + $driverOptions);
     }
 }
