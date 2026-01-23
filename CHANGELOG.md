@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.7.1
+
+* [fix] Wrongly created tag for 1.7.0.
+
 ## 1.7.0
 
 * [feature] ⭐️ PHP 8.5 support (#28).
